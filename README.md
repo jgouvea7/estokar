@@ -1,10 +1,10 @@
-# 📦 Estokar - Sistema de Gerenciamento de Estoque
+# Estokar - Sistema de Gerenciamento de Estoque
 
 O **Estokar** é uma solução completa para controle de inventário, desenvolvida como projeto acadêmico. O sistema oferece uma interface administrativa via web e um aplicativo mobile focado em mobilidade e operações de campo, ambos integrados a um backend robusto com suporte a sincronização offline.
 
 ---
 
-## 🚀 Tecnologias
+## Tecnologias
 
 O projeto utiliza uma arquitetura moderna e escalável:
 
@@ -30,7 +30,7 @@ O projeto utiliza uma arquitetura moderna e escalável:
 
 ---
 
-## ✨ Funcionalidades
+## Funcionalidades
 
 - **Autenticação Segura:**
   - Login tradicional (e-mail/senha).
@@ -52,7 +52,7 @@ O projeto utiliza uma arquitetura moderna e escalável:
 
 ---
 
-## 📂 Estrutura do Projeto
+## Estrutura do Projeto
 
 ```text
 /
@@ -65,7 +65,7 @@ O projeto utiliza uma arquitetura moderna e escalável:
 
 ---
 
-## 🛠️ Como Executar
+## Como Executar
 
 ### **Pré-requisitos**
 - Docker e Docker Compose
@@ -107,12 +107,12 @@ npx expo start
 
 ---
 
-## 📄 Documentação Adicional
+## Documentação Adicional
 
 Para detalhes sobre a arquitetura do sistema, consulte a pasta [docs](./docs/diagrams/architecture.md), onde você encontrará diagramas C4 detalhando o contexto, contêineres e componentes do Estokar.
 
 ---
 
-## ⚖️ Licença
+## Licença
 
-Este projeto é para fins acadêmicos. Consulte os [Termos de Uso](./web/src/app/dashboard/settings/terms/page.tsx) e [Política de Privacidade](./web/src/app/dashboard/settings/privacy/page.tsx) dentro da aplicação para mais informações.
+Este projeto é para fins acadêmicos. Consulte os [Termos de Uso](./web/src/app/dashboard/settings/terms/page.tsx) e [Política de Privacidade](./web/src/app/dashboard/settings/privacy/page.tsx) dentro da aplicação para mais informações.
