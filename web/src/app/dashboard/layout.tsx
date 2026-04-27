@@ -39,13 +39,31 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
   const clearSession = useAuthStore((state) => state.clearSession);
 
   useEffect(() => {
+    // if there's no session yet, check for a persisted token in localStorage
+    // to avoid redirecting while the zustand persist middleware hydrates the store
     if (!session) {
-      router.replace('/');
+      try {
+        const token = localStorage.getItem('accessToken')
+          ?? (function () {
+            const raw = localStorage.getItem('estokar-web-auth');
+            if (!raw) return null;
+            const parsed = JSON.parse(raw);
+            return parsed?.state?.session?.accessToken ?? null;
+          })();
+
+        if (!token) {
+          router.replace('/');
+        }
+      } catch (e) {
+        router.replace('/');
+      }
     }
   }, [router, session]);
 
   if (!session) {
-    return null;
+    return (
+      <div className="min-h-screen grid place-items-center">Carregando sessão...</div>
+    );
   }
 
   return (
@@ -95,7 +113,6 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
         </div>
       </aside>
 
-      {/* Main Content Area */}
       <div className="flex flex-1 flex-col pl-72">
         <header className="sticky top-0 z-40 flex h-20 items-center justify-between border-b border-slate-200 bg-white/80 px-8 backdrop-blur-md">
           <div>
