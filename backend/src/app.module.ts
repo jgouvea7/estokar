@@ -30,7 +30,7 @@ import { StockMovementsModule } from './stock-movements/stock-movements.module';
       },
     ]),
 
-    /*TypeOrmModule.forRoot({
+    TypeOrmModule.forRoot({
       type: 'postgres',
 
       ...(process.env.DATABASE_URL
@@ -56,7 +56,7 @@ import { StockMovementsModule } from './stock-movements/stock-movements.module';
       autoLoadEntities: true,
       synchronize: (process.env.DB_SYNCHRONIZE ?? 'false') === 'true',
       logging: true,
-    }),*/
+    }),
     UsersModule,
     ProductsModule,
     CategoriesModule,
