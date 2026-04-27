@@ -30,7 +30,7 @@ import { StockMovementsModule } from './stock-movements/stock-movements.module';
       },
     ]),
 
-    TypeOrmModule.forRoot({
+    /*TypeOrmModule.forRoot({
       type: 'postgres',
 
       ...(process.env.DATABASE_URL
@@ -56,7 +56,7 @@ import { StockMovementsModule } from './stock-movements/stock-movements.module';
       autoLoadEntities: true,
       synchronize: (process.env.DB_SYNCHRONIZE ?? 'false') === 'true',
       logging: true,
-    }),
+    }),*/
     UsersModule,
     ProductsModule,
     CategoriesModule,
@@ -66,7 +66,6 @@ import { StockMovementsModule } from './stock-movements/stock-movements.module';
   controllers: [AppController],
   providers: [
     AppService,
-    // Rate limiting aplicado globalmente a todos os endpoints
     {
       provide: APP_GUARD,
       useClass: ThrottlerGuard,
