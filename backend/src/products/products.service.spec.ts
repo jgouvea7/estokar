@@ -4,6 +4,7 @@ import { getRepositoryToken } from '@nestjs/typeorm';
 import { Product } from './entities/product.entity';
 import { User } from '../users/entities/user.entity';
 import { Category } from '../categories/entities/category.entity';
+import { StockMovementsService } from '../stock-movements/stock-movements.service';
 
 describe('ProductsService', () => {
   let service: ProductsService;
@@ -25,7 +26,7 @@ describe('ProductsService', () => {
           useValue: {},
         },
         {
-          provide: 'StockMovementsService',
+          provide: StockMovementsService,
           useValue: {},
         },
       ],
