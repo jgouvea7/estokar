@@ -96,7 +96,7 @@ export class AuthController {
     const allowedRedirectPrefixes = (
       this.configService.get<string>(
         'GOOGLE_ALLOWED_REDIRECT_PREFIXES',
-        'mobile://,exp://,exps://,http://localhost,https://auth.expo.io,https://auth.expo.dev,https://expo.dev'
+        'mobile://,exp://,exps://,http://localhost,https://auth.expo.io,https://auth.expo.dev,https://expo.dev,https://estokar.vercel.app'
       )
     )
       .split(',')
