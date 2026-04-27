@@ -63,12 +63,22 @@ jobs:
         with:
           node-version: '20'
 
+      - name: Clean backend
+        run: |
+          rm -rf node_modules
+          rm -rf dist
+        working-directory: backend
+
       - name: Install dependencies
         run: npm install
         working-directory: backend
 
       - name: Build
         run: npm run build
+        working-directory: backend
+
+      - name: Check build output
+        run: ls -la dist
         working-directory: backend
 
       - name: Deploy to Azure
