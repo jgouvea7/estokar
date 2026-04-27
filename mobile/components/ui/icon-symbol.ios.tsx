@@ -1,32 +1,31 @@
-import { SymbolView, SymbolViewProps, SymbolWeight } from 'expo-symbols';
-import { StyleProp, ViewStyle } from 'react-native';
+import { ChevronRight, Code, Home, Send } from 'lucide-react-native';
+import { type StyleProp, type ViewStyle, View } from 'react-native';
+
+const ICON_MAP = {
+  'house.fill': Home,
+  'paperplane.fill': Send,
+  'chevron.left.forwardslash.chevron.right': Code,
+  'chevron.right': ChevronRight,
+} as const;
+
+type IconSymbolName = keyof typeof ICON_MAP;
 
 export function IconSymbol({
   name,
   size = 24,
   color,
   style,
-  weight = 'regular',
 }: {
-  name: SymbolViewProps['name'];
+  name: IconSymbolName;
   size?: number;
   color: string;
   style?: StyleProp<ViewStyle>;
-  weight?: SymbolWeight;
 }) {
+  const Icon = ICON_MAP[name];
+
   return (
-    <SymbolView
-      weight={weight}
-      tintColor={color}
-      resizeMode="scaleAspectFit"
-      name={name}
-      style={[
-        {
-          width: size,
-          height: size,
-        },
-        style,
-      ]}
-    />
+    <View style={style}>
+      <Icon color={color} size={size} />
+    </View>
   );
 }

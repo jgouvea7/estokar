@@ -26,29 +26,20 @@ export class AuthController {
   constructor(
     private readonly authService: AuthService,
     private readonly configService: ConfigService,
-  ) {}
+  ) { }
 
-  // ──────────────────────────────────────────────────────────────
-  // POST /auth/register
-  // ──────────────────────────────────────────────────────────────
   @Post('register')
   @HttpCode(HttpStatus.CREATED)
   register(@Body() dto: RegisterDto) {
     return this.authService.register(dto);
   }
 
-  // ──────────────────────────────────────────────────────────────
-  // POST /auth/login
-  // ──────────────────────────────────────────────────────────────
   @Post('login')
   @HttpCode(HttpStatus.OK)
   login(@Body() dto: LoginDto) {
     return this.authService.login(dto);
   }
 
-  // ──────────────────────────────────────────────────────────────
-  // POST /auth/refresh  (envia refresh token no header Authorization: Bearer <token>)
-  // ──────────────────────────────────────────────────────────────
   @Post('refresh')
   @UseGuards(JwtRefreshGuard)
   @HttpCode(HttpStatus.OK)
@@ -59,9 +50,6 @@ export class AuthController {
     return this.authService.refreshTokens(userId, refreshToken);
   }
 
-  // ──────────────────────────────────────────────────────────────
-  // POST /auth/logout
-  // ──────────────────────────────────────────────────────────────
   @Post('logout')
   @UseGuards(JwtAuthGuard)
   @HttpCode(HttpStatus.OK)
@@ -69,27 +57,17 @@ export class AuthController {
     return this.authService.logout(userId);
   }
 
-  // ──────────────────────────────────────────────────────────────
-  // GET /auth/me
-  // ──────────────────────────────────────────────────────────────
   @Get('me')
   @UseGuards(JwtAuthGuard)
   getProfile(@CurrentUser('id') userId: string) {
     return this.authService.getProfile(userId);
   }
 
-  // ──────────────────────────────────────────────────────────────
-  // GET /auth/google  — redireciona para o Google
-  // ──────────────────────────────────────────────────────────────
   @Get('google')
   @UseGuards(GoogleOAuthGuard)
   googleAuth(@Query('redirect_uri') _redirectUri?: string) {
-    // O guard redireciona automaticamente para o Google
   }
 
-  // ──────────────────────────────────────────────────────────────
-  // GET /auth/google/callback  — callback após login no Google
-  // ──────────────────────────────────────────────────────────────
   @Get('google/callback')
   @UseGuards(GoogleOAuthGuard)
   @HttpCode(HttpStatus.OK)
@@ -116,7 +94,10 @@ export class AuthController {
 
   private isAllowedRedirectUri(redirectUri: string): boolean {
     const allowedRedirectPrefixes = (
-      this.configService.get<string>('GOOGLE_ALLOWED_REDIRECT_PREFIXES', 'mobile://,exp://,http://localhost')
+      this.configService.get<string>(
+        'GOOGLE_ALLOWED_REDIRECT_PREFIXES',
+        'mobile://,exp://,exps://,http://localhost,https://auth.expo.io,https://auth.expo.dev,https://expo.dev'
+      )
     )
       .split(',')
       .map((prefix) => prefix.trim())

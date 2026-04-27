@@ -7,7 +7,7 @@ export default function AboutPage() {
   return (
     <div className="max-w-3xl mx-auto space-y-8 py-6">
       <header className="flex items-center gap-4">
-        <Link href="/dashboard/settings" className="interactive-press grid h-10 w-10 place-items-center rounded-xl bg-soft text-ink">
+        <Link href="/dashboard/settings" className="grid h-10 w-10 place-items-center rounded-xl bg-slate-50 text-slate-600 transition-colors hover:bg-slate-100">
           <ChevronLeft size={20} />
         </Link>
         <div>

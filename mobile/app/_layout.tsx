@@ -9,16 +9,28 @@ export const unstable_settings = {
   anchor: '(tabs)',
 };
 
+const PremiumLightTheme = {
+  ...DefaultTheme,
+  colors: {
+    ...DefaultTheme.colors,
+    background: '#f5f7fb',
+    card: '#ffffff',
+    text: '#0f172a',
+    border: '#e2e8f0',
+    primary: '#3b82f6',
+  },
+};
+
 export default function RootLayout() {
   const colorScheme = useColorScheme();
 
   return (
-    <ThemeProvider value={colorScheme === 'dark' ? DarkTheme : DefaultTheme}>
+    <ThemeProvider value={colorScheme === 'dark' ? DarkTheme : PremiumLightTheme}>
       <Stack>
         <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
         <Stack.Screen name="modal" options={{ presentation: 'modal', title: 'Modal' }} />
       </Stack>
-      <StatusBar style="auto" />
+      <StatusBar style="dark" />
     </ThemeProvider>
   );
 }

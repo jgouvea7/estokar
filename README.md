@@ -43,10 +43,10 @@ O projeto utiliza uma arquitetura moderna e escalável:
 - **Movimentações:**
   - Registro de Entradas e Saídas.
   - Histórico detalhado de movimentações.
-- **Dashboard (Visão Operacional):**
+- **Dashboard:**
   - Insights rápidos sobre itens com maior e menor estoque.
   - Gráficos e indicadores de saúde do inventário.
-- **Mobilidade:**
+- **Mobile:**
   - Aplicativo mobile com funcionamento offline.
   - Sincronização automática quando há conexão.
 

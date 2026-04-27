@@ -38,32 +38,76 @@ export default function ProfilePage() {
   }
 
   return (
-    <div className="space-y-5">
-      <section className="surface-card rounded-3xl border border-[var(--stroke)] p-5">
-        <h3 className="text-3xl font-black">Perfil</h3>
-        <p className="mt-1 text-sm text-[var(--muted)]">Configuracoes da sua conta.</p>
+    <div className="space-y-8 reveal-up">
+      <section>
+        <h3 className="text-3xl font-bold tracking-tight text-[#0f172a]">Perfil do Usuário</h3>
+        <p className="mt-2 text-sm font-medium text-slate-500">Gerencie suas informações pessoais e configurações de conta.</p>
       </section>
 
-      <section className="surface-card surface-card-hover rounded-3xl border border-[var(--stroke)] p-5">
-        <div className="space-y-3 text-sm">
-          <div className="flex items-center justify-between rounded-2xl bg-[var(--soft)] px-4 py-3">
-            <span className="text-[var(--muted)]">Nome</span>
-            <span className="font-bold">{session.user.name}</span>
-          </div>
-          <div className="flex items-center justify-between rounded-2xl bg-[var(--soft)] px-4 py-3">
-            <span className="text-[var(--muted)]">E-mail</span>
-            <span className="font-bold">{session.user.email}</span>
-          </div>
-        </div>
+      <div className="grid gap-8 lg:grid-cols-3">
+        <section className="lg:col-span-2 space-y-6">
+          <article className="surface-card p-8">
+            <header className="mb-6">
+              <h4 className="text-lg font-bold text-[#0f172a]">Dados Pessoais</h4>
+              <p className="text-sm font-medium text-slate-500">Informações básicas de identificação.</p>
+            </header>
 
-        <button
-          type="button"
-          onClick={handleDeleteAccount}
-          className="interactive-press mt-6 flex w-full items-center justify-center gap-2 rounded-2xl border border-[#F4C7CA] bg-white px-5 py-3 text-sm font-bold text-[var(--critical)] hover:bg-[var(--critical-soft)]">
-          <Trash2 size={16} />
-          Excluir conta
-        </button>
-      </section>
+            <div className="space-y-4">
+              <div className="flex flex-col gap-1.5 px-4 py-3 rounded-xl bg-slate-50 border border-slate-100">
+                <span className="text-[10px] font-bold uppercase tracking-wider text-slate-400">Nome Completo</span>
+                <span className="text-sm font-bold text-[#0f172a]">{session.user.name}</span>
+              </div>
+              <div className="flex flex-col gap-1.5 px-4 py-3 rounded-xl bg-slate-50 border border-slate-100">
+                <span className="text-[10px] font-bold uppercase tracking-wider text-slate-400">Endereço de E-mail</span>
+                <span className="text-sm font-bold text-[#0f172a]">{session.user.email}</span>
+              </div>
+            </div>
+          </article>
+
+          <article className="surface-card p-8 border-rose-100 bg-rose-50/10">
+            <header className="mb-6">
+              <h4 className="text-lg font-bold text-rose-600">Zona de Perigo</h4>
+              <p className="text-sm font-medium text-slate-500">Ações irreversíveis relacionadas à sua conta.</p>
+            </header>
+
+            <p className="text-sm text-slate-600 mb-6">
+              Ao excluir sua conta, todos os seus dados de estoque, produtos e histórico serão removidos permanentemente. Esta ação não pode ser desfeita.
+            </p>
+
+            <button
+              type="button"
+              onClick={handleDeleteAccount}
+              className="flex items-center justify-center gap-2 rounded-xl bg-rose-50 px-6 py-3.5 text-sm font-bold text-rose-600 transition-all hover:bg-rose-600 hover:text-white active:scale-95">
+              <Trash2 size={18} />
+              Excluir Minha Conta Permanentemente
+            </button>
+          </article>
+        </section>
+
+        <section className="space-y-6">
+          <article className="surface-card p-8 text-center">
+            <div className="mx-auto mb-4 flex h-24 w-24 items-center justify-center rounded-full bg-blue-50 text-3xl font-bold text-blue-600 border-4 border-white shadow-xl">
+              {(session.user.name?.trim().slice(0, 1) || 'E').toUpperCase()}
+            </div>
+            <h4 className="text-lg font-bold text-[#0f172a]">{session.user.name}</h4>
+            <p className="text-xs font-medium text-slate-500 uppercase tracking-widest mt-1">Administrador</p>
+            
+            <div className="mt-8 flex flex-col gap-2">
+              <div className="rounded-xl bg-slate-50 p-3 text-left">
+                <p className="text-[10px] font-bold text-slate-400 uppercase">Desde</p>
+                <p className="text-xs font-bold text-slate-700">Abril de 2024</p>
+              </div>
+              <div className="rounded-xl bg-slate-50 p-3 text-left">
+                <p className="text-[10px] font-bold text-slate-400 uppercase">Status</p>
+                <div className="flex items-center gap-2 mt-0.5">
+                  <div className="h-2 w-2 rounded-full bg-emerald-500 animate-pulse" />
+                  <p className="text-xs font-bold text-emerald-600">Conta Ativa</p>
+                </div>
+              </div>
+            </div>
+          </article>
+        </section>
+      </div>
     </div>
   );
 }

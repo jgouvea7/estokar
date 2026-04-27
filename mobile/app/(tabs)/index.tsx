@@ -1,9 +1,45 @@
-import { Ionicons } from '@expo/vector-icons';
+import { LinearGradient } from 'expo-linear-gradient';
 import { Image } from 'expo-image';
 import * as ImagePicker from 'expo-image-picker';
+import * as ExpoAuthSession from 'expo-auth-session';
 import * as Linking from 'expo-linking';
 import * as WebBrowser from 'expo-web-browser';
-import { useCallback, useEffect, useMemo, useState } from 'react';
+import {
+  AlertCircle,
+  ArrowDown,
+  ArrowUp,
+  Boxes,
+  Box,
+  Camera,
+  ChevronLeft,
+  ChevronRight,
+  CircleUserRound,
+  Eye,
+  EyeOff,
+  FileText,
+  Flame,
+  History,
+  Image as ImageIcon,
+  Info,
+  LayoutGrid,
+  LogIn,
+  LogOut,
+  Menu,
+  Pencil,
+  Plus,
+  Receipt,
+  Search,
+  Settings,
+  ShieldCheck,
+  Smartphone,
+  Trash2,
+  User,
+  Users,
+  X,
+  XCircle,
+  Zap,
+} from 'lucide-react-native';
+import { ComponentType, useCallback, useEffect, useMemo, useState } from 'react';
 import {
   Alert,
   KeyboardAvoidingView,
@@ -56,28 +92,88 @@ import type {
 
 type AuthMode = 'login' | 'register';
 type AppSection = 'home' | 'products' | 'history' | 'profile' | 'settings' | 'terms' | 'privacy' | 'about';
-type StockFilter = 'all' | 'low' | 'critical';
-
 const NO_PHOTO_IMAGE = 'sem-foto';
 
 WebBrowser.maybeCompleteAuthSession();
 
 const theme = {
-  accent: '#246BFE',
-  accentSoft: '#EAF1FF',
-  bg: '#F6F7FB',
-  card: '#FFFFFF',
-  critical: '#E5484D',
-  criticalSoft: '#FDEBEC',
-  ink: '#080B12',
-  low: '#D99A00',
-  lowSoft: '#FFF6D8',
-  muted: '#697386',
-  ok: '#159A61',
-  okSoft: '#E7F7EF',
-  soft: '#EEF1F6',
-  stroke: '#DDE3EE',
+  accent: '#3b82f6',
+  accentSoft: '#eff6ff',
+  bg: '#f5f7fb',
+  card: '#f8fafc',
+  critical: '#ef4444',
+  criticalSoft: '#fee2e2',
+  ink: '#0f172a',
+  low: '#f59e0b',
+  lowSoft: '#fef3c7',
+  muted: '#64748b',
+  ok: '#10b981',
+  okSoft: '#d1fae5',
+  soft: '#eef2f6',
+  stroke: '#e2e8f0',
+  surface: '#f8fafc',
+  surface2: '#f8fafc',
+  brandGradient: ['#0b1220', '#101d33', '#1f3a70'],
 };
+
+const APP_ICON_MAP = {
+  'add': Plus,
+  'alert-circle-outline': AlertCircle,
+  'arrow-down': ArrowDown,
+  'arrow-up': ArrowUp,
+  'camera-outline': Camera,
+  'chevron-back': ChevronLeft,
+  'chevron-forward': ChevronRight,
+  'close': X,
+  'close-circle-outline': XCircle,
+  'create-outline': Pencil,
+  'cube': Boxes,
+  'cube-outline': Box,
+  'circle-user-round': CircleUserRound,
+  'eye-off-outline': EyeOff,
+  'eye-outline': Eye,
+  'file-text-outline': FileText,
+  'flame-outline': Flame,
+  'grid-outline': LayoutGrid,
+  'history': History,
+  'image-outline': ImageIcon,
+  'information-circle-outline': Info,
+  'log-in-outline': LogIn,
+  'log-out-outline': LogOut,
+  'menu': Menu,
+  'people-outline': Users,
+  'person-outline': User,
+  'phone-portrait-outline': Smartphone,
+  'receipt-outline': Receipt,
+  'search': Search,
+  'settings-outline': Settings,
+  'shield-checkmark-outline': ShieldCheck,
+  'smartphone-outline': Smartphone,
+  'trash-outline': Trash2,
+  'flash-outline': Zap,
+} as const;
+
+type AppIconName = keyof typeof APP_ICON_MAP;
+
+function AppIcon({
+  name,
+  size = 20,
+  color = theme.ink,
+  strokeWidth = 2,
+}: {
+  name: AppIconName;
+  size?: number;
+  color?: string;
+  strokeWidth?: number;
+}) {
+  const Icon = APP_ICON_MAP[name] as ComponentType<{
+    color?: string;
+    size?: number;
+    strokeWidth?: number;
+  }>;
+
+  return <Icon color={color} size={size} strokeWidth={strokeWidth} />;
+}
 
 export default function AuthScreen() {
   const [mode, setMode] = useState<AuthMode>('login');
@@ -147,9 +243,14 @@ export default function AuthScreen() {
     setAuthMessage('');
 
     try {
-      const redirectUri = Linking.createURL('auth/callback');
+      const redirectUri = ExpoAuthSession.makeRedirectUri({
+        useProxy: true,
+      });
       const authUrl = getGoogleOAuthUrl(redirectUri);
+      console.log("REDIRECT URI:", redirectUri);
+      console.log("AUTH URL:", authUrl);
       const result = await WebBrowser.openAuthSessionAsync(authUrl, redirectUri);
+      console.log("RESULT:", result);
 
       if (result.type !== 'success' || !result.url) {
         setAuthMessage('Login com Google cancelado.');
@@ -161,12 +262,9 @@ export default function AuthScreen() {
         typeof parsed.queryParams?.access_token === 'string'
           ? parsed.queryParams.access_token
           : '';
-      const refreshToken =
-        typeof parsed.queryParams?.refresh_token === 'string'
-          ? parsed.queryParams.refresh_token
-          : '';
+  
 
-      if (!accessToken || !refreshToken) {
+      if (!accessToken) {
         throw new Error('Nao foi possivel concluir o login com Google.');
       }
 
@@ -179,12 +277,10 @@ export default function AuthScreen() {
       const profile = await getProfile(accessToken).catch(() => fallbackUser);
       const nextSession: AuthSession = {
         accessToken,
-        refreshToken,
         user: {
           email: profile.email || fallbackUser.email,
           id: profile.id || fallbackUser.id,
           name: profile.name || fallbackUser.name,
-          role: profile.role,
         },
       };
 
@@ -229,19 +325,17 @@ export default function AuthScreen() {
           contentContainerStyle={styles.authContainer}
           keyboardShouldPersistTaps="handled"
           showsVerticalScrollIndicator={false}>
-          <View style={styles.authHero}>
-            <View style={styles.authGlow} />
-            <AppLogo size={84} />
-            <Text style={styles.brandName}>Estokar</Text>
-            <Text style={styles.brandSubtitle}>
-              Estoque inteligente com previsao, alertas e historico de movimentacao.
-            </Text>
-          </View>
-
           <View style={styles.authCard}>
-            <View style={styles.segmentedControl}>
-              <SegmentButton active={!isRegister} label="Entrar" onPress={() => setMode('login')} />
-              <SegmentButton active={isRegister} label="Criar conta" onPress={() => setMode('register')} />
+            <View style={styles.authHeader}>
+              <View style={styles.authBrandRow}>
+                <View style={styles.authBrandIcon}>
+                  <AppIcon name="cube" size={20} color="#FFFFFF" strokeWidth={2.5} />
+                </View>
+                <View style={styles.authBrandText}>
+                  <Text style={styles.authBrandEyebrow}>ESTOKAR</Text>
+                  <Text style={styles.authBrandTitle}>Inventory OS</Text>
+                </View>
+              </View>
             </View>
 
             {isRegister ? (
@@ -257,13 +351,24 @@ export default function AuthScreen() {
             />
 
             <View style={styles.field}>
-              <Text style={styles.label}>Senha</Text>
+              <View style={styles.labelRow}>
+                <Text style={styles.label}>Senha</Text>
+                {!isRegister ? (
+                  <Pressable
+                    accessibilityRole="button"
+                    hitSlop={8}
+                    onPress={() => Alert.alert('Recuperar senha', 'Funcionalidade em breve.')}
+                    style={({ pressed }) => [styles.forgotLinkButton, pressed && styles.pressed]}>
+                    <Text style={styles.forgotLink}>Esqueceu a senha?</Text>
+                  </Pressable>
+                ) : null}
+              </View>
               <View style={styles.passwordField}>
                 <TextInput
                   autoCapitalize="none"
                   onChangeText={setPassword}
-                  placeholder="Senha"
-                  placeholderTextColor="#929AAA"
+                  placeholder="••••••••"
+                  placeholderTextColor="#94a3b8"
                   secureTextEntry={!showPassword}
                   style={styles.passwordInput}
                   value={password}
@@ -272,7 +377,7 @@ export default function AuthScreen() {
                   accessibilityRole="button"
                   onPress={() => setShowPassword((current) => !current)}
                   style={({ pressed }) => [styles.iconButton, pressed && styles.pressed]}>
-                  <Ionicons
+                  <AppIcon
                     name={showPassword ? 'eye-off-outline' : 'eye-outline'}
                     size={21}
                     color={theme.ink}
@@ -281,7 +386,9 @@ export default function AuthScreen() {
               </View>
             </View>
 
-            {isRegister ? <PremiumInput label="Confirmar senha" placeholder="Repita a senha" secureTextEntry /> : null}
+            {isRegister ? (
+              <PremiumInput label="Confirmar senha" placeholder="Repita a senha" secureTextEntry />
+            ) : null}
             {authMessage ? <Text style={styles.authMessage}>{authMessage}</Text> : null}
 
             <Pressable
@@ -293,11 +400,22 @@ export default function AuthScreen() {
                 authLoading && styles.buttonDisabled,
                 pressed && styles.buttonPressed,
               ]}>
-              <Text style={styles.primaryButtonText}>
-                {authLoading ? 'Conectando...' : isRegister ? 'Criar conta' : 'Entrar'}
-              </Text>
-              <Ionicons name="arrow-forward" size={19} color="#FFFFFF" />
+              <LinearGradient
+                colors={theme.brandGradient}
+                end={{ x: 1, y: 1 }}
+                start={{ x: 0, y: 0 }}
+                style={styles.primaryButtonGradient}>
+                <Text style={styles.primaryButtonText}>
+                  {authLoading ? 'Conectando...' : isRegister ? 'Criar conta' : 'Entrar na conta'}
+                </Text>
+              </LinearGradient>
             </Pressable>
+
+            <View style={styles.authDivider}>
+              <View style={styles.authDividerLine} />
+              <Text style={styles.authDividerText}>Ou continue com</Text>
+              <View style={styles.authDividerLine} />
+            </View>
 
             <Pressable
               accessibilityRole="button"
@@ -308,11 +426,32 @@ export default function AuthScreen() {
                 googleLoading && styles.buttonDisabled,
                 pressed && styles.buttonPressed,
               ]}>
-              <Ionicons name="logo-google" size={19} color={theme.ink} />
-              <Text style={styles.googleButtonText}>
-                {googleLoading ? 'Conectando Google...' : 'Continuar com Google'}
-              </Text>
+              {googleLoading ? (
+                <Text style={styles.googleButtonText}>Conectando Google...</Text>
+              ) : (
+                <View style={styles.googleBrand}>
+                  <Text style={styles.googleMark}>G</Text>
+                  <Text style={styles.googleButtonText}>Google</Text>
+                </View>
+              )}
             </Pressable>
+
+            <View style={styles.authFooter}>
+              <Text style={styles.authFooterText}>
+                {isRegister ? 'Ja tem uma conta?' : 'Nao tem uma conta?'}
+              </Text>
+              <Pressable
+                accessibilityRole="button"
+                onPress={() => setMode(isRegister ? 'login' : 'register')}
+                style={({ pressed }) => [
+                  styles.authFooterAction,
+                  pressed && styles.buttonPressed,
+                ]}>
+                <Text style={styles.authFooterActionText}>
+                  {isRegister ? 'Entrar' : 'Crie uma agora'}
+                </Text>
+              </Pressable>
+            </View>
           </View>
         </ScrollView>
       </KeyboardAvoidingView>
@@ -396,7 +535,6 @@ function DashboardScreen({
       if (product.remoteId) {
         await deleteRemoteProduct(session.accessToken, product.remoteId);
       } else {
-        // Se não tem remoteId, remove apenas localmente (já remove do outbox se houver)
         await deleteLocalProduct(product);
       }
     } catch {
@@ -410,21 +548,11 @@ function DashboardScreen({
     if (quantity <= 0) return;
 
     try {
-      if (product.remoteId) {
-        const nextQuantity = type === 'in' ? product.quantity + quantity : product.quantity - quantity;
-        if (nextQuantity < 0) throw new Error('Estoque insuficiente.');
-
-        await updateRemoteProduct(session.accessToken, product.remoteId, {
-          ...product,
-          quantity: nextQuantity,
-        } as UpdateProductInput);
-      } else {
-        throw new Error('Produto ainda não sincronizado.');
-      }
-    } catch {
       await moveLocalStock(product, type, quantity);
-    } finally {
       await refreshProducts();
+    } catch (error) {
+      const message = error instanceof Error ? error.message : 'Nao foi possivel atualizar o estoque.';
+      Alert.alert('Erro ao movimentar estoque', message);
     }
   }
 
@@ -478,7 +606,7 @@ function DashboardScreen({
             accessibilityRole="button"
             onPress={() => setSidebarOpen(true)}
             style={({ pressed }) => [styles.headerIconButton, pressed && styles.pressed]}>
-            <Ionicons name="menu" size={25} color={theme.ink} />
+            <AppIcon name="menu" size={25} color={theme.ink} />
           </Pressable>
           <View>
             <Text style={styles.headerEyebrow}>Estokar</Text>
@@ -510,11 +638,10 @@ function DashboardScreen({
             />
           ) : null}
           {section === 'history' ? (
-            <HistorySection insights={insights} movements={movements} />
+            <HistorySection movements={movements} />
           ) : null}
           {section === 'profile' ? (
             <ProfileSection
-              insights={insights}
               onDeleteAccount={onDeleteAccount}
               onLogout={onLogout}
               user={session.user}
@@ -537,20 +664,28 @@ function DashboardScreen({
         {sidebarOpen ? (
           <View style={styles.sidebarLayer}>
             <Pressable onPress={() => setSidebarOpen(false)} style={styles.sidebarBackdrop} />
-            <View style={styles.sidebar}>
+            <LinearGradient
+              colors={theme.brandGradient}
+              end={{ x: 1, y: 1 }}
+              start={{ x: 0, y: 0 }}
+              style={styles.sidebar}>
               <View style={styles.sidebarBrand}>
-                <AppLogo size={48} />
-                <View>
-                  <Text style={styles.sidebarTitle}>Estokar</Text>
-                  <Text style={styles.sidebarSubtitle}>Inventory OS</Text>
+                <View style={styles.sidebarLogo}>
+                  <AppIcon name="cube" size={20} color="#FFFFFF" strokeWidth={2.5} />
+                </View>
+                <View style={styles.sidebarBrandText}>
+                  <Text style={styles.sidebarEyebrow}>ESTOKAR</Text>
+                  <Text style={styles.sidebarTitle}>Inventory OS</Text>
                 </View>
               </View>
-              <SidebarItem active={section === 'home'} icon="grid-outline" label="Inicio" onPress={() => navigate('home')} />
-              <SidebarItem active={section === 'products'} icon="cube-outline" label="Produtos" onPress={() => navigate('products')} />
-              <SidebarItem active={section === 'history'} icon="receipt-outline" label="Historico" onPress={() => navigate('history')} />
-              <SidebarItem active={section === 'profile'} icon="person-outline" label="Perfil" onPress={() => navigate('profile')} />
-              <SidebarItem active={section === 'settings'} icon="settings-outline" label="Configuracoes" onPress={() => navigate('settings')} />
-            </View>
+              <View style={styles.sidebarNav}>
+                <SidebarItem active={section === 'home'} icon="grid-outline" label="Inicio" onPress={() => navigate('home')} />
+                <SidebarItem active={section === 'products'} icon="cube-outline" label="Produtos" onPress={() => navigate('products')} />
+                <SidebarItem active={section === 'history'} icon="history" label="Historico" onPress={() => navigate('history')} />
+                <SidebarItem active={section === 'profile'} icon="circle-user-round" label="Perfil" onPress={() => navigate('profile')} />
+                <SidebarItem active={section === 'settings'} icon="settings-outline" label="Configuracoes" onPress={() => navigate('settings')} />
+              </View>
+            </LinearGradient>
           </View>
         ) : null}
       </View>
@@ -573,29 +708,40 @@ function HomeSection({
 
   return (
     <View style={styles.section}>
-      <View style={styles.heroPanel}>
+      <LinearGradient
+        colors={theme.brandGradient}
+        end={{ x: 1, y: 1 }}
+        start={{ x: 0, y: 0 }}
+        style={styles.heroPanel}>
         <View style={styles.heroAccent} />
-        <Text style={styles.heroKicker}>Dashboard inteligente</Text>
-        <Text style={styles.heroTitle}>{insights.totalStock} itens em estoque</Text>
-        <Text style={styles.heroSubtitle}>
-          {insights.criticalProducts} produto(s) em falta ou criticos. Reposicao sugerida em destaque.
+        <Text style={styles.heroKicker}>Visao Geral Inteligente</Text>
+        <Text style={styles.heroTitle}>
+          {insights.totalStock.toLocaleString()}{' '}
+          <Text style={styles.heroTitleMuted}>itens em estoque</Text>
         </Text>
+        <Text style={styles.heroSubtitle}>
+          Ha{' '}
+          <Text style={styles.heroSubtitleHighlight}>
+            {insights.criticalProducts + insights.lowProducts}
+          </Text>{' '}
+          produtos que requerem sua atencao imediata hoje.
+        </Text>
+      </LinearGradient>
+
+      <View style={styles.metricsGrid}>
+        <MetricCard icon="cube" label="Total" value={String(products.length)} color="blue" />
+        <MetricCard icon="alert-circle-outline" label="Baixo" value={String(insights.lowProducts)} color="orange" />
+        <MetricCard icon="close-circle-outline" label="Faltando" value={String(insights.outOfStock)} color="red" />
       </View>
 
       <View style={styles.metricsGrid}>
-        <MetricCard icon="cube-outline" label="Produtos" value={String(products.length)} />
-        <MetricCard icon="alert-circle-outline" label="Baixo" value={String(insights.lowProducts)} />
-        <MetricCard icon="close-circle-outline" label="Em falta" value={String(insights.outOfStock)} />
-      </View>
-
-      <View style={styles.metricsGrid}>
-        <MetricCard icon="log-in-outline" label="Entradas" value={`+${insights.periodEntries}`} />
-        <MetricCard icon="log-out-outline" label="Saidas" value={`-${insights.periodOutputs}`} />
-        <MetricCard icon="flame-outline" label="Mais usado" value={insights.mostConsumedShort} />
+        <MetricCard icon="log-in-outline" label="Entradas" value={`+${insights.periodEntries}`} color="green" />
+        <MetricCard icon="log-out-outline" label="Saidas" value={`-${insights.periodOutputs}`} color="slate" />
+        <MetricCard icon="flame-outline" label="Destaque" value={insights.mostConsumedShort} color="purple" />
       </View>
 
       <View style={styles.panel}>
-        <SectionHeading caption="3 maiores e 3 menores estoques" title="Visao operacional" />
+        <SectionHeading caption="Produtos com maior e menor volume" title="Visao operacional" />
         <View style={styles.chart}>
           {operationalProducts.highest.length > 0 && (
             <View style={{ gap: 8 }}>
@@ -632,7 +778,7 @@ function HomeSection({
       </View>
 
       <View style={styles.panel}>
-        <SectionHeading caption="Alertas automaticos" title="Reposicao sugerida" />
+        <SectionHeading caption="Alertas de estoque critico" title="Acoes de Reposicao" />
         {insights.alerts.length ? (
           <View style={styles.alertList}>
             {insights.alerts.map((alert) => (
@@ -648,7 +794,7 @@ function HomeSection({
             ))}
           </View>
         ) : (
-          <Text style={styles.emptyText}>Nenhum alerta critico agora.</Text>
+          <Text style={styles.emptyText}>Tudo sob controle. Nenhum alerta critico agora.</Text>
         )}
       </View>
     </View>
@@ -685,7 +831,6 @@ function ProductsSection({
   const [selectedCategory, setSelectedCategory] = useState<Category | null>(null);
   const [query, setQuery] = useState('');
   const [categoryFilter, setCategoryFilter] = useState('Todos');
-  const [stockFilter, setStockFilter] = useState<StockFilter>('all');
   const [form, setForm] = useState({
     category: '',
     categoryId: '',
@@ -695,22 +840,16 @@ function ProductsSection({
     name: '',
     quantity: '',
   });
-  const [movementQuantity, setMovementQuantity] = useState('');
   const [categoryDraft, setCategoryDraft] = useState('');
 
   const visibleProducts = useMemo(() => {
     return products.filter((product) => {
-      const status = getStockStatus(product);
       const matchesQuery = product.name.toLowerCase().includes(query.trim().toLowerCase());
       const matchesCategory = categoryFilter === 'Todos' || product.category === categoryFilter;
-      const matchesStock =
-        stockFilter === 'all' ||
-        (stockFilter === 'low' && status.level === 'low') ||
-        (stockFilter === 'critical' && status.level === 'critical');
 
-      return matchesQuery && matchesCategory && matchesStock;
+      return matchesQuery && matchesCategory;
     });
-  }, [categoryFilter, products, query, stockFilter]);
+  }, [categoryFilter, products, query]);
 
   useEffect(() => {
     const categoryNames = new Set(categories.map((category) => category.name));
@@ -734,7 +873,6 @@ function ProductsSection({
 
   function resetForm() {
     setEditingProduct(null);
-    setMovementQuantity('');
     setForm({
       category: '',
       categoryId: '',
@@ -753,7 +891,6 @@ function ProductsSection({
 
   function openEditModal(product: Product) {
     setEditingProduct(product);
-    setMovementQuantity('');
     setForm({
       category: product.category ?? '',
       categoryId: product.categoryId ?? categories.find((category) => category.name === product.category)?.id ?? '',
@@ -829,34 +966,6 @@ function ProductsSection({
     setModalVisible(false);
   }
 
-  async function handleMovement(type: StockMovement['type']) {
-    const parsed = Number(movementQuantity);
-    if (!editingProduct || !Number.isFinite(parsed) || parsed <= 0) return;
-
-    try {
-      await onMoveStock(editingProduct, type, Math.trunc(parsed));
-      setMovementQuantity('');
-      setModalVisible(false);
-      resetForm();
-    } catch (error) {
-      const message = error instanceof Error ? error.message : 'Erro ao movimentar estoque.';
-      Alert.alert('Atenção', message);
-    }
-  }
-
-  async function handleQuickDecrease() {
-    if (!editingProduct) return;
-
-    try {
-      await onMoveStock(editingProduct, 'out', 1);
-      setMovementQuantity('');
-      setModalVisible(false);
-      resetForm();
-    } catch (error) {
-      const message = error instanceof Error ? error.message : 'Erro ao registrar consumo rápido.';
-      Alert.alert('Atenção', message);
-    }
-  }
 
   async function handleDeleteProduct() {
     if (!editingProduct) return;
@@ -945,54 +1054,69 @@ function ProductsSection({
   return (
     <View style={styles.section}>
       <View style={styles.productsHeader}>
-        <SectionHeading caption="Busca, filtros e categorias" title="Produtos" />
+        <View style={styles.productsHeaderText}>
+          <Text style={styles.sectionTitle}>Gerenciamento de Produtos</Text>
+          <Text style={styles.sectionSubtitle}>
+            Visualize, edite e acompanhe o volume total do seu estoque.
+          </Text>
+        </View>
         <Pressable
           accessibilityRole="button"
           onPress={openCreateModal}
           style={({ pressed }) => [styles.addProductButton, pressed && styles.buttonPressed]}>
-          <Ionicons name="add" size={20} color="#FFF" />
-          <Text style={styles.addProductButtonText}>Novo</Text>
+          <LinearGradient
+            colors={theme.brandGradient}
+            end={{ x: 1, y: 1 }}
+            start={{ x: 0, y: 0 }}
+            style={styles.addProductButtonGradient}>
+            <AppIcon name="add" size={20} color="#FFF" />
+            <Text style={styles.addProductButtonText}>Novo Produto</Text>
+          </LinearGradient>
         </Pressable>
       </View>
 
-      <View style={styles.searchBox}>
-        <Ionicons name="search" size={18} color={theme.muted} />
-        <TextInput
-          onChangeText={setQuery}
-          placeholder="Buscar produto"
-          placeholderTextColor="#929AAA"
-          style={styles.searchInput}
-          value={query}
-        />
-      </View>
-
-      <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.filterRow}>
-        <Chip
-          active={categoryFilter === 'Todos'}
-          label="Todos"
-          onPress={() => setCategoryFilter('Todos')}
-        />
-        {categories.map((category) => (
-          <Chip
-            key={category.id}
-            active={categoryFilter === category.name}
-            label={category.name}
-            onLongPress={() => handleCategoryLongPress(category)}
-            onPress={() => setCategoryFilter(category.name)}
+      <View style={styles.productsFiltersPanel}>
+        <View style={styles.searchBox}>
+          <AppIcon name="search" size={18} color={theme.muted} />
+          <TextInput
+            onChangeText={setQuery}
+            placeholder="Pesquisar por nome ou descricao..."
+            placeholderTextColor="#94a3b8"
+            style={styles.searchInput}
+            value={query}
           />
-        ))}
-        <Chip active={false} label="+" onPress={openCreateCategoryModal} />
-      </ScrollView>
+        </View>
 
-      <View style={styles.filterRowWrap}>
-        <Chip active={stockFilter === 'all'} label="Todos" onPress={() => setStockFilter('all')} />
-        <Chip active={stockFilter === 'low'} label="Baixo" onPress={() => setStockFilter('low')} />
-        <Chip active={stockFilter === 'critical'} label="Critico" onPress={() => setStockFilter('critical')} />
+        <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.filterRow}>
+          <Chip
+            active={categoryFilter === 'Todos'}
+            label="Todos"
+            onPress={() => setCategoryFilter('Todos')}
+            useGradient
+          />
+          {categories.map((category) => (
+            <Chip
+              key={category.id}
+              active={categoryFilter === category.name}
+              label={category.name}
+              onLongPress={() => handleCategoryLongPress(category)}
+              onPress={() => setCategoryFilter(category.name)}
+              useGradient
+            />
+          ))}
+          <Chip active={false} label="+" onPress={openCreateCategoryModal} useGradient />
+        </ScrollView>
+
       </View>
 
       <View style={styles.productList}>
         {visibleProducts.map((product) => (
-          <ProductCard key={product.id} product={product} onPress={() => openEditModal(product)} />
+          <ProductCard 
+            key={product.id} 
+            product={product} 
+            onPress={() => openEditModal(product)} 
+            onMoveStock={(type) => onMoveStock(product, type, 1)}
+          />
         ))}
       </View>
       <ProductEditorModal
@@ -1000,20 +1124,15 @@ function ProductsSection({
         editingProduct={editingProduct}
         form={form}
         imageModalVisible={imageModalVisible}
-        movementQuantity={movementQuantity}
         onChangeForm={updateForm}
-        onChangeMovementQuantity={setMovementQuantity}
         onClose={() => {
           resetForm();
           setModalVisible(false);
         }}
         onDelete={handleDeleteProduct}
-        onMoveIn={() => handleMovement('in')}
-        onMoveOut={() => handleMovement('out')}
         onOpenImageModal={() => setImageModalVisible(true)}
         onPickFromCamera={takeProductPhoto}
         onPickFromGallery={pickProductImage}
-        onQuickDecrease={handleQuickDecrease}
         onSave={handleSaveProduct}
         setImageModalVisible={setImageModalVisible}
         visible={modalVisible}
@@ -1062,7 +1181,9 @@ function CategoryEditorModal({
     <Modal animationType="slide" onRequestClose={onClose} transparent visible={visible}>
       <View style={styles.modalLayer}>
         <Pressable onPress={onClose} style={styles.modalBackdrop} />
-        <KeyboardAvoidingView behavior={Platform.OS === 'ios' ? 'padding' : undefined}>
+        <KeyboardAvoidingView
+          behavior={Platform.OS === 'ios' ? 'padding' : undefined}
+          style={styles.modalSheetWrap}>
           <View style={styles.categoryModalSheet}>
             <View style={styles.modalHandle} />
             <Text style={styles.categoryModalTitle}>{mode === 'edit' ? 'Editar categoria' : 'Nova categoria'}</Text>
@@ -1070,16 +1191,22 @@ function CategoryEditorModal({
               autoFocus
               onChangeText={onChangeName}
               placeholder="Nome da categoria"
-              placeholderTextColor="#929AAA"
+              placeholderTextColor="#94a3b8"
               style={styles.categoryInput}
               value={value}
             />
             <View style={styles.modalButtonRow}>
-              <Pressable accessibilityRole="button" onPress={onClose} style={styles.cancelButton}>
-                <Text style={styles.cancelButtonText}>Cancelar</Text>
+              <Pressable accessibilityRole="button" onPress={onClose} style={styles.categoryCancelButton}>
+                <Text style={styles.categoryCancelButtonText}>Cancelar</Text>
               </Pressable>
-              <Pressable accessibilityRole="button" onPress={onSave} style={styles.saveButton}>
-                <Text style={styles.saveButtonText}>{mode === 'edit' ? 'Salvar' : 'Criar'}</Text>
+              <Pressable accessibilityRole="button" onPress={onSave} style={styles.categorySaveButtonLarge}>
+                <LinearGradient
+                  colors={theme.brandGradient}
+                  end={{ x: 1, y: 1 }}
+                  start={{ x: 0, y: 0 }}
+                  style={styles.categorySaveButtonGradient}>
+                  <Text style={styles.categorySaveButtonText}>{mode === 'edit' ? 'Salvar' : 'Criar'}</Text>
+                </LinearGradient>
               </Pressable>
             </View>
           </View>
@@ -1110,11 +1237,11 @@ function CategoryActionsModal({
           <View style={styles.modalHandle} />
           <Text style={styles.imageModalTitle}>{category?.name ?? 'Categoria'}</Text>
           <Pressable accessibilityRole="button" onPress={onEdit} style={({ pressed }) => [styles.imageModalAction, pressed && styles.pressed]}>
-            <Ionicons name="create-outline" size={22} color={theme.ink} />
+            <AppIcon name="create-outline" size={22} color={theme.ink} />
             <Text style={styles.imageModalActionText}>Editar</Text>
           </Pressable>
           <Pressable accessibilityRole="button" onPress={onDelete} style={({ pressed }) => [styles.imageModalAction, pressed && styles.pressed]}>
-            <Ionicons name="trash-outline" size={22} color={theme.critical} />
+            <AppIcon name="trash-outline" size={22} color={theme.critical} />
             <Text style={[styles.imageModalActionText, styles.criticalText]}>Excluir</Text>
           </Pressable>
           <Pressable accessibilityRole="button" onPress={onClose} style={styles.modalCancelButton}>
@@ -1131,17 +1258,12 @@ function ProductEditorModal({
   editingProduct,
   form,
   imageModalVisible,
-  movementQuantity,
   onChangeForm,
-  onChangeMovementQuantity,
   onClose,
   onDelete,
-  onMoveIn,
-  onMoveOut,
   onOpenImageModal,
   onPickFromCamera,
   onPickFromGallery,
-  onQuickDecrease,
   onSave,
   setImageModalVisible,
   visible,
@@ -1158,17 +1280,12 @@ function ProductEditorModal({
     quantity: string;
   };
   imageModalVisible: boolean;
-  movementQuantity: string;
   onChangeForm: (key: keyof ProductEditorModalProps['form'], value: string) => void;
-  onChangeMovementQuantity: (value: string) => void;
   onClose: () => void;
   onDelete: () => void;
-  onMoveIn: () => void;
-  onMoveOut: () => void;
   onOpenImageModal: () => void;
   onPickFromCamera: () => void;
   onPickFromGallery: () => void;
-  onQuickDecrease: () => void;
   onSave: () => void;
   setImageModalVisible: (visible: boolean) => void;
   visible: boolean;
@@ -1177,7 +1294,9 @@ function ProductEditorModal({
     <Modal animationType="slide" onRequestClose={onClose} transparent visible={visible}>
       <View style={styles.editorLayer}>
         <Pressable onPress={onClose} style={styles.modalBackdrop} />
-        <KeyboardAvoidingView behavior={Platform.OS === 'ios' ? 'padding' : undefined}>
+        <KeyboardAvoidingView
+          behavior={Platform.OS === 'ios' ? 'padding' : undefined}
+          style={styles.modalSheetWrap}>
           <View style={styles.editorSheet}>
             <View style={styles.modalHandle} />
             <ScrollView keyboardShouldPersistTaps="handled" showsVerticalScrollIndicator={false}>
@@ -1189,7 +1308,7 @@ function ProductEditorModal({
                   <Text style={styles.editorSubtitle}>Cadastro completo sem sair da tela</Text>
                 </View>
                 <Pressable accessibilityRole="button" onPress={onClose} style={styles.formCloseButton}>
-                  <Ionicons name="close" size={22} color={theme.ink} />
+                  <AppIcon name="close" size={22} color={theme.ink} />
                 </Pressable>
               </View>
 
@@ -1262,49 +1381,34 @@ function ProductEditorModal({
                       </Text>
                       <Text style={styles.imagePickerSubtitle}>Galeria ou camera</Text>
                     </View>
-                    <Ionicons name="chevron-forward" size={20} color={theme.muted} />
+                    <AppIcon name="chevron-forward" size={20} color={theme.muted} />
                   </Pressable>
                 </View>
-
-                {editingProduct ? (
-                  <View style={styles.movementEditor}>
-                    <SectionHeading caption="Registre entrada ou saida" title="Movimentacao" />
-                    <PremiumInput
-                      keyboardType="number-pad"
-                      label="Quantidade"
-                      onChangeText={onChangeMovementQuantity}
-                      placeholder="0"
-                      value={movementQuantity}
-                    />
-                    <View style={styles.modalButtonRow}>
-                      <Pressable accessibilityRole="button" onPress={onMoveIn} style={styles.entryButton}>
-                        <Text style={styles.entryButtonText}>+ Entrada</Text>
-                      </Pressable>
-                      <Pressable accessibilityRole="button" onPress={onMoveOut} style={styles.exitButton}>
-                        <Text style={styles.exitButtonText}>- Saida</Text>
-                      </Pressable>
-                    </View>
-                    <Pressable
-                      accessibilityRole="button"
-                      onPress={onQuickDecrease}
-                      style={styles.ghostButton}>
-                      <Text style={styles.ghostButtonText}>Registrar consumo rapido (-1)</Text>
-                    </Pressable>
-                  </View>
-                ) : null}
 
                 <View style={styles.modalButtonRow}>
                   <Pressable accessibilityRole="button" onPress={onClose} style={styles.cancelButton}>
                     <Text style={styles.cancelButtonText}>Cancelar</Text>
                   </Pressable>
-                  <Pressable accessibilityRole="button" onPress={onSave} style={styles.saveButton}>
-                    <Text style={styles.saveButtonText}>Salvar</Text>
+                  <Pressable
+                    accessibilityRole="button"
+                    onPress={onSave}
+                    style={({ pressed }) => [styles.saveButton, pressed && styles.buttonPressed]}>
+                    <LinearGradient
+                      colors={theme.brandGradient}
+                      end={{ x: 1, y: 1 }}
+                      start={{ x: 0, y: 0 }}
+                      style={styles.saveButtonGradient}>
+                      <Text style={styles.saveButtonText}>Salvar</Text>
+                    </LinearGradient>
                   </Pressable>
                 </View>
 
                 {editingProduct ? (
-                  <Pressable accessibilityRole="button" onPress={onDelete} style={styles.deleteProductButton}>
-                    <Ionicons name="trash-outline" size={19} color={theme.ink} />
+                  <Pressable
+                    accessibilityRole="button"
+                    onPress={onDelete}
+                    style={({ pressed }) => [styles.deleteProductButton, pressed && styles.buttonPressed]}>
+                    <AppIcon name="trash-outline" size={18} color={theme.critical} />
                     <Text style={styles.deleteProductButtonText}>Apagar produto</Text>
                   </Pressable>
                 ) : null}
@@ -1336,58 +1440,79 @@ type ProductEditorModalProps = {
   };
 };
 
-function ProductCard({ onPress, product }: { onPress: () => void; product: Product }) {
+function ProductCard({ 
+  onPress, 
+  product, 
+  onMoveStock 
+}: { 
+  onPress: () => void; 
+  product: Product; 
+  onMoveStock?: (type: StockMovement['type']) => void;
+}) {
   const status = getStockStatus(product);
-  const forecast = getProductForecast(product, []);
-
+  
   return (
     <Pressable
       accessibilityRole="button"
       onPress={onPress}
       style={({ pressed }) => [styles.productCard, pressed && styles.productCardPressed]}>
-      <ProductImage image={product.image} size={72} />
-      <View style={styles.productInfo}>
-        <View style={styles.productTitleRow}>
-          <Text numberOfLines={1} style={styles.productName}>{product.name}</Text>
-          <View style={[styles.stockPill, { backgroundColor: status.softColor }]}>
-            <Text style={[styles.stockPillText, { color: status.color }]}>{status.label}</Text>
-          </View>
+      <View style={styles.productCardTop}>
+        <View style={styles.productImageContainer}>
+          <ProductImage image={product.image} size={72} />
         </View>
-        <Text numberOfLines={1} style={styles.productDescription}>{product.description}</Text>
-        <View style={styles.productMetaRow}>
-          <Text style={styles.productCategory}>{product.category || 'Nao categorizado'}</Text>
-          <Text style={styles.productQuantity}>{product.quantity} un.</Text>
-          <Text style={styles.productForecast}>{forecast.daysLeftText}</Text>
+        <View style={styles.productMainInfo}>
+          <View style={styles.productHeaderRow}>
+            <View style={styles.productTitleBlock}>
+              <View style={styles.productMetaTop}>
+                <Text style={styles.productCategoryTag}>{product.category || 'Sem Categoria'}</Text>
+                <View style={styles.metaDot} />
+                <View style={[styles.statusTag, { backgroundColor: status.softColor }]}>
+                  <Text style={[styles.statusTagText, { color: status.color }]}>{status.label}</Text>
+                </View>
+              </View>
+              <Text numberOfLines={1} style={styles.productName}>{product.name}</Text>
+            </View>
+            <View style={styles.productQuantityBlock}>
+              <Text style={styles.productQuantityValue}>{product.quantity}</Text>
+              <Text style={styles.productQuantityLabel}>Unidades</Text>
+            </View>
+          </View>
+          <Text numberOfLines={1} style={styles.productDescription}>{product.description}</Text>
+          
+          <View style={styles.productCardFooter}>
+            <View style={styles.productActionsRow}>
+              <Pressable
+                onPress={(event) => {
+                  event.stopPropagation();
+                  onMoveStock?.('in');
+                }}
+                style={({ pressed }) => [styles.actionButton, styles.entryButtonAction, pressed && styles.pressed]}>
+                <Text style={styles.entryActionText}>+ Entrada</Text>
+              </Pressable>
+              <Pressable
+                onPress={(event) => {
+                  event.stopPropagation();
+                  onMoveStock?.('out');
+                }}
+                style={({ pressed }) => [styles.actionButton, styles.exitButtonAction, pressed && styles.pressed]}>
+                <Text style={styles.exitActionText}>- Saida</Text>
+              </Pressable>
+            </View>
+          </View>
         </View>
       </View>
     </Pressable>
   );
 }
 
-function HistorySection({
-  insights,
-  movements,
-}: {
-  insights: InventoryInsights;
-  movements: StockMovement[];
-}) {
+function HistorySection({ movements }: { movements: StockMovement[] }) {
   return (
     <View style={styles.section}>
-      <View style={styles.heroPanel}>
-        <View style={styles.heroAccent} />
-        <Text style={styles.heroKicker}>Historico</Text>
-        <Text style={styles.heroTitle}>
-          +{insights.periodEntries} / -{insights.periodOutputs}
+      <View style={styles.sectionHeaderBlock}>
+        <Text style={styles.sectionTitle}>Historico de Operacoes</Text>
+        <Text style={styles.sectionSubtitle}>
+          Acompanhe cada entrada e saida do seu estoque em tempo real.
         </Text>
-        <Text style={styles.heroSubtitle}>
-          Extrato de entradas e saidas registradas no estoque.
-        </Text>
-      </View>
-
-      <View style={styles.metricsGrid}>
-        <MetricCard icon="log-in-outline" label="Entradas" value={`+${insights.periodEntries}`} />
-        <MetricCard icon="log-out-outline" label="Saidas" value={`-${insights.periodOutputs}`} />
-        <MetricCard icon="receipt-outline" label="Registros" value={String(movements.length)} />
       </View>
 
       <MovementPanel movements={movements} />
@@ -1396,46 +1521,83 @@ function HistorySection({
 }
 
 function MovementPanel({ compact, movements }: { compact?: boolean; movements: StockMovement[] }) {
-  const visibleMovements = compact ? movements.slice(0, 5) : movements.slice(0, 8);
+  const visibleMovements = compact ? movements.slice(0, 5) : movements;
+
+  const grouped = useMemo(() => {
+    return visibleMovements.reduce<Record<string, StockMovement[]>>((acc, m) => {
+      const date = new Date(m.createdAt).toLocaleDateString('pt-BR', {
+        weekday: 'long',
+        day: '2-digit',
+        month: 'long',
+      });
+      if (!acc[date]) acc[date] = [];
+      acc[date].push(m);
+      return acc;
+    }, {});
+  }, [visibleMovements]);
 
   return (
-    <View style={styles.panel}>
-      <SectionHeading caption="Entradas e saidas recentes" title="Historico" />
-      <View style={styles.movementList}>
-        {visibleMovements.length ? (
-          visibleMovements.map((movement) => (
-            <View key={movement.id} style={styles.movementRow}>
-              <View style={[styles.movementIcon, movement.type === 'in' ? styles.movementIn : styles.movementOut]}>
-                <Ionicons
-                  name={movement.type === 'in' ? 'arrow-down' : 'arrow-up'}
-                  size={16}
-                  color={movement.type === 'in' ? theme.ok : theme.critical}
-                />
+    <View style={styles.movementList}>
+      {Object.entries(grouped).length ? (
+        Object.entries(grouped).map(([dateLabel, items]) => (
+          <View key={dateLabel} style={{ gap: 16, marginBottom: 32 }}>
+            <View style={{ flexDirection: 'row', alignItems: 'center', gap: 12 }}>
+              <View style={{ backgroundColor: '#fff', borderRadius: 99, paddingHorizontal: 12, paddingVertical: 6, borderWidth: 1, borderColor: theme.stroke }}>
+                <Text style={{ fontSize: 10, fontWeight: '800', color: theme.muted, textTransform: 'uppercase', letterSpacing: 1 }}>{dateLabel}</Text>
               </View>
-              <View style={styles.movementInfo}>
-                <Text numberOfLines={1} style={styles.movementProduct}>{movement.productName}</Text>
-                <Text style={styles.movementDate}>{formatDate(movement.createdAt)}</Text>
-              </View>
-              <Text style={[styles.movementAmount, movement.type === 'in' ? styles.movementAmountIn : styles.movementAmountOut]}>
-                {movement.type === 'in' ? '+' : '-'}{movement.quantity}
-              </Text>
+              <View style={{ height: 1, flex: 1, backgroundColor: theme.stroke }} />
             </View>
-          ))
-        ) : (
+            
+            <View style={styles.timeline}>
+              <View style={styles.timelineLine} />
+              {items.map((movement) => (
+                <View key={movement.id} style={styles.timelineItem}>
+                  <View style={[styles.timelineDot, movement.type === 'in' ? styles.timelineDotIn : styles.timelineDotOut]} />
+                  <View style={styles.movementRow}>
+                    <View style={[styles.movementIcon, movement.type === 'in' ? styles.movementIn : styles.movementOut]}>
+                      <AppIcon
+                        name={movement.type === 'in' ? 'arrow-down' : 'arrow-up'}
+                        size={20}
+                        color={movement.type === 'in' ? theme.ok : theme.critical}
+                      />
+                    </View>
+                    <View style={styles.movementInfo}>
+                      <Text numberOfLines={1} style={styles.movementProduct}>{movement.productName}</Text>
+                      <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6 }}>
+                        <Text style={styles.movementDate}>{new Date(movement.createdAt).toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' })}</Text>
+                        <View style={{ width: 4, height: 4, borderRadius: 2, backgroundColor: theme.stroke }} />
+                        <Text style={{ fontSize: 10, fontWeight: '800', textTransform: 'uppercase', color: movement.type === 'in' ? theme.ok : theme.critical }}>
+                          {movement.type === 'in' ? 'Entrada' : 'Saida'}
+                        </Text>
+                      </View>
+                    </View>
+                    <View style={{ alignItems: 'flex-end' }}>
+                      <Text style={[styles.movementAmount, movement.type === 'in' ? styles.movementAmountIn : styles.movementAmountOut]}>
+                        {movement.type === 'in' ? '+' : '-'}{movement.quantity}
+                      </Text>
+                      <Text style={{ fontSize: 10, fontWeight: '800', textTransform: 'uppercase', color: theme.muted }}>Unidades</Text>
+                    </View>
+                  </View>
+                </View>
+              ))}
+            </View>
+          </View>
+        ))
+      ) : (
+        <View style={[styles.panel, { alignItems: 'center', paddingVertical: 48, borderStyle: 'dashed' }]}>
+          <AppIcon name="receipt-outline" size={48} color={theme.stroke} />
           <Text style={styles.emptyText}>Nenhuma movimentacao registrada.</Text>
-        )}
-      </View>
+        </View>
+      )}
     </View>
   );
 }
 
 function ProfileSection({
-  insights,
   onDeleteAccount,
   onLogout,
   user,
 }: {
-  insights: InventoryInsights;
   onDeleteAccount: () => Promise<void>;
   onLogout: () => void;
   user: AuthSession['user'];
@@ -1469,43 +1631,82 @@ function ProfileSection({
 
   return (
     <View style={styles.section}>
-      <View style={styles.profileHero}>
-        <View style={styles.profileAvatar}>
+      <View style={styles.sectionHeaderBlock}>
+        <Text style={styles.sectionTitle}>Perfil do Usuario</Text>
+        <Text style={styles.sectionSubtitle}>
+          Gerencie suas informacoes pessoais e configuracoes de conta.
+        </Text>
+      </View>
+
+      <View style={styles.panel}>
+        <Text style={styles.cardTitle}>Dados Pessoais</Text>
+        <Text style={styles.cardSubtitle}>Informacoes basicas de identificacao.</Text>
+        <View style={styles.infoCardList}>
+          <View style={styles.infoCardItem}>
+            <Text style={styles.infoCardLabel}>Nome Completo</Text>
+            <Text style={styles.infoCardValue}>{user.name}</Text>
+          </View>
+          <View style={styles.infoCardItem}>
+            <Text style={styles.infoCardLabel}>Endereco de E-mail</Text>
+            <Text style={styles.infoCardValue}>{user.email}</Text>
+          </View>
+        </View>
+      </View>
+
+      <View style={styles.profileSummaryCard}>
+        <View style={styles.profileAvatarLarge}>
           <Text style={styles.profileAvatarText}>{getInitial(user.name)}</Text>
         </View>
         <Text style={styles.profileName}>{user.name}</Text>
-        <Text style={styles.profileEmail}>{user.email}</Text>
-      </View>
+        <Text style={styles.profileRole}>{user.role ?? 'Administrador'}</Text>
 
-      <View style={styles.profileInfo}>
-        <InfoRow label="Cargo" value={user.role ?? 'Usuario'} />
-        <InfoRow label="Produtos" value={String(insights.totalProducts)} />
-        <InfoRow label="Itens no estoque" value={String(insights.totalStock)} />
-        <InfoRow label="Produtos criticos" value={String(insights.criticalProducts)} />
+        <View style={styles.profileMetaGrid}>
+          <View style={styles.profileMetaCard}>
+            <Text style={styles.profileMetaLabel}>Desde</Text>
+            <Text style={styles.profileMetaValue}>Abril de 2024</Text>
+          </View>
+          <View style={styles.profileMetaCard}>
+            <Text style={styles.profileMetaLabel}>Status</Text>
+            <View style={styles.profileStatusRow}>
+              <View style={styles.profileStatusDot} />
+              <Text style={styles.profileStatusText}>Conta Ativa</Text>
+            </View>
+          </View>
+        </View>
       </View>
 
       <Pressable
         accessibilityRole="button"
         onPress={onLogout}
         style={({ pressed }) => [styles.logoutButton, pressed && styles.buttonPressed]}>
-        <Ionicons name="log-out-outline" size={20} color="#FFFFFF" />
+        <AppIcon name="log-out-outline" size={20} color="#FFFFFF" />
         <Text style={styles.logoutText}>Sair</Text>
       </Pressable>
 
-      <Pressable
-        accessibilityRole="button"
-        disabled={deletingAccount}
-        onPress={handleDeleteAccountPress}
-        style={({ pressed }) => [
-          styles.deleteAccountButton,
-          deletingAccount && styles.buttonDisabled,
-          pressed && styles.buttonPressed,
-        ]}>
-        <Ionicons name="trash-outline" size={19} color={theme.critical} />
-        <Text style={styles.deleteAccountButtonText}>
-          {deletingAccount ? 'Excluindo conta...' : 'Excluir conta'}
+      <View style={[styles.panel, styles.dangerPanel]}>
+        <Text style={styles.dangerTitle}>Zona de Perigo</Text>
+        <Text style={styles.cardSubtitle}>Acoes irreversiveis relacionadas a sua conta.</Text>
+        <Text style={styles.dangerText}>
+          Ao excluir sua conta, todos os dados de estoque, produtos e historico serao
+          removidos permanentemente. Esta acao nao pode ser desfeita.
         </Text>
-      </Pressable>
+        <Pressable
+          accessibilityRole="button"
+          disabled={deletingAccount}
+          onPress={handleDeleteAccountPress}
+          style={({ pressed }) => [
+            styles.deleteAccountButton,
+            deletingAccount && styles.buttonDisabled,
+            pressed && styles.buttonPressed,
+          ]}>
+          <AppIcon name="trash-outline" size={19} color={theme.critical} />
+          <Text style={styles.deleteAccountButtonText}>
+            {deletingAccount
+              ? 'Excluindo conta...'
+              : 'Excluir Minha Conta Permanentemente'}
+          </Text>
+        </Pressable>
+      </View>
     </View>
   );
 }
@@ -1526,20 +1727,30 @@ function Chip({
   label,
   onLongPress,
   onPress,
+  useGradient,
 }: {
   active: boolean;
   label: string;
   onLongPress?: () => void;
   onPress: () => void;
+  useGradient?: boolean;
 }) {
+  const usesGradient = useGradient || active || label === '+';
+
   return (
     <Pressable
       accessibilityRole="button"
       delayLongPress={240}
       onLongPress={onLongPress}
       onPress={onPress}
-      style={({ pressed }) => [styles.chip, active && styles.chipActive, pressed && styles.pressed]}>
-      <Text style={[styles.chipText, active && styles.chipTextActive]}>{label}</Text>
+      style={({ pressed }) => [styles.chipPressable, pressed && styles.pressed]}>
+      <LinearGradient
+        colors={usesGradient ? theme.brandGradient : [theme.surface, theme.surface]}
+        end={{ x: 1, y: 1 }}
+        start={{ x: 0, y: 0 }}
+        style={[styles.chip, usesGradient && styles.chipGradient]}>
+        <Text style={[styles.chipText, usesGradient && styles.chipTextActive]}>{label}</Text>
+      </LinearGradient>
     </Pressable>
   );
 }
@@ -1555,7 +1766,7 @@ function PremiumInput({
     <View style={styles.field}>
       <Text style={styles.label}>{label}</Text>
       <TextInput
-        placeholderTextColor="#929AAA"
+        placeholderTextColor="#94a3b8"
         {...props}
         onBlur={(event) => {
           setFocused(false);
@@ -1578,7 +1789,7 @@ function ProductImage({ image, size }: { image: string; size: number }) {
   }
   return (
     <View style={[styles.noPhotoBox, { height: size, width: size }]}>
-      <Ionicons name="add" size={Math.round(size * 0.42)} color={theme.accent} />
+      <AppIcon name="add" size={Math.round(size * 0.42)} color={theme.accent} />
     </View>
   );
 }
@@ -1612,10 +1823,10 @@ function ImageSourceModal({
   );
 }
 
-function ImageModalAction({ icon, label, onPress }: { icon: keyof typeof Ionicons.glyphMap; label: string; onPress: () => void }) {
+function ImageModalAction({ icon, label, onPress }: { icon: AppIconName; label: string; onPress: () => void }) {
   return (
     <Pressable accessibilityRole="button" onPress={onPress} style={({ pressed }) => [styles.imageModalAction, pressed && styles.pressed]}>
-      <Ionicons name={icon} size={22} color={theme.ink} />
+      <AppIcon name={icon} size={22} color={theme.ink} />
       <Text style={styles.imageModalActionText}>{label}</Text>
     </Pressable>
   );
@@ -1624,49 +1835,74 @@ function ImageModalAction({ icon, label, onPress }: { icon: keyof typeof Ionicon
 function AppLogo({ size }: { size: number }) {
   const markSize = Math.round(size * 0.34);
   return (
-    <View style={[styles.logo, { borderRadius: Math.round(size * 0.3), height: size, width: size }]}>
-      <Text style={[styles.logoLetter, { fontSize: Math.round(size * 0.5) }]}>E</Text>
-      <View style={[styles.logoMark, { borderRadius: Math.round(markSize * 0.46), height: markSize, width: markSize }]}>
-        <Ionicons name="cube-outline" size={Math.round(size * 0.18)} color={theme.ink} />
+    <View style={[styles.logo, { borderRadius: Math.round(size * 0.35), height: size, width: size }]}>
+      <Text style={[styles.logoLetter, { fontSize: Math.round(size * 0.55), letterSpacing: -2 }]}>E</Text>
+      <View style={[styles.logoMark, { borderRadius: Math.round(markSize * 0.4), height: markSize, width: markSize }]}>
+        <AppIcon name="cube" size={Math.round(size * 0.2)} color={theme.ink} strokeWidth={2.5} />
       </View>
     </View>
   );
 }
 
-function SidebarItem({ active, icon, label, onPress }: { active: boolean; icon: keyof typeof Ionicons.glyphMap; label: string; onPress: () => void }) {
+function SidebarItem({ active, icon, label, onPress }: { active: boolean; icon: AppIconName; label: string; onPress: () => void }) {
+  const inactiveColor = 'rgba(203, 213, 225, 0.82)';
   return (
     <Pressable
       accessibilityRole="button"
       onPress={onPress}
       style={({ pressed }) => [styles.sidebarItem, active && styles.sidebarItemActive, pressed && styles.pressed]}>
-      <Ionicons name={icon} size={21} color={active ? '#FFFFFF' : theme.ink} />
+      <AppIcon name={icon} size={19} color={active ? '#FFFFFF' : inactiveColor} />
       <Text style={[styles.sidebarItemText, active && styles.sidebarItemTextActive]}>{label}</Text>
     </Pressable>
   );
 }
 
 function OperationalRow({ color, maxQuantity, product }: { color: string; maxQuantity: number; product: Product }) {
+  const width = `${Math.max((product.quantity / maxQuantity) * 100, 5)}%`;
   return (
     <View style={styles.chartRow}>
-      <Text numberOfLines={1} style={styles.chartLabel}>{product.name}</Text>
+      <View style={styles.chartHeader}>
+        <Text numberOfLines={1} style={styles.chartLabel}>{product.name}</Text>
+        <Text style={[styles.chartValue, { color }]}>{product.quantity} un.</Text>
+      </View>
       <View style={styles.chartTrack}>
         <View
           style={[
             styles.chartBar,
-            { backgroundColor: color, width: `${Math.max((product.quantity / maxQuantity) * 100, 8)}%` },
+            { backgroundColor: color, width },
           ]}
         />
       </View>
-      <Text style={styles.chartValue}>{product.quantity}</Text>
     </View>
   );
 }
 
-function MetricCard({ icon, label, value }: { icon: keyof typeof Ionicons.glyphMap; label: string; value: string }) {
+function MetricCard({ 
+  icon, 
+  label, 
+  value, 
+  color = 'blue' 
+}: { 
+  icon: AppIconName; 
+  label: string; 
+  value: string;
+  color?: 'blue' | 'orange' | 'red' | 'green' | 'slate' | 'purple';
+}) {
+  const colorMap = {
+    blue: { bg: '#eff6ff', text: '#3b82f6', border: '#dbeafe' },
+    orange: { bg: '#fff7ed', text: '#f59e0b', border: '#ffedd5' },
+    red: { bg: '#fff1f2', text: '#e11d48', border: '#ffe4e6' },
+    green: { bg: '#f0fdf4', text: '#10b981', border: '#dcfce7' },
+    slate: { bg: '#f8fafc', text: '#64748b', border: '#f1f5f9' },
+    purple: { bg: '#faf5ff', text: '#a855f7', border: '#f3e8ff' },
+  };
+
+  const colors = colorMap[color] || colorMap.blue;
+
   return (
     <View style={styles.metricCard}>
-      <View style={styles.metricIcon}>
-        <Ionicons name={icon} size={18} color={theme.accent} />
+      <View style={[styles.metricIcon, { backgroundColor: colors.bg, borderColor: colors.border, borderWidth: 1 }]}>
+        <AppIcon name={icon} size={20} color={colors.text} />
       </View>
       <Text numberOfLines={1} adjustsFontSizeToFit style={styles.metricValue}>{value}</Text>
       <Text style={styles.metricLabel}>{label}</Text>
@@ -1805,47 +2041,65 @@ function formatDate(value: string) {
 function SettingsSection({ onNavigate }: { onNavigate: (section: AppSection) => void }) {
   return (
     <View style={styles.section}>
+      <View style={styles.sectionHeaderBlock}>
+        <Text style={styles.sectionTitle}>Configuracoes</Text>
+        <Text style={styles.sectionSubtitle}>
+          Gerencie as preferencias da plataforma e informacoes legais.
+        </Text>
+      </View>
+
       <View style={styles.panel}>
-        <Text style={[styles.sectionTitle, { fontSize: 20, marginBottom: 20 }]}>Configuracoes</Text>
-        
-        <View style={{ gap: 4 }}>
-          <SettingsItem 
-            icon="smartphone-outline" 
-            label="Versao do aplicativo" 
-            value="v1.2.4 (Build 20240422)" 
+        <Text style={styles.cardTitle}>Sistema</Text>
+        <Text style={styles.cardSubtitle}>Informacoes tecnicas sobre o aplicativo.</Text>
+
+        <View style={{ gap: 12, marginTop: 16 }}>
+          <SettingsItem
+            icon="smartphone-outline"
+            label="Versao do aplicativo"
+            value="v1.2.4 (Build 20240422)"
           />
-          
-          <View style={{ height: 1, backgroundColor: theme.stroke, marginVertical: 12 }} />
-          
-          <SettingsLink 
-            icon="file-text-outline" 
-            label="Termos de uso" 
-            description="Leia as regras de utilizacao do sistema." 
+        </View>
+      </View>
+
+      <View style={styles.panel}>
+        <Text style={styles.cardTitle}>Juridico e Suporte</Text>
+        <Text style={styles.cardSubtitle}>Documentacao legal e diretrizes de uso.</Text>
+
+        <View style={{ gap: 12, marginTop: 16 }}>
+          <SettingsLink
+            icon="file-text-outline"
+            label="Termos de uso"
+            description="Direitos e deveres na utilizacao do Estokar."
             onPress={() => onNavigate('terms')}
           />
-          
-          <SettingsLink 
-            icon="shield-checkmark-outline" 
-            label="Privacidade e Dados" 
-            description="Como seus dados sao tratados." 
+
+          <SettingsLink
+            icon="shield-checkmark-outline"
+            label="Privacidade e Dados"
+            description="Como protegemos sua seguranca e informacoes."
             onPress={() => onNavigate('privacy')}
           />
-          
-          <SettingsLink 
-            icon="information-circle-outline" 
-            label="Sobre o Estokar" 
-            description="Informacoes sobre a plataforma." 
+
+          <SettingsLink
+            icon="information-circle-outline"
+            label="Sobre o Estokar"
+            description="Conheca a historia e os criadores por tras da ferramenta."
             onPress={() => onNavigate('about')}
           />
         </View>
       </View>
 
       <View style={styles.panel}>
-        <Text style={[styles.chartGroupLabel, { marginBottom: 12 }]}>INFORMACOES LEGAIS</Text>
-        <Text style={[styles.sectionSubtitle, { fontSize: 13 }]}>
-          O Estokar Inventory OS e uma ferramenta de gestao interna. Ao utilizar este software, voce concorda que os dados inseridos sao de responsabilidade da organizacao contratante.
+        <Text style={styles.legalKicker}>INFORMACOES LEGAIS</Text>
+        <Text style={styles.legalText}>
+          O Estokar Inventory OS e uma plataforma de gerenciamento de inventario projetada
+          para otimizacao de fluxos operacionais.
         </Text>
-        <Text style={[styles.sectionSubtitle, { fontSize: 11, marginTop: 12, opacity: 0.6 }]}>
+        <Text style={styles.legalText}>
+          Ao utilizar este software, voce declara estar ciente de que a integridade dos
+          dados inseridos e de responsabilidade da organizacao proprietaria da conta.
+        </Text>
+        <Text style={styles.legalFootnote}>
           © 2026 Estokar Inventory OS. Todos os direitos reservados.
         </Text>
       </View>
@@ -1857,7 +2111,7 @@ function TermsSection({ onBack }: { onBack: () => void }) {
   return (
     <View style={styles.section}>
       <Pressable onPress={onBack} style={styles.backButton}>
-        <Ionicons name="chevron-back" size={20} color={theme.ink} />
+        <AppIcon name="chevron-back" size={20} color={theme.ink} />
         <Text style={styles.backButtonText}>Voltar</Text>
       </Pressable>
       
@@ -1887,7 +2141,7 @@ function PrivacySection({ onBack }: { onBack: () => void }) {
   return (
     <View style={styles.section}>
       <Pressable onPress={onBack} style={styles.backButton}>
-        <Ionicons name="chevron-back" size={20} color={theme.ink} />
+        <AppIcon name="chevron-back" size={20} color={theme.ink} />
         <Text style={styles.backButtonText}>Voltar</Text>
       </Pressable>
       
@@ -1917,7 +2171,7 @@ function AboutSection({ onBack }: { onBack: () => void }) {
   return (
     <View style={styles.section}>
       <Pressable onPress={onBack} style={styles.backButton}>
-        <Ionicons name="chevron-back" size={20} color={theme.ink} />
+        <AppIcon name="chevron-back" size={20} color={theme.ink} />
         <Text style={styles.backButtonText}>Voltar</Text>
       </Pressable>
       
@@ -1940,12 +2194,12 @@ function AboutSection({ onBack }: { onBack: () => void }) {
   );
 }
 
-function SettingsItem({ icon, label, value }: { icon: keyof typeof Ionicons.glyphMap; label: string; value: string }) {
+function SettingsItem({ icon, label, value }: { icon: AppIconName; label: string; value: string }) {
   return (
     <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', paddingVertical: 8 }}>
       <View style={{ flexDirection: 'row', alignItems: 'center', gap: 12 }}>
         <View style={{ width: 40, height: 40, backgroundColor: theme.soft, borderRadius: 12, alignItems: 'center', justifyContent: 'center' }}>
-          <Ionicons name={icon} size={20} color={theme.ink} />
+          <AppIcon name={icon} size={20} color={theme.ink} />
         </View>
         <View>
           <Text style={{ fontSize: 14, fontWeight: '800', color: theme.ink }}>{label}</Text>
@@ -1957,19 +2211,19 @@ function SettingsItem({ icon, label, value }: { icon: keyof typeof Ionicons.glyp
   );
 }
 
-function SettingsLink({ icon, label, description, onPress }: { icon: keyof typeof Ionicons.glyphMap; label: string; description: string; onPress: () => void }) {
+function SettingsLink({ icon, label, description, onPress }: { icon: AppIconName; label: string; description: string; onPress: () => void }) {
   return (
     <Pressable onPress={onPress} style={({ pressed }) => [{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', paddingVertical: 8, opacity: pressed ? 0.6 : 1 }]}>
       <View style={{ flexDirection: 'row', alignItems: 'center', gap: 12 }}>
         <View style={{ width: 40, height: 40, backgroundColor: theme.soft, borderRadius: 12, alignItems: 'center', justifyContent: 'center' }}>
-          <Ionicons name={icon} size={20} color={theme.ink} />
+          <AppIcon name={icon} size={20} color={theme.ink} />
         </View>
         <View>
           <Text style={{ fontSize: 14, fontWeight: '800', color: theme.ink }}>{label}</Text>
           <Text style={{ fontSize: 12, color: theme.muted }}>{description}</Text>
         </View>
       </View>
-      <Ionicons name="chevron-forward" size={18} color={theme.muted} />
+      <AppIcon name="chevron-forward" size={18} color={theme.muted} />
     </Pressable>
   );
 }
@@ -1983,200 +2237,289 @@ function LegalBlock({ title, children }: { title: string; children: string }) {
   );
 }
 
-function AboutItem({ icon, title }: { icon: keyof typeof Ionicons.glyphMap; title: string }) {
+function AboutItem({ icon, title }: { icon: AppIconName; title: string }) {
   return (
     <View style={{ flexDirection: 'row', alignItems: 'center', gap: 12 }}>
-      <Ionicons name={icon} size={20} color={theme.accent} />
+      <AppIcon name={icon} size={20} color={theme.accent} />
       <Text style={{ fontSize: 15, fontWeight: '800', color: theme.ink }}>{title}</Text>
     </View>
   );
 }
 
 const shadow = {
-  elevation: 8,
-  shadowColor: '#0B1220',
-  shadowOffset: { width: 0, height: 12 },
-  shadowOpacity: 0.08,
-  shadowRadius: 24,
+  elevation: 2,
+  shadowColor: '#000',
+  shadowOffset: { width: 0, height: 1 },
+  shadowOpacity: 0.02,
+  shadowRadius: 2,
+};
+
+const elevatedShadow = {
+  elevation: 4,
+  shadowColor: '#000',
+  shadowOffset: { width: 0, height: 10 },
+  shadowOpacity: 0.04,
+  shadowRadius: 30,
 };
 
 const styles = StyleSheet.create({
-  addProductButton: { ...shadow, alignItems: 'center', backgroundColor: theme.accent, borderRadius: 16, flexDirection: 'row', gap: 6, justifyContent: 'center', minHeight: 44, paddingHorizontal: 14 },
-  addProductButtonText: { color: '#FFFFFF', fontSize: 14, fontWeight: '900' },
-  backButton: { alignItems: 'center', flexDirection: 'row', gap: 6, marginBottom: 12 },
-  backButtonText: { color: theme.ink, fontSize: 14, fontWeight: '800' },
-  alertCard: { alignItems: 'center', backgroundColor: theme.bg, borderRadius: 16, flexDirection: 'row', gap: 12, minHeight: 66, padding: 12 },
+  addProductButton: { alignItems: 'center', alignSelf: 'flex-end', borderRadius: 12, overflow: 'hidden' },
+  addProductButtonGradient: { alignItems: 'center', flexDirection: 'row', gap: 8, justifyContent: 'center', minHeight: 44, paddingHorizontal: 18 },
+  addProductButtonText: { color: '#FFFFFF', fontSize: 13, fontWeight: '700' },
+  authDivider: { alignItems: 'center', flexDirection: 'row', gap: 12, marginTop: 4 },
+  authDividerLine: { backgroundColor: theme.stroke, flex: 1, height: 1 },
+  authDividerText: { color: theme.muted, fontSize: 11, fontWeight: '700', textTransform: 'uppercase', letterSpacing: 1.2 },
+  authFooter: { alignItems: 'center', gap: 8, marginTop: 6 },
+  authFooterAction: { alignItems: 'center', alignSelf: 'stretch', backgroundColor: theme.surface, borderColor: theme.stroke, borderRadius: 12, borderWidth: 1, justifyContent: 'center', minHeight: 48, paddingHorizontal: 18 },
+  authFooterActionText: { color: theme.accent, fontSize: 14, fontWeight: '800' },
+  authFooterText: { color: theme.muted, fontSize: 13, textAlign: 'center' },
+  authHeader: { alignItems: 'flex-start', gap: 12, marginBottom: 8 },
+  authBrandRow: { alignItems: 'center', flexDirection: 'row', gap: 12 },
+  authBrandIcon: { alignItems: 'center', justifyContent: 'center', height: 56, width: 56, borderRadius: 16, backgroundColor: theme.ink },
+  authBrandText: { gap: 4 },
+  authBrandEyebrow: { color: theme.muted, fontSize: 11, fontWeight: '800', letterSpacing: 2, textTransform: 'uppercase' },
+  authBrandTitle: { color: theme.ink, fontSize: 24, fontWeight: '900', letterSpacing: -0.4 },
+  authHelper: { color: theme.muted, fontSize: 15, lineHeight: 22 },
+  backButton: { alignItems: 'center', flexDirection: 'row', gap: 6, marginBottom: 16 },
+  backButtonText: { color: theme.ink, fontSize: 14, fontWeight: '700' },
+  alertCard: { alignItems: 'center', backgroundColor: theme.surface, borderRadius: 16, flexDirection: 'row', gap: 12, minHeight: 66, padding: 12, borderWidth: 1, borderColor: theme.stroke },
   alertInfo: { flex: 1 },
   alertList: { gap: 10, marginTop: 16 },
-  alertText: { color: theme.muted, fontSize: 13, marginTop: 3 },
-  alertTitle: { color: theme.ink, fontSize: 15, fontWeight: '900' },
-  appHeader: { alignItems: 'center', flexDirection: 'row', justifyContent: 'space-between', minHeight: 70, paddingHorizontal: 18 },
+  alertText: { color: theme.muted, fontSize: 13, marginTop: 2 },
+  alertTitle: { color: theme.ink, fontSize: 15, fontWeight: '700' },
+  appHeader: { alignItems: 'center', flexDirection: 'row', justifyContent: 'space-between', minHeight: 80, paddingHorizontal: 20 },
   appSafeArea: { backgroundColor: theme.bg, flex: 1 },
   appShell: { flex: 1 },
-  authCard: { ...shadow, backgroundColor: theme.card, borderColor: 'rgba(255,255,255,0.8)', borderRadius: 28, borderWidth: 1, gap: 16, padding: 18 },
+  authCard: { ...elevatedShadow, backgroundColor: theme.card, borderRadius: 24, gap: 18, padding: 32, borderWidth: 1, borderColor: theme.stroke },
   authContainer: { flexGrow: 1, justifyContent: 'center', padding: 22 },
-  authGlow: { backgroundColor: theme.accentSoft, borderRadius: 90, height: 180, opacity: 0.9, position: 'absolute', top: -38, width: 180 },
-  authHero: { alignItems: 'center', marginBottom: 26, position: 'relative' },
-  authMessage: { color: theme.muted, fontSize: 13, lineHeight: 18, textAlign: 'center' },
+  authMessage: { color: theme.critical, fontSize: 13, fontWeight: '600', textAlign: 'center' },
   authSafeArea: { backgroundColor: theme.bg, flex: 1 },
-  avatarButton: { ...shadow, alignItems: 'center', backgroundColor: theme.ink, borderRadius: 18, height: 42, justifyContent: 'center', width: 42 },
-  avatarText: { color: '#FFFFFF', fontSize: 16, fontWeight: '900' },
-  brandName: { color: theme.ink, fontSize: 40, fontWeight: '900', lineHeight: 46 },
-  brandSubtitle: { color: theme.muted, fontSize: 16, lineHeight: 23, marginTop: 8, maxWidth: 310, textAlign: 'center' },
-  buttonDisabled: { opacity: 0.55 },
-  buttonPressed: { opacity: 0.86, transform: [{ scale: 0.985 }] },
-  cancelButton: { alignItems: 'center', backgroundColor: theme.soft, borderRadius: 18, flex: 1, justifyContent: 'center', minHeight: 54 },
-  cancelButtonText: { color: theme.ink, fontSize: 16, fontWeight: '900' },
-  chart: { gap: 14, marginTop: 18 },
-  chartBar: { backgroundColor: theme.accent, borderRadius: 99, height: 10 },
-  chartGroupLabel: { color: theme.ok, fontSize: 11, fontWeight: '900', letterSpacing: 0.5, marginBottom: 4 },
-  chartLabel: { color: theme.ink, fontSize: 12, fontWeight: '700', width: 90 },
-  chartRow: { alignItems: 'center', flexDirection: 'row', gap: 10 },
-  chartTrack: { backgroundColor: theme.soft, borderRadius: 99, flex: 1, height: 10, overflow: 'hidden' },
-  chartValue: { color: theme.ink, fontSize: 12, fontWeight: '900', textAlign: 'right', width: 28 },
-  categoryInput: { backgroundColor: '#FBFCFE', borderColor: theme.stroke, borderRadius: 16, borderWidth: 1, color: theme.ink, flex: 1, fontSize: 15, minHeight: 44, paddingHorizontal: 14 },
-  categoryModalSheet: { backgroundColor: '#FFFFFF', borderTopLeftRadius: 28, borderTopRightRadius: 28, gap: 14, paddingBottom: 28, paddingHorizontal: 18, paddingTop: 10 },
-  categoryModalTitle: { color: theme.ink, fontSize: 20, fontWeight: '900' },
-  categorySaveButton: { alignItems: 'center', backgroundColor: theme.accent, borderRadius: 14, height: 44, justifyContent: 'center', width: 44 },
-  chip: { alignItems: 'center', backgroundColor: '#FFFFFF', borderColor: theme.stroke, borderRadius: 999, borderWidth: 1, justifyContent: 'center', minHeight: 38, paddingHorizontal: 14 },
-  chipActive: { backgroundColor: theme.ink, borderColor: theme.ink },
-  chipText: { color: theme.ink, fontSize: 13, fontWeight: '800' },
-  chipTextActive: { color: '#FFFFFF' },
-  content: { paddingBottom: 34, paddingHorizontal: 18, paddingTop: 8 },
-  createProductTitle: { color: theme.ink, fontSize: 21, fontWeight: '900' },
+  avatarButton: { alignItems: 'center', backgroundColor: theme.ink, borderRadius: 16, height: 40, justifyContent: 'center', width: 40 },
+  avatarText: { color: '#FFFFFF', fontSize: 16, fontWeight: '700' },
+  buttonDisabled: { opacity: 0.5 },
+  buttonPressed: { opacity: 0.8 },
+  cancelButton: { alignItems: 'center', backgroundColor: theme.surface, borderRadius: 16, borderWidth: 1, borderColor: theme.stroke, flex: 1, justifyContent: 'center', minHeight: 52 },
+  cancelButtonText: { color: theme.ink, fontSize: 15, fontWeight: '700' },
+  cardSubtitle: { color: theme.muted, fontSize: 13, fontWeight: '600', marginTop: 4 },
+  cardTitle: { color: theme.ink, fontSize: 18, fontWeight: '800' },
+  chart: { gap: 16, marginTop: 20 },
+  chartBar: { backgroundColor: theme.accent, borderRadius: 99, height: 8 },
+  chartGroupLabel: { color: theme.ok, fontSize: 11, fontWeight: '800', letterSpacing: 1.5, marginBottom: 6, textTransform: 'uppercase' },
+  chartHeader: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 6, paddingHorizontal: 4 },
+  chartLabel: { color: theme.muted, fontSize: 14, fontWeight: '700' },
+  chartRow: { gap: 4 },
+  chartTrack: { backgroundColor: theme.soft, borderRadius: 99, flex: 1, height: 8, overflow: 'hidden' },
+  chartValue: { fontSize: 14, fontWeight: '800' },
+  categoryInput: { backgroundColor: theme.surface, borderColor: theme.stroke, borderRadius: 12, borderWidth: 1, color: theme.ink, flex: 1, fontSize: 14, fontWeight: '500', minHeight: 48, paddingHorizontal: 16 },
+  categoryModalSheet: { alignSelf: 'center', backgroundColor: '#ffffff', borderRadius: 24, gap: 18, padding: 34, paddingBottom: 36, width: '92%', maxWidth: 520 },
+  categoryModalTitle: { color: theme.ink, fontSize: 20, fontWeight: '700' },
+  categoryCancelButton: { alignItems: 'center', backgroundColor: theme.surface, borderRadius: 14, borderWidth: 1, borderColor: theme.stroke, flex: 1, justifyContent: 'center', minHeight: 44 },
+  categoryCancelButtonText: { color: theme.ink, fontSize: 13, fontWeight: '700' },
+  categorySaveButtonLarge: { alignItems: 'center', borderRadius: 14, flex: 1, justifyContent: 'center', minHeight: 44, overflow: 'hidden' },
+  categorySaveButtonGradient: { alignItems: 'center', borderRadius: 14, flex: 1, justifyContent: 'center', minHeight: 44, width: '100%' },
+  categorySaveButtonText: { color: '#FFFFFF', fontSize: 13, fontWeight: '800' },
+  categorySaveButton: { alignItems: 'center', backgroundColor: theme.accent, borderRadius: 16, height: 48, justifyContent: 'center', width: 48 },
+  chipPressable: { borderRadius: 999 },
+  chip: { alignItems: 'center', borderColor: theme.stroke, borderRadius: 999, borderWidth: 1, justifyContent: 'center', minHeight: 36, paddingHorizontal: 16 },
+  chipGradient: { borderColor: 'rgba(255,255,255,0.25)' },
+  chipText: { color: '#475569', fontSize: 14, fontWeight: '600' },
+  chipTextActive: { color: '#ffffff' },
+  content: { paddingBottom: 40, paddingHorizontal: 20, paddingTop: 10 },
+  createProductTitle: { color: theme.ink, fontSize: 20, fontWeight: '700' },
   criticalText: { color: theme.critical },
-  deleteProductButton: { alignItems: 'center', backgroundColor: '#FFFFFF', borderColor: theme.stroke, borderRadius: 18, borderWidth: 1, flexDirection: 'row', gap: 8, justifyContent: 'center', minHeight: 52 },
-  deleteAccountButton: { alignItems: 'center', backgroundColor: '#FFFFFF', borderColor: '#F4C7CA', borderRadius: 18, borderWidth: 1, flexDirection: 'row', gap: 8, justifyContent: 'center', minHeight: 54 },
-  deleteAccountButtonText: { color: theme.critical, fontSize: 15, fontWeight: '900' },
-  deleteProductButtonText: { color: theme.ink, fontSize: 16, fontWeight: '800' },
-  descriptionInput: { minHeight: 92, paddingTop: 14, textAlignVertical: 'top' },
-  editorForm: { gap: 14, paddingBottom: 18 },
-  editorLayer: { flex: 1, justifyContent: 'flex-end' },
-  editorSheet: { backgroundColor: '#FFFFFF', borderTopLeftRadius: 30, borderTopRightRadius: 30, maxHeight: '92%', paddingHorizontal: 18, paddingTop: 10 },
-  editorSubtitle: { color: theme.muted, fontSize: 13, marginTop: 3 },
-  emptyText: { color: theme.muted, fontSize: 14, marginTop: 14 },
-  entryButton: { alignItems: 'center', backgroundColor: theme.okSoft, borderRadius: 16, flex: 1, justifyContent: 'center', minHeight: 48 },
-  entryButtonText: { color: theme.ok, fontSize: 15, fontWeight: '900' },
-  exitButton: { alignItems: 'center', backgroundColor: theme.criticalSoft, borderRadius: 16, flex: 1, justifyContent: 'center', minHeight: 48 },
-  exitButtonText: { color: theme.critical, fontSize: 15, fontWeight: '900' },
-  field: { gap: 8 },
-  filterRow: { gap: 8, paddingRight: 18 },
+  deleteProductButton: { alignItems: 'center', backgroundColor: theme.surface, borderColor: theme.critical, borderRadius: 16, borderWidth: 1, flexDirection: 'row', gap: 8, justifyContent: 'center', minHeight: 52 },
+  deleteAccountButton: { alignItems: 'center', backgroundColor: '#fff1f2', borderColor: '#fecdd3', borderRadius: 16, borderWidth: 1, flexDirection: 'row', gap: 8, justifyContent: 'center', minHeight: 48, paddingHorizontal: 12 },
+  deleteAccountButtonText: { color: theme.critical, fontSize: 13, fontWeight: '800' },
+  dangerPanel: { borderColor: '#fecdd3', backgroundColor: '#fff7f9' },
+  dangerText: { color: theme.muted, fontSize: 13, lineHeight: 20, marginTop: 12, marginBottom: 16 },
+  dangerTitle: { color: theme.critical, fontSize: 18, fontWeight: '800' },
+  deleteProductButtonText: { color: theme.critical, fontSize: 14, fontWeight: '700' },
+  descriptionInput: { minHeight: 100, paddingTop: 16, textAlignVertical: 'top' },
+  editorForm: { gap: 16, paddingBottom: 16 },
+  editorLayer: { alignItems: 'center', flex: 1, justifyContent: 'center', padding: 8 },
+  editorSheet: { backgroundColor: '#ffffff', borderRadius: 28, maxHeight: '96%', padding: 24, width: '94%', maxWidth: 590 },
+  editorSubtitle: { color: theme.muted, fontSize: 13, marginTop: 4 },
+  emptyText: { color: theme.muted, fontSize: 14, textAlign: 'center', marginTop: 20, fontStyle: 'italic' },
+  entryButton: { alignItems: 'center', backgroundColor: theme.okSoft, borderRadius: 12, flex: 1, justifyContent: 'center', minHeight: 40 },
+  entryButtonText: { color: theme.ok, fontSize: 14, fontWeight: '700' },
+  exitButton: { alignItems: 'center', backgroundColor: theme.criticalSoft, borderRadius: 12, flex: 1, justifyContent: 'center', minHeight: 40 },
+  exitButtonText: { color: theme.critical, fontSize: 14, fontWeight: '700' },
+  field: { gap: 10 },
+  filterRow: { gap: 8, paddingRight: 20 },
   filterRowWrap: { flexDirection: 'row', flexWrap: 'wrap', gap: 8 },
-  formCloseButton: { alignItems: 'center', backgroundColor: theme.soft, borderRadius: 14, height: 38, justifyContent: 'center', width: 38 },
-  formHeader: { alignItems: 'center', flexDirection: 'row', justifyContent: 'space-between', marginBottom: 14 },
-  ghostButton: { alignItems: 'center', borderColor: theme.stroke, borderRadius: 16, borderWidth: 1, justifyContent: 'center', minHeight: 46 },
-  ghostButtonText: { color: theme.ink, fontSize: 14, fontWeight: '900' },
-  googleButton: { alignItems: 'center', backgroundColor: '#FFFFFF', borderColor: theme.stroke, borderRadius: 18, borderWidth: 1, flexDirection: 'row', gap: 8, justifyContent: 'center', minHeight: 54 },
-  googleButtonText: { color: theme.ink, fontSize: 15, fontWeight: '800' },
-  headerEyebrow: { color: theme.muted, fontSize: 12, fontWeight: '800', textAlign: 'center', textTransform: 'uppercase' },
-  headerIconButton: { alignItems: 'center', backgroundColor: '#FFFFFF', borderColor: theme.stroke, borderRadius: 16, borderWidth: 1, height: 46, justifyContent: 'center', width: 46 },
-  headerTitle: { color: theme.ink, fontSize: 20, fontWeight: '900', textAlign: 'center' },
-  heroAccent: { backgroundColor: theme.accent, borderRadius: 90, height: 130, opacity: 0.9, position: 'absolute', right: -38, top: -42, width: 130 },
-  heroKicker: { color: '#AEB7C8', fontSize: 13, fontWeight: '800', textTransform: 'uppercase' },
-  heroPanel: { ...shadow, backgroundColor: theme.ink, borderRadius: 28, overflow: 'hidden', padding: 22 },
-  heroSubtitle: { color: '#C9D1DF', fontSize: 15, lineHeight: 22, marginTop: 8, maxWidth: 270 },
-  heroTitle: { color: '#FFFFFF', fontSize: 30, fontWeight: '900', lineHeight: 36, marginTop: 10 },
-  iconButton: { alignItems: 'center', height: 42, justifyContent: 'center', width: 42 },
-  imageModal: { backgroundColor: '#FFFFFF', borderTopLeftRadius: 28, borderTopRightRadius: 28, gap: 10, paddingBottom: 28, paddingHorizontal: 18, paddingTop: 10 },
-  imageModalAction: { alignItems: 'center', backgroundColor: theme.bg, borderRadius: 18, flexDirection: 'row', gap: 12, minHeight: 58, paddingHorizontal: 16 },
-  imageModalActionText: { color: theme.ink, fontSize: 16, fontWeight: '800' },
-  imageModalTitle: { color: theme.ink, fontSize: 20, fontWeight: '900', marginBottom: 4 },
-  imagePickerButton: { alignItems: 'center', backgroundColor: '#FBFCFE', borderColor: theme.stroke, borderRadius: 18, borderWidth: 1, flexDirection: 'row', gap: 14, minHeight: 100, padding: 12 },
+  forgotLinkButton: { paddingHorizontal: 6, paddingVertical: 6 },
+  forgotLink: { color: theme.accent, fontSize: 13, fontWeight: '700', textDecorationLine: 'underline' },
+  formCloseButton: { alignItems: 'center', backgroundColor: theme.surface, borderRadius: 12, height: 40, justifyContent: 'center', width: 40 },
+  formHeader: { alignItems: 'center', flexDirection: 'row', justifyContent: 'space-between', marginBottom: 16 },
+  ghostButton: { alignItems: 'center', borderColor: theme.stroke, borderRadius: 12, borderWidth: 1, justifyContent: 'center', minHeight: 40 },
+  ghostButtonText: { color: theme.ink, fontSize: 13, fontWeight: '700' },
+  googleButton: { alignItems: 'center', backgroundColor: '#ffffff', borderColor: theme.stroke, borderRadius: 12, borderWidth: 1, flexDirection: 'row', gap: 10, justifyContent: 'center', minHeight: 56 },
+  googleButtonText: { color: theme.ink, fontSize: 14, fontWeight: '700' },
+  googleBrand: { flexDirection: 'row', alignItems: 'center', gap: 8 },
+  googleMark: { color: '#4285F4', fontSize: 20, fontWeight: '900' },
+  headerEyebrow: { color: theme.muted, fontSize: 11, fontWeight: '700', textAlign: 'center', textTransform: 'uppercase', letterSpacing: 1.5 },
+  headerIconButton: { alignItems: 'center', backgroundColor: '#ffffff', borderColor: theme.stroke, borderRadius: 12, borderWidth: 1, height: 44, justifyContent: 'center', width: 44 },
+  headerTitle: { color: theme.ink, fontSize: 22, fontWeight: '800', textAlign: 'center', letterSpacing: -0.5 },
+  heroAccent: { backgroundColor: theme.accent, borderRadius: 100, height: 150, opacity: 0.1, position: 'absolute', right: -40, top: -40, width: 150 },
+  heroKicker: { color: theme.accent, fontSize: 11, fontWeight: '800', textTransform: 'uppercase', letterSpacing: 2 },
+  heroPanel: { ...elevatedShadow, borderRadius: 28, overflow: 'hidden', padding: 24 },
+  heroSubtitle: { color: '#94a3b8', fontSize: 15, lineHeight: 22, marginTop: 12, maxWidth: 280 },
+  heroSubtitleHighlight: { color: '#ffffff', fontWeight: '800' },
+  heroTitle: { color: '#ffffff', fontSize: 32, fontWeight: '800', lineHeight: 38, marginTop: 12, letterSpacing: -1 },
+  heroTitleMuted: { fontSize: 18, color: '#94a3b8', fontWeight: '500' },
+  iconButton: { alignItems: 'center', height: 48, justifyContent: 'center', width: 48 },
+  imageModal: { backgroundColor: '#ffffff', borderRadius: 24, gap: 12, padding: 24, width: '100%', maxWidth: 520 },
+  imageModalAction: { alignItems: 'center', backgroundColor: theme.surface, borderRadius: 16, flexDirection: 'row', gap: 12, minHeight: 56, paddingHorizontal: 16 },
+  imageModalActionText: { color: theme.ink, fontSize: 14, fontWeight: '700' },
+  imageModalTitle: { color: theme.ink, fontSize: 20, fontWeight: '700', marginBottom: 8 },
+  imagePickerButton: { alignItems: 'center', backgroundColor: '#ffffff', borderColor: theme.stroke, borderRadius: 16, borderWidth: 1, flexDirection: 'row', gap: 16, minHeight: 96, padding: 16 },
   imagePickerSubtitle: { color: theme.muted, fontSize: 13, marginTop: 4 },
   imagePickerTextBlock: { flex: 1 },
-  imagePickerTitle: { color: theme.ink, fontSize: 16, fontWeight: '900' },
-  infoLabel: { color: theme.muted, fontSize: 15 },
-  infoRow: { alignItems: 'center', borderBottomColor: theme.stroke, borderBottomWidth: StyleSheet.hairlineWidth, flexDirection: 'row', justifyContent: 'space-between', minHeight: 58 },
-  infoValue: { color: theme.ink, fontSize: 15, fontWeight: '900' },
+  imagePickerTitle: { color: theme.ink, fontSize: 15, fontWeight: '700' },
+  infoLabel: { color: theme.muted, fontSize: 15, fontWeight: '500' },
+  infoRow: { alignItems: 'center', borderBottomColor: theme.stroke, borderBottomWidth: 1, flexDirection: 'row', justifyContent: 'space-between', minHeight: 64 },
+  infoValue: { color: theme.ink, fontSize: 15, fontWeight: '700' },
+  infoCardItem: { backgroundColor: theme.surface, borderColor: theme.stroke, borderRadius: 14, borderWidth: 1, paddingHorizontal: 16, paddingVertical: 12 },
+  infoCardLabel: { color: theme.muted, fontSize: 10, fontWeight: '800', textTransform: 'uppercase', letterSpacing: 1.2 },
+  infoCardList: { gap: 12, marginTop: 16 },
+  infoCardValue: { color: theme.ink, fontSize: 14, fontWeight: '800', marginTop: 6 },
   inlineField: { flex: 1 },
-  inlineInputs: { flexDirection: 'row', gap: 10 },
-  input: { backgroundColor: '#FBFCFE', borderColor: theme.stroke, borderRadius: 16, borderWidth: 1, color: theme.ink, fontSize: 16, minHeight: 54, paddingHorizontal: 16 },
-  inputFocused: { borderColor: theme.accent, shadowColor: theme.accent, shadowOffset: { width: 0, height: 0 }, shadowOpacity: 0.16, shadowRadius: 12 },
+  inlineInputs: { flexDirection: 'row', gap: 12 },
+  input: { backgroundColor: theme.surface, borderColor: theme.stroke, borderRadius: 12, borderWidth: 1, color: theme.ink, fontSize: 15, fontWeight: '600', minHeight: 52, paddingHorizontal: 16, paddingVertical: 12 },
+  inputFocused: { borderColor: '#3b82f6', backgroundColor: '#ffffff' },
   keyboardView: { flex: 1 },
-  label: { color: theme.ink, fontSize: 13, fontWeight: '800', paddingLeft: 2 },
-  legalContent: { gap: 20, marginTop: 24 },
-  legalSubtitle: { color: theme.muted, fontSize: 11, fontWeight: '900', letterSpacing: 1 },
-  legalTitle: { color: theme.ink, fontSize: 24, fontWeight: '900' },
-  loadingScreen: { alignItems: 'center', flex: 1, justifyContent: 'center' },
-  loadingText: { color: theme.ink, fontSize: 18, fontWeight: '800', marginTop: 10 },
-  logo: { ...shadow, alignItems: 'center', backgroundColor: theme.ink, justifyContent: 'center', marginBottom: 18, position: 'relative' },
-  logoLetter: { color: '#FFFFFF', fontWeight: '900', lineHeight: 44 },
-  logoMark: { alignItems: 'center', backgroundColor: '#FFFFFF', borderColor: theme.stroke, borderWidth: 1, bottom: -5, justifyContent: 'center', position: 'absolute', right: -5 },
-  logoutButton: { ...shadow, alignItems: 'center', backgroundColor: theme.ink, borderRadius: 18, flexDirection: 'row', gap: 8, justifyContent: 'center', minHeight: 56 },
-  logoutText: { color: '#FFFFFF', fontSize: 16, fontWeight: '900' },
-  metricCard: { ...shadow, backgroundColor: theme.card, borderColor: 'rgba(255,255,255,0.8)', borderRadius: 20, borderWidth: 1, flex: 1, minHeight: 110, padding: 13 },
-  metricIcon: { alignItems: 'center', backgroundColor: theme.accentSoft, borderRadius: 12, height: 34, justifyContent: 'center', marginBottom: 10, width: 34 },
-  metricLabel: { color: theme.muted, fontSize: 12, fontWeight: '700', marginTop: 4 },
-  metricValue: { color: theme.ink, fontSize: 23, fontWeight: '900' },
-  metricsGrid: { flexDirection: 'row', gap: 10 },
-  modalBackdrop: { ...StyleSheet.absoluteFillObject, backgroundColor: 'rgba(8, 11, 18, 0.32)' },
-  modalButtonRow: { flexDirection: 'row', gap: 10 },
-  modalCancelButton: { alignItems: 'center', justifyContent: 'center', minHeight: 48 },
-  modalCancelText: { color: theme.muted, fontSize: 16, fontWeight: '800' },
-  modalHandle: { alignSelf: 'center', backgroundColor: theme.stroke, borderRadius: 2, height: 4, marginBottom: 8, width: 44 },
-  modalLayer: { flex: 1, justifyContent: 'flex-end' },
-  movementAmount: { fontSize: 16, fontWeight: '900' },
+  label: { color: theme.ink, fontSize: 11, fontWeight: '800', textTransform: 'uppercase', letterSpacing: 1.2 },
+  labelRow: { alignItems: 'center', flexDirection: 'row', justifyContent: 'space-between' },
+  legalFootnote: { color: theme.muted, fontSize: 10, fontWeight: '700', marginTop: 16, opacity: 0.6, textTransform: 'uppercase', letterSpacing: 1 },
+  legalKicker: { color: theme.ink, fontSize: 11, fontWeight: '800', letterSpacing: 2, textTransform: 'uppercase' },
+  legalText: { color: theme.muted, fontSize: 13, lineHeight: 20, marginTop: 12 },
+  legalContent: { gap: 24, marginTop: 32 },
+  legalSubtitle: { color: theme.muted, fontSize: 12, fontWeight: '800', letterSpacing: 2 },
+  legalTitle: { color: theme.ink, fontSize: 28, fontWeight: '800', letterSpacing: -1 },
+  loadingScreen: { alignItems: 'center', flex: 1, justifyContent: 'center', backgroundColor: theme.bg },
+  loadingText: { color: theme.ink, fontSize: 20, fontWeight: '800', marginTop: 16 },
+  logo: { ...elevatedShadow, alignItems: 'center', backgroundColor: theme.ink, justifyContent: 'center', marginBottom: 20, position: 'relative' },
+  logoLetter: { color: '#FFFFFF', fontWeight: '800' },
+  logoMark: { alignItems: 'center', backgroundColor: '#FFFFFF', borderColor: theme.stroke, borderWidth: 1, bottom: -6, justifyContent: 'center', position: 'absolute', right: -6 },
+  logoutButton: { alignItems: 'center', backgroundColor: theme.ink, borderRadius: 12, flexDirection: 'row', gap: 10, justifyContent: 'center', minHeight: 48 },
+  logoutText: { color: '#FFFFFF', fontSize: 14, fontWeight: '700' },
+  metricCard: { ...shadow, backgroundColor: theme.card, borderRadius: 24, flex: 1, minHeight: 120, padding: 16, borderWidth: 1, borderColor: theme.stroke },
+  metricIcon: { alignItems: 'center', borderRadius: 12, height: 40, justifyContent: 'center', marginBottom: 12, width: 40 },
+  metricLabel: { color: theme.muted, fontSize: 10, fontWeight: '800', marginTop: 6, textTransform: 'uppercase', letterSpacing: 1 },
+  metricValue: { color: theme.ink, fontSize: 26, fontWeight: '800', letterSpacing: -1 },
+  metricsGrid: { flexDirection: 'row', gap: 12 },
+  modalBackdrop: { ...StyleSheet.absoluteFillObject, backgroundColor: 'rgba(15, 23, 42, 0.4)' },
+  modalButtonRow: { flexDirection: 'row', gap: 16, marginTop: 6 },
+    modalSheetWrap: { width: '100%', alignItems: 'center' },
+  modalCancelButton: { alignItems: 'center', justifyContent: 'center', minHeight: 44 },
+  modalCancelText: { color: theme.muted, fontSize: 14, fontWeight: '700' },
+  modalHandle: { display: 'none' },
+  modalLayer: { alignItems: 'center', flex: 1, justifyContent: 'center', padding: 16 },
+  movementAmount: { fontSize: 24, fontWeight: '800', letterSpacing: -1 },
   movementAmountIn: { color: theme.ok },
   movementAmountOut: { color: theme.critical },
-  movementDate: { color: theme.muted, fontSize: 12, marginTop: 2 },
-  movementEditor: { backgroundColor: theme.bg, borderRadius: 20, gap: 12, padding: 14 },
-  movementIcon: { alignItems: 'center', borderRadius: 13, height: 34, justifyContent: 'center', width: 34 },
+  movementDate: { color: theme.muted, fontSize: 12, fontWeight: '600', marginTop: 4 },
+  movementEditor: { backgroundColor: theme.surface, borderRadius: 16, gap: 16, padding: 16 },
+  movementIcon: { alignItems: 'center', borderRadius: 12, height: 48, justifyContent: 'center', width: 48 },
   movementIn: { backgroundColor: theme.okSoft },
   movementInfo: { flex: 1 },
-  movementList: { gap: 10, marginTop: 16 },
+  movementList: { gap: 12, marginTop: 20 },
   movementOut: { backgroundColor: theme.criticalSoft },
-  movementProduct: { color: theme.ink, fontSize: 14, fontWeight: '900' },
-  movementRow: { alignItems: 'center', backgroundColor: theme.bg, borderRadius: 16, flexDirection: 'row', gap: 12, minHeight: 58, paddingHorizontal: 12 },
-  noPhotoBox: { alignItems: 'center', backgroundColor: theme.accentSoft, borderColor: '#D7E4FF', borderRadius: 16, borderWidth: 1, justifyContent: 'center' },
-  panel: { ...shadow, backgroundColor: theme.card, borderColor: 'rgba(255,255,255,0.8)', borderRadius: 24, borderWidth: 1, padding: 18 },
-  passwordField: { alignItems: 'center', backgroundColor: '#FBFCFE', borderColor: theme.stroke, borderRadius: 16, borderWidth: 1, flexDirection: 'row', minHeight: 54, paddingLeft: 16, paddingRight: 8 },
-  passwordInput: { color: theme.ink, flex: 1, fontSize: 16, minHeight: 52 },
-  pressed: { opacity: 0.72 },
-  primaryButton: { ...shadow, alignItems: 'center', backgroundColor: theme.ink, borderRadius: 18, flexDirection: 'row', gap: 8, justifyContent: 'center', minHeight: 56 },
-  primaryButtonText: { color: '#FFFFFF', fontSize: 16, fontWeight: '800' },
-  productCard: { ...shadow, alignItems: 'center', backgroundColor: theme.card, borderColor: 'rgba(255,255,255,0.8)', borderRadius: 22, borderWidth: 1, flexDirection: 'row', gap: 14, minHeight: 104, padding: 13 },
-  productCardPressed: { opacity: 0.9, transform: [{ scale: 0.99 }] },
-  productCategory: { color: theme.muted, fontSize: 12, fontWeight: '800' },
-  productDescription: { color: theme.muted, fontSize: 13 },
-  productForecast: { color: theme.muted, fontSize: 12, fontWeight: '800' },
+  movementProduct: { color: theme.ink, fontSize: 16, fontWeight: '800' },
+  movementRow: { ...shadow, alignItems: 'center', backgroundColor: theme.card, borderRadius: 24, flexDirection: 'row', gap: 16, minHeight: 80, padding: 20, borderWidth: 1, borderColor: theme.stroke },
+  noPhotoBox: { alignItems: 'center', backgroundColor: theme.soft, borderRadius: 20, justifyContent: 'center' },
+  panel: { ...shadow, backgroundColor: theme.card, borderRadius: 24, padding: 24, borderWidth: 1, borderColor: theme.stroke },
+  passwordField: { alignItems: 'center', backgroundColor: theme.surface, borderColor: theme.stroke, borderRadius: 12, borderWidth: 1, flexDirection: 'row', minHeight: 48, paddingLeft: 16, paddingRight: 8 },
+  passwordInput: { color: theme.ink, flex: 1, fontSize: 15, minHeight: 44 },
+  pressed: { opacity: 0.7 },
+  primaryButton: { alignItems: 'center', borderRadius: 12, flexDirection: 'row', gap: 10, justifyContent: 'center', minHeight: 52, overflow: 'hidden' },
+  primaryButtonGradient: { alignItems: 'center', borderRadius: 12, flex: 1, justifyContent: 'center', minHeight: 52, width: '100%' },
+  primaryButtonText: { color: '#FFFFFF', fontSize: 15, fontWeight: '700' },
+  productCard: { ...shadow, backgroundColor: theme.card, borderRadius: 20, padding: 14, borderWidth: 1, borderColor: theme.stroke },
+  productCardPressed: { opacity: 0.9, backgroundColor: '#ffffff' },
+  productCardTop: { flexDirection: 'row', gap: 18 },
+  productImageContainer: { height: 72, width: 72, borderRadius: 14, overflow: 'hidden', backgroundColor: theme.surface },
+  productMainInfo: { flex: 1 },
+  productHeaderRow: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'flex-start', gap: 8 },
+  productTitleBlock: { flex: 1, gap: 4 },
+  productMetaTop: { flexDirection: 'row', alignItems: 'center', gap: 6, marginBottom: 2 },
+  productCategoryTag: { color: theme.muted, fontSize: 9, fontWeight: '800', letterSpacing: 1, textTransform: 'uppercase' },
+  metaDot: { width: 3, height: 3, borderRadius: 2, backgroundColor: theme.stroke },
+  statusTag: { borderRadius: 99, paddingHorizontal: 8, paddingVertical: 2 },
+  statusTagText: { fontSize: 10, fontWeight: '800' },
+  productName: { color: theme.ink, fontSize: 16, fontWeight: '800', letterSpacing: -0.4 },
+  productDescription: { color: theme.muted, fontSize: 12, marginTop: 2 },
+  productQuantityBlock: { alignItems: 'flex-end' },
+  productQuantityValue: { fontSize: 18, fontWeight: '800', color: theme.accent, letterSpacing: -0.6 },
+  productQuantityLabel: { fontSize: 9, fontWeight: '800', textTransform: 'uppercase', color: theme.muted, letterSpacing: 1 },
+  productCardFooter: { flexDirection: 'row', justifyContent: 'flex-start', alignItems: 'center', marginTop: 12, paddingTop: 10, borderTopWidth: 1, borderTopColor: theme.stroke },
+  productActionsRow: { flexDirection: 'row', gap: 8 },
+  actionButton: { flexDirection: 'row', alignItems: 'center', justifyContent: 'center', paddingHorizontal: 16, paddingVertical: 8, borderRadius: 12 },
+  entryButtonAction: { backgroundColor: theme.okSoft },
+  exitButtonAction: { backgroundColor: theme.criticalSoft },
+  entryActionText: { fontSize: 12, fontWeight: '800', color: theme.ok },
+  exitActionText: { fontSize: 12, fontWeight: '800', color: theme.critical },
+  productCategory: { color: theme.muted, fontSize: 10, fontWeight: '700', letterSpacing: 1.2, textTransform: 'uppercase' },
+  productForecast: { color: theme.muted, fontSize: 12, fontWeight: '600' },
   productImage: { backgroundColor: theme.soft, borderRadius: 16 },
-  productInfo: { flex: 1, gap: 5 },
+  productInfo: { flex: 1, gap: 4 },
   productList: { gap: 12 },
   productMetaRow: { alignItems: 'center', flexDirection: 'row', gap: 8 },
-  productName: { color: theme.ink, flex: 1, fontSize: 16, fontWeight: '900' },
-  productQuantity: { color: theme.accent, fontSize: 13, fontWeight: '900' },
+  productQuantity: { color: '#2563eb', fontSize: 16, fontWeight: '700' },
   productTitleRow: { alignItems: 'center', flexDirection: 'row', gap: 8 },
-  productsHeader: { alignItems: 'center', flexDirection: 'row', justifyContent: 'space-between' },
-  profileAvatar: { ...shadow, alignItems: 'center', backgroundColor: theme.ink, borderRadius: 42, height: 84, justifyContent: 'center', marginBottom: 14, width: 84 },
-  profileAvatarText: { color: '#FFFFFF', fontSize: 34, fontWeight: '900' },
-  profileEmail: { color: theme.muted, fontSize: 15, marginTop: 5 },
-  profileHero: { ...shadow, alignItems: 'center', backgroundColor: theme.card, borderRadius: 28, padding: 24 },
-  profileInfo: { ...shadow, backgroundColor: theme.card, borderRadius: 22, paddingHorizontal: 16 },
-  profileName: { color: theme.ink, fontSize: 24, fontWeight: '900' },
-  saveButton: { ...shadow, alignItems: 'center', backgroundColor: theme.ink, borderRadius: 18, flex: 1, justifyContent: 'center', minHeight: 54 },
-  saveButtonText: { color: '#FFFFFF', fontSize: 16, fontWeight: '900' },
-  searchBox: { alignItems: 'center', backgroundColor: '#FFFFFF', borderColor: theme.stroke, borderRadius: 18, borderWidth: 1, flexDirection: 'row', gap: 8, minHeight: 50, paddingHorizontal: 14 },
-  searchInput: { color: theme.ink, flex: 1, fontSize: 15 },
-  section: { gap: 18 },
+  productsHeader: { alignItems: 'flex-start', flexDirection: 'column', gap: 12, marginBottom: 8 },
+  productsHeaderText: { flex: 1, gap: 6 },
+  productsFiltersPanel: { ...shadow, backgroundColor: theme.card, borderRadius: 20, borderWidth: 1, borderColor: theme.stroke, padding: 16, gap: 12 },
+  profileAvatar: { alignItems: 'center', backgroundColor: theme.ink, borderRadius: 48, height: 96, justifyContent: 'center', marginBottom: 20, width: 96 },
+  profileAvatarText: { color: '#FFFFFF', fontSize: 34, fontWeight: '700' },
+  profileAvatarLarge: { alignItems: 'center', backgroundColor: theme.ink, borderRadius: 52, height: 104, justifyContent: 'center', marginBottom: 16, width: 104 },
+  profileEmail: { color: theme.muted, fontSize: 16, marginTop: 6 },
+  profileMetaCard: { backgroundColor: theme.surface, borderRadius: 14, padding: 12, flex: 1 },
+  profileMetaGrid: { flexDirection: 'row', gap: 12, marginTop: 20, width: '100%' },
+  profileMetaLabel: { color: theme.muted, fontSize: 10, fontWeight: '800', textTransform: 'uppercase', letterSpacing: 1.2 },
+  profileMetaValue: { color: theme.ink, fontSize: 12, fontWeight: '800', marginTop: 6 },
+  profileName: { color: theme.ink, fontSize: 20, fontWeight: '800', letterSpacing: -0.5 },
+  profileRole: { color: theme.muted, fontSize: 11, fontWeight: '700', textTransform: 'uppercase', letterSpacing: 2, marginTop: 4 },
+  profileStatusDot: { backgroundColor: '#10b981', borderRadius: 6, height: 8, width: 8 },
+  profileStatusRow: { alignItems: 'center', flexDirection: 'row', gap: 6, marginTop: 6 },
+  profileStatusText: { color: '#059669', fontSize: 12, fontWeight: '800' },
+  profileSummaryCard: { ...elevatedShadow, alignItems: 'center', backgroundColor: theme.card, borderRadius: 24, padding: 24, borderWidth: 1, borderColor: theme.stroke },
+  saveButton: { alignItems: 'center', borderRadius: 16, flex: 1, justifyContent: 'center', minHeight: 52, overflow: 'hidden' },
+  saveButtonGradient: { alignItems: 'center', borderRadius: 16, flex: 1, justifyContent: 'center', minHeight: 52, width: '100%' },
+  saveButtonText: { color: '#FFFFFF', fontSize: 14, fontWeight: '800' },
+  searchBox: { alignItems: 'center', backgroundColor: theme.surface, borderColor: theme.stroke, borderRadius: 12, borderWidth: 1, flexDirection: 'row', gap: 10, minHeight: 52, paddingHorizontal: 16 },
+  searchInput: { color: theme.ink, flex: 1, fontSize: 14, fontWeight: '600' },
+  section: { gap: 24 },
+  sectionHeaderBlock: { gap: 6 },
   sectionHeader: { gap: 4 },
-  sectionSubtitle: { color: theme.muted, fontSize: 14, lineHeight: 20 },
-  sectionTitle: { color: theme.ink, fontSize: 24, fontWeight: '900' },
-  segmentButton: { alignItems: 'center', borderRadius: 13, flex: 1, justifyContent: 'center', minHeight: 42 },
-  segmentButtonActive: { ...shadow, backgroundColor: '#FFFFFF', elevation: 3, shadowOpacity: 0.05, shadowRadius: 10 },
-  segmentText: { color: theme.muted, fontSize: 14, fontWeight: '700' },
+  sectionSubtitle: { color: theme.muted, fontSize: 14, fontWeight: '600' },
+  sectionTitle: { color: theme.ink, fontSize: 28, fontWeight: '800', letterSpacing: -1 },
+  segmentButton: { alignItems: 'center', borderRadius: 12, flex: 1, justifyContent: 'center', minHeight: 42 },
+  segmentButtonActive: { backgroundColor: '#FFFFFF' },
+  segmentText: { color: theme.muted, fontSize: 14, fontWeight: '600' },
   segmentTextActive: { color: theme.ink },
   segmentedControl: { backgroundColor: theme.soft, borderRadius: 16, flexDirection: 'row', gap: 4, padding: 4 },
-  sidebar: { ...shadow, backgroundColor: theme.card, borderBottomRightRadius: 28, borderTopRightRadius: 28, gap: 8, height: '100%', paddingHorizontal: 18, paddingTop: 24, width: 286 },
-  sidebarBackdrop: { ...StyleSheet.absoluteFillObject, backgroundColor: 'rgba(8, 11, 18, 0.32)' },
-  sidebarBrand: { alignItems: 'center', flexDirection: 'row', gap: 12, marginBottom: 28 },
-  sidebarItem: { alignItems: 'center', borderRadius: 18, flexDirection: 'row', gap: 12, minHeight: 52, paddingHorizontal: 14 },
-  sidebarItemActive: { backgroundColor: theme.ink },
-  sidebarItemText: { color: theme.ink, fontSize: 16, fontWeight: '800' },
-  sidebarItemTextActive: { color: '#FFFFFF' },
+  sidebar: { ...elevatedShadow, borderBottomRightRadius: 24, borderTopRightRadius: 24, gap: 18, height: '100%', paddingHorizontal: 22, paddingTop: 28, width: 280 },
+  sidebarBackdrop: { ...StyleSheet.absoluteFillObject, backgroundColor: 'rgba(15, 23, 42, 0.4)' },
+  sidebarBrand: { alignItems: 'center', flexDirection: 'row', gap: 12, marginBottom: 18 },
+  sidebarBrandText: { gap: 2 },
+  sidebarEyebrow: { color: 'rgba(191, 219, 254, 0.8)', fontSize: 10, fontWeight: '800', letterSpacing: 2.2 },
+  sidebarLogo: { alignItems: 'center', backgroundColor: 'rgba(255, 255, 255, 0.1)', borderRadius: 12, borderWidth: 1, borderColor: 'rgba(255, 255, 255, 0.2)', height: 40, justifyContent: 'center', width: 40 },
+  sidebarNav: { gap: 6 },
+  sidebarItem: { alignItems: 'center', borderRadius: 16, flexDirection: 'row', gap: 12, minHeight: 48, paddingHorizontal: 14 },
+  sidebarItemActive: { backgroundColor: 'rgba(255, 255, 255, 0.12)', borderWidth: 1, borderColor: 'rgba(255, 255, 255, 0.18)' },
+  sidebarItemText: { color: 'rgba(203, 213, 225, 0.82)', fontSize: 14, fontWeight: '600' },
+  sidebarItemTextActive: { color: '#ffffff' },
   sidebarLayer: { ...StyleSheet.absoluteFillObject, flexDirection: 'row' },
-  sidebarSubtitle: { color: theme.muted, fontSize: 13, fontWeight: '700', marginTop: 2 },
-  sidebarTitle: { color: theme.ink, fontSize: 23, fontWeight: '900' },
-  statusDot: { borderRadius: 6, height: 12, width: 12 },
+  sidebarSubtitle: { color: 'rgba(226, 232, 240, 0.8)', fontSize: 12, fontWeight: '600', marginTop: 2 },
+  sidebarTitle: { color: '#ffffff', fontSize: 18, fontWeight: '800', letterSpacing: -0.4 },
+  statusDot: { borderRadius: 8, height: 16, width: 16 },
   stockPill: { borderRadius: 999, paddingHorizontal: 8, paddingVertical: 4 },
-  stockPillText: { fontSize: 11, fontWeight: '900' },
+  stockPillText: { fontSize: 10, fontWeight: '700' },
+  timeline: { gap: 16, paddingLeft: 24, position: 'relative' },
+  timelineLine: { backgroundColor: theme.stroke, bottom: 0, left: 12, position: 'absolute', top: 0, width: 2 },
+  timelineItem: { paddingLeft: 16, position: 'relative' },
+  timelineDot: { borderRadius: 6, height: 12, left: 12, position: 'absolute', top: '50%', transform: [{ translateX: -6 }, { translateY: -6 }], width: 12, zIndex: 10 },
+  timelineDotIn: { backgroundColor: theme.ok },
+  timelineDotOut: { backgroundColor: theme.critical },
 });

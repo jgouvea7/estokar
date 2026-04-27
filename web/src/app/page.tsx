@@ -6,7 +6,7 @@ export default function Home() {
     <main className="mx-auto flex min-h-screen w-full max-w-[1120px] flex-col px-6 py-10 sm:px-8 lg:py-12">
       <header className="surface-card mb-12 flex items-center justify-between rounded-3xl border border-[var(--stroke)] px-5 py-4">
         <div className="flex items-center gap-3">
-          <div className="grid h-11 w-11 place-items-center rounded-2xl bg-[var(--ink)] text-white">
+          <div className="grid h-11 w-11 place-items-center rounded-2xl bg-[image:var(--brand-gradient)] text-white shadow-[0_16px_32px_-20px_rgba(15,23,42,0.7)] ring-1 ring-white/20">
             <Boxes size={20} />
           </div>
           <div>
@@ -15,29 +15,36 @@ export default function Home() {
           </div>
         </div>
         <div className="flex items-center gap-2">
-          <Link href="/login" className="interactive-press rounded-2xl border border-[var(--stroke)] bg-white px-4 py-2 text-sm font-bold hover:bg-[var(--soft)]">
+          <Link href="/login" className="rounded-xl border border-[var(--stroke)] bg-white px-4 py-2 text-sm font-bold text-[var(--ink)] transition-colors hover:bg-[var(--surface-2)]">
             Entrar
           </Link>
-          <Link href="/register" className="interactive-press rounded-2xl bg-[var(--ink)] px-4 py-2 text-sm font-bold text-white hover:opacity-90">
+          <Link href="/register" className="rounded-xl bg-[image:var(--brand-gradient)] px-4 py-2 text-sm font-bold text-white shadow-[0_16px_32px_-22px_rgba(15,23,42,0.8)] ring-1 ring-white/15 transition-all hover:-translate-y-0.5">
             Comecar
           </Link>
         </div>
       </header>
 
       <section className="grid gap-5 lg:grid-cols-[1.2fr_0.8fr]">
-        <article className="reveal-up rounded-3xl bg-[var(--ink)] p-8 text-white shadow-[0_30px_60px_-45px_rgba(8,11,18,0.9)] lg:p-10">
-          <p className="text-xs font-semibold uppercase tracking-[0.2em] text-[#AEB7C8]">Controle inteligente de estoque</p>
-          <h2 className="mt-4 max-w-xl text-4xl font-black leading-tight lg:text-5xl">Controle total do seu estoque, sem complicacao.</h2>
-          <p className="mt-4 max-w-lg text-sm leading-7 text-[#C9D1DF]">
-            Gerencie produtos, categorias e movimentacoes em segundos com uma experiencia fluida e previsao operacional em tempo real.
-          </p>
-          <div className="mt-7 flex flex-wrap gap-3">
-            <Link href="/register" className="interactive-press rounded-2xl bg-white px-5 py-3 text-sm font-bold text-[var(--ink)] hover:opacity-90">
-              Criar conta gratuitamente
-            </Link>
-            <Link href="/login" className="interactive-press rounded-2xl border border-white/30 px-5 py-3 text-sm font-bold text-white hover:bg-white/10">
-              Entrar agora
-            </Link>
+        <article className="relative overflow-hidden reveal-up rounded-3xl bg-[image:var(--brand-gradient)] p-8 text-white shadow-[0_40px_80px_-30px_rgba(15,23,42,0.75)] lg:p-12">
+          <div className="absolute -top-24 -left-24 h-64 w-64 rounded-full bg-[#6aa1ff] opacity-25 blur-3xl" />
+          <div className="absolute -bottom-24 -right-24 h-64 w-64 rounded-full bg-[#1b3a8a] opacity-40 blur-3xl" />
+          
+          <div className="relative z-10">
+            <p className="text-xs font-bold uppercase tracking-[0.2em] text-blue-200/80">Controle inteligente de estoque</p>
+            <h2 className="mt-5 max-w-xl text-5xl font-black leading-[1.1] tracking-tight lg:text-6xl">
+              Controle total do seu estoque, <span className="text-transparent bg-clip-text bg-gradient-to-r from-blue-200 to-white">sem complicação.</span>
+            </h2>
+            <p className="mt-6 max-w-lg text-base leading-relaxed text-blue-100/80">
+              Gerencie produtos, categorias e movimentações em segundos com uma experiência fluida e previsão operacional em tempo real.
+            </p>
+            <div className="mt-8 flex flex-wrap gap-4">
+              <Link href="/register" className="rounded-xl bg-[image:var(--brand-gradient)] px-6 py-3.5 text-sm font-bold text-white shadow-[0_18px_35px_-20px_rgba(15,23,42,0.6)] ring-1 ring-white/15 transition-all hover:-translate-y-0.5">
+                Criar conta gratuitamente
+              </Link>
+              <Link href="/login" className="rounded-xl border border-white/30 bg-white/10 backdrop-blur-sm px-6 py-3.5 text-sm font-bold text-white transition-colors hover:bg-white/20">
+                Entrar agora
+              </Link>
+            </div>
           </div>
         </article>
 
@@ -90,11 +97,11 @@ export default function Home() {
         </article>
       </section>
 
-      <section className="surface-card mt-8 rounded-3xl border border-[var(--stroke)] bg-[var(--accent-soft)] px-6 py-10 text-center">
-        <p className="text-xs font-semibold uppercase tracking-[0.16em] text-[var(--muted)]">Pronto para evoluir sua operacao</p>
-        <h3 className="mt-2 text-3xl font-black text-[var(--ink)]">Leve sua gestao para o nivel profissional</h3>
-        <p className="mx-auto mt-2 max-w-xl text-sm text-[var(--muted)]">Use web e mobile com experiencia consistente, sincronizacao real e leitura operacional clara para tomar decisoes rapidas.</p>
-        <Link href="/register" className="interactive-press mt-6 inline-flex rounded-2xl bg-[var(--ink)] px-6 py-3 text-sm font-bold text-white hover:opacity-90">
+      <section className="surface-card mt-8 rounded-3xl border border-slate-100 bg-blue-50/40 px-6 py-10 text-center">
+        <p className="text-xs font-bold uppercase tracking-[0.16em] text-slate-500">Pronto para evoluir sua operacao</p>
+        <h3 className="mt-2 text-3xl font-bold tracking-tight text-[#0f172a]">Leve sua gestao para o nivel profissional</h3>
+        <p className="mx-auto mt-2 max-w-xl text-sm font-medium text-slate-500">Use web e mobile com experiencia consistente, sincronizacao real e leitura operacional clara para tomar decisoes rapidas.</p>
+        <Link href="/register" className="mt-6 inline-flex rounded-xl bg-[image:var(--brand-gradient)] px-6 py-3 text-sm font-bold text-white shadow-[0_16px_32px_-22px_rgba(15,23,42,0.75)] ring-1 ring-white/15 transition-all hover:-translate-y-0.5">
           Criar conta gratuitamente
         </Link>
       </section>

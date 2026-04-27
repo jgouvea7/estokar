@@ -33,11 +33,8 @@ export class AuthService {
     private readonly usersRepository: Repository<User>,
     private readonly jwtService: JwtService,
     private readonly configService: ConfigService,
-  ) {}
+  ) { }
 
-  // ──────────────────────────────────────────────────────────────
-  // REGISTER
-  // ──────────────────────────────────────────────────────────────
   async register(dto: RegisterDto): Promise<Omit<User, 'password' | 'refreshToken'>> {
     const existing = await this.usersRepository.findOneBy({ email: dto.email });
     if (existing) {
@@ -60,11 +57,7 @@ export class AuthService {
     return safeUser;
   }
 
-  // ──────────────────────────────────────────────────────────────
-  // LOGIN
-  // ──────────────────────────────────────────────────────────────
   async login(dto: LoginDto): Promise<AuthTokens & { user: Partial<User> }> {
-    // Select password explicitly (marked select:false in entity)
     const user = await this.usersRepository.findOne({
       where: { email: dto.email },
       select: ['id', 'name', 'email', 'password'],
@@ -92,9 +85,6 @@ export class AuthService {
     };
   }
 
-  // ──────────────────────────────────────────────────────────────
-  // REFRESH TOKENS
-  // ──────────────────────────────────────────────────────────────
   async refreshTokens(
     userId: string,
     refreshToken: string,
@@ -118,16 +108,10 @@ export class AuthService {
     return tokens;
   }
 
-  // ──────────────────────────────────────────────────────────────
-  // LOGOUT
-  // ──────────────────────────────────────────────────────────────
   async logout(userId: string): Promise<void> {
     await this.usersRepository.update(userId, { refreshToken: undefined });
   }
 
-  // ──────────────────────────────────────────────────────────────
-  // GOOGLE OAUTH LOGIN
-  // ──────────────────────────────────────────────────────────────
   async googleLogin(googleUser: GoogleUser): Promise<AuthTokens & { user: Partial<User> }> {
     if (!googleUser.email) {
       throw new UnauthorizedException('Não foi possível obter e-mail da conta Google.');
@@ -161,9 +145,6 @@ export class AuthService {
     };
   }
 
-  // ──────────────────────────────────────────────────────────────
-  // GET PROFILE
-  // ──────────────────────────────────────────────────────────────
   async getProfile(userId: string): Promise<User> {
     const user = await this.usersRepository.findOne({
       where: { id: userId },
@@ -175,9 +156,6 @@ export class AuthService {
     return user;
   }
 
-  // ──────────────────────────────────────────────────────────────
-  // PRIVATE HELPERS
-  // ──────────────────────────────────────────────────────────────
   private async generateTokens(
     userId: string,
     email: string,

@@ -1,8 +1,9 @@
 "use client";
 
-import { useMemo, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
+import { createPortal } from 'react-dom';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
-import { MoreVertical, Plus, Search, TrendingDown, TrendingUp, Image as ImageIcon, Trash2, Edit2 } from 'lucide-react';
+import { MoreVertical, Plus, Search, TrendingDown, TrendingUp, Image as ImageIcon, Trash2, Edit2, PackageSearch } from 'lucide-react';
 import toast from 'react-hot-toast';
 import {
   createCategory,
@@ -248,81 +249,97 @@ export default function ProductsPage() {
   }
 
   return (
-    <div className="space-y-4">
-      <section className="surface-card rounded-2xl border border-stroke p-5 lg:p-6">
-        <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
-          <div>
-            <h3 className="text-2xl font-black tracking-tight text-ink">Produtos</h3>
-            <p className="mt-1 text-xs font-medium text-muted">Fluxo direto com backend e atualizacao imediata.</p>
-          </div>
-          <div className="flex items-center gap-2">
-            <button
-              type="button"
-              onClick={openCreateProduct}
-              className="interactive-press flex h-10 items-center justify-center gap-2 rounded-xl bg-accent px-4 text-xs font-bold text-white hover:brightness-110">
-              <Plus size={16} strokeWidth={3} />
-              Novo
-            </button>
-          </div>
+    <div className="space-y-8 reveal-up">
+      <section className="flex flex-col gap-6 lg:flex-row lg:items-end lg:justify-start lg:gap-8">
+        <div>
+          <h3 className="text-3xl font-bold tracking-tight text-[#0f172a]">Gerenciamento de Produtos</h3>
+          <p className="mt-2 text-sm font-medium text-slate-500">Visualize, edite e acompanhe o volume total do seu estoque.</p>
         </div>
+        <button
+          type="button"
+          onClick={openCreateProduct}
+          className="group flex h-12 items-center justify-center gap-2 rounded-xl bg-[image:var(--brand-gradient)] px-6 text-sm font-bold text-white shadow-[0_18px_40px_-20px_rgba(15,23,42,0.7)] ring-1 ring-white/15 transition-all hover:-translate-y-0.5 hover:shadow-[0_22px_45px_-20px_rgba(15,23,42,0.85)]">
+          <Plus size={18} strokeWidth={2.5} />
+          Novo Produto
+        </button>
+      </section>
 
-        <div className="mt-6 flex flex-col gap-3">
-          <div className="flex h-11 items-center gap-2 rounded-xl border border-stroke bg-white px-4 focus-within:border-accent">
-            <Search size={18} className="text-muted" />
+      <section className="surface-card p-6">
+        <div className="flex flex-col gap-6">
+          <div className="flex flex-1 items-center gap-3 rounded-xl border border-slate-200 bg-slate-50/50 px-4 py-3 transition-all focus-within:border-blue-400 focus-within:bg-white focus-within:ring-4 focus-within:ring-blue-100/50">
+            <Search size={20} className="text-slate-400" />
             <input
               value={query}
               onChange={(event) => setQuery(event.target.value)}
-              placeholder="Buscar produto ou descricao"
-              className="w-full bg-transparent text-sm font-medium text-ink outline-none placeholder:text-muted/60"
+              placeholder="Pesquisar por nome ou descrição..."
+              className="w-full bg-transparent text-sm font-medium text-[#0f172a] outline-none placeholder:text-slate-400"
             />
           </div>
 
-          <div className="flex flex-wrap items-center gap-1.5">
-            <CategoryChip active={categoryFilter === 'Todos'} label="Todos" onClick={() => setCategoryFilter('Todos')} />
-            {categories.map((category) => (
-              <div key={category.id} className="relative flex items-center gap-1.5">
-                <CategoryChip
-                  active={categoryFilter === category.name}
-                  label={category.name}
-                  onClick={() => setCategoryFilter(category.name)}
-                />
-                <button
-                  type="button"
-                  onClick={() => setOpenCategoryMenuId((current) => (current === category.id ? null : category.id))}
-                  className="interactive-press flex h-8 w-8 items-center justify-center rounded-lg border border-stroke bg-white text-muted hover:bg-soft">
-                  <MoreVertical size={14} />
-                </button>
+          <div className="flex flex-wrap items-center gap-2">
+            <CategoryChip active={categoryFilter === 'Todos'} label="Todos os itens" onClick={() => setCategoryFilter('Todos')} />
+            {categories.map((category) => {
+              const isActive = categoryFilter === category.name;
 
-                {openCategoryMenuId === category.id ? (
-                  <div className="surface-card absolute left-0 top-10 z-20 w-36 rounded-xl border border-stroke p-1.5 shadow-xl">
+              return (
+                <div key={category.id} className="group relative">
+                  <div
+                    className={`flex items-center rounded-full border px-1 shadow-sm transition-all ${isActive
+                      ? 'border-transparent bg-[image:var(--brand-gradient)] text-white shadow-[0_18px_35px_-22px_rgba(15,23,42,0.8)] ring-1 ring-white/15'
+                      : 'border-slate-200 bg-white/70 text-slate-600 hover:border-slate-300 hover:bg-white'
+                      }`}>
                     <button
                       type="button"
-                      onClick={() => {
-                        setCategoryEditing(category);
-                        setCategoryDraft(category.name);
-                        setOpenCategoryMenuId(null);
-                        setShowCategoryModal(true);
-                      }}
-                      className="flex w-full items-center gap-2 rounded-lg px-2 py-1.5 text-left text-xs font-bold hover:bg-soft">
-                      <Edit2 size={12} />
-                      Editar
+                      onClick={() => setCategoryFilter(category.name)}
+                      className={`h-9 px-4 text-sm font-semibold transition-colors ${isActive
+                        ? 'text-white'
+                        : 'text-slate-600 hover:text-[#0f172a]'
+                        }`}>
+                      {category.name}
                     </button>
+                    <span className={`h-5 w-px ${isActive ? 'bg-white/30' : 'bg-slate-200'}`} />
                     <button
                       type="button"
-                      onClick={() => {
-                        const confirmed = window.confirm('Tem certeza que deseja excluir esta categoria?');
-                        setOpenCategoryMenuId(null);
-                        if (!confirmed) return;
-                        deleteCategoryMutation.mutate(category.id);
-                      }}
-                      className="flex w-full items-center gap-2 rounded-lg px-2 py-1.5 text-left text-xs font-bold text-critical hover:bg-critical-soft">
-                      <Trash2 size={12} />
-                      Excluir
+                      onClick={() => setOpenCategoryMenuId((current) => (current === category.id ? null : category.id))}
+                      className={`flex h-9 w-9 items-center justify-center rounded-full transition-colors ${isActive
+                        ? 'text-white/80 hover:text-white'
+                        : 'text-slate-400 hover:text-[#0f172a]'
+                        }`}>
+                      <MoreVertical size={14} />
                     </button>
                   </div>
-                ) : null}
-              </div>
-            ))}
+
+                  {openCategoryMenuId === category.id ? (
+                    <div className="absolute left-0 top-11 z-20 w-40 overflow-hidden rounded-xl border border-slate-200 bg-white p-1 shadow-xl">
+                      <button
+                        type="button"
+                        onClick={() => {
+                          setCategoryEditing(category);
+                          setCategoryDraft(category.name);
+                          setOpenCategoryMenuId(null);
+                          setShowCategoryModal(true);
+                        }}
+                        className="flex w-full items-center gap-2 rounded-lg px-3 py-2 text-left text-xs font-bold text-slate-700 hover:bg-slate-50">
+                        <Edit2 size={14} />
+                        Editar Nome
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => {
+                          const confirmed = window.confirm('Tem certeza que deseja excluir esta categoria?');
+                          setOpenCategoryMenuId(null);
+                          if (!confirmed) return;
+                          deleteCategoryMutation.mutate(category.id);
+                        }}
+                        className="flex w-full items-center gap-2 rounded-lg px-3 py-2 text-left text-xs font-bold text-rose-600 hover:bg-rose-50">
+                        <Trash2 size={14} />
+                        Excluir Categoria
+                      </button>
+                    </div>
+                  ) : null}
+                </div>
+              );
+            })}
             <button
               type="button"
               onClick={() => {
@@ -330,88 +347,101 @@ export default function ProductsPage() {
                 setCategoryDraft('');
                 setShowCategoryModal(true);
               }}
-              className="interactive-press flex h-8 w-8 items-center justify-center rounded-full border border-stroke bg-white text-ink hover:bg-soft">
-              <Plus size={14} strokeWidth={3} />
+              className="flex h-9 w-9 items-center justify-center rounded-full bg-[image:var(--brand-gradient)] text-white shadow-[0_12px_28px_-18px_rgba(15,23,42,0.8)] ring-1 ring-white/15 transition-all hover:-translate-y-0.5">
+              <Plus size={18} strokeWidth={2.5} />
             </button>
           </div>
         </div>
       </section>
 
-      <section className="grid gap-3">
+      <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-1">
         {productsQuery.isLoading ? <ProductsSkeleton /> : null}
 
         {!productsQuery.isLoading && !filteredProducts.length ? (
-          <div className="surface-card rounded-2xl border border-stroke px-4 py-12 text-center">
-            <p className="text-sm font-bold text-ink">Nenhum produto encontrado</p>
+          <div className="surface-card flex flex-col items-center justify-center border-dashed border-slate-200 bg-transparent py-20 text-center">
+            <div className="mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-slate-50 text-slate-300">
+              <PackageSearch size={32} />
+            </div>
+            <p className="text-base font-bold text-[#0f172a]">Nenhum produto encontrado</p>
+            <p className="mt-1 text-sm font-medium text-slate-500">Tente ajustar sua busca ou filtros.</p>
           </div>
         ) : null}
 
         {filteredProducts.map((product) => {
-          const categoryName = product.category?.name ?? categoryMap.get(product.categoryId ?? '')?.name ?? 'Nao categorizado';
+          const categoryName = product.category?.name ?? categoryMap.get(product.categoryId ?? '')?.name ?? 'Sem Categoria';
           const critical = product.quantity <= 0;
           const low = product.quantity > 0 && product.quantity <= 5;
-          const statusLabel = critical ? 'Critico' : low ? 'Baixo' : 'OK';
+          const statusLabel = critical ? 'Sem Estoque' : low ? 'Estoque Baixo' : 'Estoque OK';
           const statusClass = critical
-            ? 'bg-critical-soft text-critical'
+            ? 'bg-rose-100 text-rose-700'
             : low
-              ? 'bg-low-soft text-low'
-              : 'bg-ok-soft text-ok';
+              ? 'bg-orange-100 text-orange-700'
+              : 'bg-emerald-100 text-emerald-700';
 
           return (
-            <article 
-              key={product.id} 
+            <article
+              key={product.id}
               onClick={() => openEditProduct(product)}
-              className="surface-card surface-card-hover group relative flex cursor-pointer flex-col gap-4 rounded-2xl border border-stroke p-4 sm:flex-row sm:items-center">
-              <div className="relative h-20 w-20 shrink-0 overflow-hidden rounded-xl bg-soft shadow-inner">
+              className="surface-card group relative flex cursor-pointer flex-col gap-6 p-5 transition-shadow hover:shadow-lg sm:flex-row sm:items-center sm:gap-8">
+              <div className="relative h-24 w-24 shrink-0 overflow-hidden rounded-2xl bg-slate-50 shadow-inner">
                 {product.image && product.image !== NO_PHOTO_IMAGE ? (
-                  <img src={product.image} alt={product.name} className="h-full w-full object-cover" />
+                  <img src={product.image} alt={product.name} className="h-full w-full object-cover transition-transform group-hover:scale-110" />
                 ) : (
-                  <div className="grid h-full w-full place-items-center text-muted/40">
-                    <ImageIcon size={24} />
+                  <div className="grid h-full w-full place-items-center text-slate-300">
+                    <ImageIcon size={32} strokeWidth={1.5} />
                   </div>
                 )}
               </div>
 
-              <div className="flex flex-1 flex-col justify-center">
-                <div className="flex items-start justify-between gap-3">
-                  <div className="min-w-0 flex-1">
-                    <h5 className="truncate text-lg font-black leading-tight text-ink">{product.name}</h5>
-                    <p className="mt-0.5 line-clamp-1 text-xs font-medium text-muted">{product.description}</p>
+              <div className="flex flex-1 flex-col">
+                <div className="flex items-start justify-between gap-4">
+                  <div>
+                    <div className="mb-1 flex items-center gap-2">
+                      <span className="text-[10px] font-bold uppercase tracking-wider text-slate-400">{categoryName}</span>
+                      <span className="h-1 w-1 rounded-full bg-slate-300" />
+                      <span className={`rounded-full px-2 py-0.5 text-[10px] font-bold tracking-tight ${statusClass}`}>
+                        {statusLabel}
+                      </span>
+                    </div>
+                    <h5 className="text-xl font-bold tracking-tight text-[#0f172a]">{product.name}</h5>
+                    <p className="mt-1 line-clamp-1 text-sm font-medium text-slate-500">{product.description}</p>
                   </div>
-                  <span className={`shrink-0 rounded-full px-2 py-0.5 text-[10px] font-black tracking-wider uppercase ${statusClass}`}>
-                    {statusLabel}
-                  </span>
+                  <div className="flex flex-col items-end gap-1">
+                    <span className="text-2xl font-bold tracking-tight text-blue-600">{product.quantity}</span>
+                    <span className="text-[10px] font-bold uppercase tracking-widest text-slate-400">Unidades</span>
+                  </div>
                 </div>
 
-                <div className="mt-3 flex flex-wrap items-center gap-2">
-                  <span className="rounded-lg bg-soft px-2 py-1 text-[10px] font-bold text-ink/70">{categoryName}</span>
-                  <div className="h-1 w-1 rounded-full bg-stroke" />
-                  <span className="text-xs font-black text-accent">{product.quantity} un.</span>
-                </div>
-
-                <div className="mt-4 flex items-center gap-2">
-                  <button
-                    type="button"
-                    onClick={(e) => { e.stopPropagation(); handleQuickStock(product, 'in'); }}
-                    disabled={quickStockMutation.isPending}
-                    className="interactive-press flex h-9 items-center justify-center gap-1.5 rounded-xl bg-ok-soft px-4 text-xs font-black text-ok transition hover:bg-ok hover:text-white disabled:opacity-60">
-                    <TrendingUp size={14} strokeWidth={3} />
-                    +1
-                  </button>
-                  <button
-                    type="button"
-                    onClick={(e) => { e.stopPropagation(); handleQuickStock(product, 'out'); }}
-                    disabled={quickStockMutation.isPending}
-                    className="interactive-press flex h-9 items-center justify-center gap-1.5 rounded-xl bg-critical-soft px-4 text-xs font-black text-critical transition hover:bg-critical hover:text-white disabled:opacity-60">
-                    <TrendingDown size={14} strokeWidth={3} />
-                    -1
-                  </button>
+                <div className="mt-6 flex items-center justify-between border-t border-slate-100 pt-4">
+                  <div className="flex items-center gap-2">
+                    <button
+                      type="button"
+                      onClick={(e) => { e.stopPropagation(); handleQuickStock(product, 'in'); }}
+                      disabled={quickStockMutation.isPending}
+                      className="flex h-10 items-center gap-2 rounded-xl bg-emerald-50 px-5 text-sm font-bold text-emerald-600 transition-all hover:bg-emerald-500 hover:text-white disabled:opacity-50">
+                      <Plus size={16} strokeWidth={3} />
+                      Entrada
+                    </button>
+                    <button
+                      type="button"
+                      onClick={(e) => { e.stopPropagation(); handleQuickStock(product, 'out'); }}
+                      disabled={quickStockMutation.isPending}
+                      className="flex h-10 items-center gap-2 rounded-xl bg-rose-50 px-5 text-sm font-bold text-rose-600 transition-all hover:bg-rose-500 hover:text-white disabled:opacity-50">
+                      <TrendingDown size={16} strokeWidth={3} />
+                      Saída
+                    </button>
+                  </div>
+                  <div className="flex items-center gap-2 opacity-0 transition-opacity group-hover:opacity-100">
+                    <span className="text-xs font-bold text-slate-400">Clique para editar</span>
+                    <Edit2 size={14} className="text-slate-300" />
+                  </div>
                 </div>
               </div>
             </article>
           );
         })}
-      </section>
+      </div>
+
 
       {showProductModal ? (
         <Modal title={productEditing ? 'Editar produto' : 'Novo produto'} onClose={() => setShowProductModal(false)}>
@@ -439,7 +469,7 @@ export default function ProductsPage() {
               placeholder="Ex: Boneco de acao 20cm"
               onChange={(value) => setForm((current) => ({ ...current, description: value }))}
             />
-            
+
             <div className="grid grid-cols-2 gap-3">
               <Input
                 label="Quantidade"
@@ -461,7 +491,7 @@ export default function ProductsPage() {
               <select
                 value={form.categoryId}
                 onChange={(event) => setForm((current) => ({ ...current, categoryId: event.target.value }))}
-                className="w-full rounded-xl border border-stroke bg-white px-3 py-2.5 text-xs font-bold text-ink outline-none focus:border-accent">
+                className="w-full rounded-xl border border-[#e2e8f0] bg-[#f8fafc] px-4 py-3 text-sm font-medium text-[#0f172a] outline-none transition-all focus:border-blue-400 focus:bg-white focus:ring-4 focus:ring-blue-100/50">
                 <option value="">Nenhuma</option>
                 {categories.map((category) => (
                   <option key={category.id} value={category.id}>
@@ -471,21 +501,21 @@ export default function ProductsPage() {
               </select>
             </div>
 
-            <div className="pt-2 space-y-2">
+            <div className="pt-4 space-y-3">
               <button
                 type="button"
                 onClick={handleSaveProduct}
                 disabled={createProductMutation.isPending || updateProductMutation.isPending}
-                className="interactive-press w-full rounded-xl bg-ink py-3 text-xs font-black text-white hover:opacity-90 disabled:opacity-60">
-                {productEditing ? 'Salvar alteracoes' : 'Criar produto'}
+                className="w-full rounded-2xl bg-[image:var(--brand-gradient)] py-4 text-sm font-bold text-white shadow-[0_18px_35px_-20px_rgba(15,23,42,0.75)] ring-1 ring-white/15 transition-all hover:-translate-y-0.5 hover:brightness-110 disabled:opacity-60">
+                {productEditing ? 'Salvar alterações' : 'Criar produto'}
               </button>
 
               {productEditing && (
                 <button
                   type="button"
                   onClick={() => handleDeleteProduct(productEditing)}
-                  className="w-full rounded-xl py-2 text-[10px] font-bold text-critical/60 hover:text-critical">
-                  Apagar produto
+                  className="w-full rounded-xl py-2 text-xs font-bold text-slate-400 transition-colors hover:text-rose-600">
+                  Apagar produto permanentemente
                 </button>
               )}
             </div>
@@ -518,8 +548,8 @@ export default function ProductsPage() {
                 }
                 categoryMutation.mutate({ id: categoryEditing?.id, name: value });
               }}
-              className="interactive-press w-full rounded-xl bg-ink py-3 text-xs font-black text-white hover:opacity-90">
-              {categoryMutation.isPending ? 'Salvando...' : categoryEditing ? 'Salvar' : 'Criar'}
+              className="w-full rounded-2xl bg-[image:var(--brand-gradient)] py-4 text-sm font-bold text-white shadow-[0_18px_35px_-20px_rgba(15,23,42,0.75)] ring-1 ring-white/15 transition-all hover:-translate-y-0.5 hover:brightness-110">
+              {categoryMutation.isPending ? 'Salvando...' : categoryEditing ? 'Salvar Alterações' : 'Criar Categoria'}
             </button>
           </div>
         </Modal>
@@ -541,9 +571,9 @@ function CategoryChip({
     <button
       type="button"
       onClick={onClick}
-      className={`interactive-press h-8 rounded-full border px-4 text-xs font-bold transition-all ${active
-        ? 'border-ink bg-ink text-white'
-        : 'border-stroke bg-white text-ink hover:bg-soft'
+      className={`h-9 rounded-full border px-4 text-sm font-semibold transition-all ${active
+        ? 'border-transparent bg-[image:var(--brand-gradient)] text-white shadow-[0_16px_32px_-22px_rgba(15,23,42,0.7)] ring-1 ring-white/15'
+        : 'border-slate-200 bg-white/70 text-slate-600 hover:border-slate-300 hover:bg-white hover:text-[#0f172a]'
         }`}>
       {label}
     </button>
@@ -559,21 +589,34 @@ function Modal({
   onClose: () => void;
   title: string;
 }) {
-  return (
-    <div 
-      className="fixed inset-0 z-50 flex items-center justify-center bg-ink/40 backdrop-blur-sm p-4 overflow-y-auto"
-      onClick={onClose}
-    >
-      <div 
-        className="surface-card w-full max-w-xl rounded-2xl border border-stroke p-6 lg:p-8 shadow-2xl"
+  useEffect(() => {
+    document.body.style.overflow = 'hidden';
+    return () => {
+      document.body.style.overflow = 'unset';
+    };
+  }, []);
+
+  if (typeof document === 'undefined') {
+    return null;
+  }
+
+  return createPortal(
+    <div className="fixed inset-0 z-[70] flex items-center justify-center p-4 sm:p-6">
+      <div
+        className="absolute inset-0 bg-[rgba(11,18,32,0.55)] backdrop-blur-[6px]"
+        onClick={onClose}
+      />
+      <div
+        className="relative z-[80] w-full max-w-[720px] max-h-[85vh] overflow-y-auto rounded-3xl bg-white p-6 sm:p-8 shadow-[var(--elevated-shadow-strong)]"
         onClick={(e) => e.stopPropagation()}
       >
         <div className="mb-6">
-          <h4 className="text-xl font-black text-ink">{title}</h4>
+          <h4 className="text-xl font-bold tracking-tight text-[#0f172a]">{title}</h4>
         </div>
         {children}
       </div>
-    </div>
+    </div>,
+    document.body,
   );
 }
 
@@ -592,14 +635,14 @@ function Input({
   value: string;
 }) {
   return (
-    <div className="flex flex-col gap-1.5">
-      <label className="text-xs font-bold text-ink">{label}</label>
+    <div className="flex flex-col gap-2">
+      <label className="text-xs font-bold text-[#0f172a] uppercase tracking-wider">{label}</label>
       <input
         type={type}
         value={value}
         placeholder={placeholder}
         onChange={(event) => onChange(event.target.value)}
-        className="w-full rounded-xl border border-stroke bg-white px-3 py-2.5 text-xs font-bold text-ink outline-none transition focus:border-accent"
+        className="w-full rounded-xl border border-[#e2e8f0] bg-[#f8fafc] px-4 py-3.5 text-sm font-medium text-[#0f172a] outline-none transition-all placeholder:text-slate-400 focus:border-blue-400 focus:bg-white focus:ring-4 focus:ring-blue-100/50"
       />
     </div>
   );
