@@ -15,6 +15,7 @@ async function bootstrap() {
         'http://localhost:3000',
         'http://backend:3000',
         'http://localhost:8081',
+        'https://estokar-beta.vercel.app',
       ];
 
       if (!origin) return callback(null, true);

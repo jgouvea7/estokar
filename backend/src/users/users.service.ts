@@ -5,8 +5,8 @@ import {
   NotFoundException,
 } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Category } from 'src/categories/entities/category.entity';
-import { Product } from 'src/products/entities/product.entity';
+import { Category } from '../categories/entities/category.entity';
+import { Product } from '../products/entities/product.entity';
 import { UpdateUserDto } from './dto/update-user.dto';
 import { User } from './entities/user.entity';
 import { Repository } from 'typeorm';
