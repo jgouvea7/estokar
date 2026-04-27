@@ -1,17 +1,13 @@
 import type { Metadata } from "next";
-import { Geist, Geist_Mono } from "next/font/google";
+import { Geist } from "next/font/google";
 import { Toaster } from 'react-hot-toast';
 import { DisableServiceWorker } from '@/components/disable-service-worker';
 import { QueryProvider } from '@/providers/query-provider';
 import "./globals.css";
+import { AuthProvider } from "@/providers/auth-provider";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
-  subsets: ["latin"],
-});
-
-const geistMono = Geist_Mono({
-  variable: "--font-geist-mono",
   subsets: ["latin"],
 });
 
@@ -37,7 +33,9 @@ export default function RootLayout({
       <body className="min-h-full flex flex-col">
         <DisableServiceWorker />
         <QueryProvider>
-          {children}
+          <AuthProvider>
+            {children}
+          </AuthProvider>
           <Toaster position="top-right" toastOptions={{ duration: 3200 }} />
         </QueryProvider>
       </body>

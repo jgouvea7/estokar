@@ -2056,7 +2056,7 @@ function SettingsSection({ onNavigate }: { onNavigate: (section: AppSection) => 
           <SettingsItem
             icon="smartphone-outline"
             label="Versao do aplicativo"
-            value="v1.2.4 (Build 20240422)"
+            value="v1.0.0 (Build 20260427)"
           />
         </View>
       </View>
