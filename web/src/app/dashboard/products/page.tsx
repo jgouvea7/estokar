@@ -3,7 +3,7 @@
 import { useEffect, useMemo, useState } from 'react';
 import { createPortal } from 'react-dom';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
-import { MoreVertical, Plus, Search, TrendingDown, TrendingUp, Image as ImageIcon, Trash2, Edit2, PackageSearch } from 'lucide-react';
+import { MoreVertical, Plus, Search, TrendingDown, Image as ImageIcon, Trash2, Edit2, PackageSearch } from 'lucide-react';
 import toast from 'react-hot-toast';
 import {
   createCategory,

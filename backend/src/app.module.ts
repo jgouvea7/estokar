@@ -39,6 +39,11 @@ import { StockMovementsModule } from './stock-movements/stock-movements.module';
           ssl: {
             rejectUnauthorized: false,
           },
+          extra: {
+            ssl: {
+              rejectUnauthorized: false,
+            },
+          },
         }
         : {
           host: process.env.DB_HOST,
@@ -50,7 +55,7 @@ import { StockMovementsModule } from './stock-movements/stock-movements.module';
 
       autoLoadEntities: true,
       synchronize: (process.env.DB_SYNCHRONIZE ?? 'false') === 'true',
-      logging: process.env.NODE_ENV === 'development',
+      logging: true,
     }),
     UsersModule,
     ProductsModule,

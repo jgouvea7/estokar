@@ -1,7 +1,7 @@
 "use client";
 
 import Link from 'next/link';
-import { Shield, FileText, Info, Smartphone, ChevronRight } from 'lucide-react';
+import { Shield, FileText, Info, Smartphone, ChevronRight, LucideIcon } from 'lucide-react';
 
 export default function SettingsPage() {
   return (
@@ -86,7 +86,7 @@ export default function SettingsPage() {
   );
 }
 
-function SettingsItem({ icon: Icon, label, value, color }: { icon: any, label: string, value: string, color: string }) {
+function SettingsItem({ icon: Icon, label, value, color }: { icon: LucideIcon, label: string, value: string, color: string }) {
   const colorMap: Record<string, string> = {
     blue: 'bg-blue-50 text-blue-600',
     slate: 'bg-slate-100 text-slate-600',
@@ -110,7 +110,7 @@ function SettingsItem({ icon: Icon, label, value, color }: { icon: any, label: s
   );
 }
 
-function SettingsLink({ icon: Icon, label, description, href, color }: { icon: any, label: string, description: string, href: string, color: string }) {
+function SettingsLink({ icon: Icon, label, description, href, color }: { icon: LucideIcon, label: string, description: string, href: string, color: string }) {
   const colorMap: Record<string, string> = {
     blue: 'bg-blue-50 text-blue-600',
     slate: 'bg-slate-100 text-slate-600',
