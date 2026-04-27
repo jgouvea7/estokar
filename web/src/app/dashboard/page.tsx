@@ -103,16 +103,16 @@ export default function DashboardPage() {
       totalStock,
     };
 
-}, [historyItems, products]);
+  }, [historyItems, products]);
 
-const maxQuantity = useMemo(() => {
-  const allOp = [...insights.highestStock, ...insights.lowestStock];
-  return Math.max(...allOp.map((item) => item.quantity), 1);
-}, [insights.highestStock, insights.lowestStock]);
+  const maxQuantity = useMemo(() => {
+    const allOp = [...insights.highestStock, ...insights.lowestStock];
+    return Math.max(...allOp.map((item) => item.quantity), 1);
+  }, [insights.highestStock, insights.lowestStock]);
 
-if (!session) {
-  return null;
-}
+  if (!session) {
+    return null;
+  }
 
   return (
     <div className="space-y-8 reveal-up">
@@ -144,7 +144,6 @@ if (!session) {
           </header>
 
           <div className="space-y-10">
-            {/* Maiores Estoques */}
             {insights.highestStock.length > 0 && (
               <div className="space-y-4">
                 <div className="flex items-center gap-2">
@@ -164,7 +163,6 @@ if (!session) {
               </div>
             )}
 
-            {/* Menores Estoques */}
             {insights.lowestStock.length > 0 && (
               <div className="space-y-4">
                 <div className="flex items-center gap-2">
@@ -246,9 +244,9 @@ function OperationalRow({
         </span>
       </div>
       <div className="h-2 w-full overflow-hidden rounded-full bg-slate-100">
-        <div 
-          className={`h-full rounded-full transition-all duration-1000 ${color === 'emerald' ? 'bg-emerald-500' : 'bg-rose-500'}`} 
-          style={{ width }} 
+        <div
+          className={`h-full rounded-full transition-all duration-1000 ${color === 'emerald' ? 'bg-emerald-500' : 'bg-rose-500'}`}
+          style={{ width }}
         />
       </div>
     </article>

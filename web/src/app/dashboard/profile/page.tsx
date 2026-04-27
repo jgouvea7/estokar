@@ -90,8 +90,7 @@ export default function ProfilePage() {
               {(session.user.name?.trim().slice(0, 1) || 'E').toUpperCase()}
             </div>
             <h4 className="text-lg font-bold text-[#0f172a]">{session.user.name}</h4>
-            <p className="text-xs font-medium text-slate-500 uppercase tracking-widest mt-1">Administrador</p>
-            
+
             <div className="mt-8 flex flex-col gap-2">
               <div className="rounded-xl bg-slate-50 p-3 text-left">
                 <p className="text-[10px] font-bold text-slate-400 uppercase">Desde</p>

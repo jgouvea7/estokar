@@ -262,7 +262,7 @@ export default function AuthScreen() {
         typeof parsed.queryParams?.access_token === 'string'
           ? parsed.queryParams.access_token
           : '';
-  
+
 
       if (!accessToken) {
         throw new Error('Nao foi possivel concluir o login com Google.');
@@ -1111,10 +1111,10 @@ function ProductsSection({
 
       <View style={styles.productList}>
         {visibleProducts.map((product) => (
-          <ProductCard 
-            key={product.id} 
-            product={product} 
-            onPress={() => openEditModal(product)} 
+          <ProductCard
+            key={product.id}
+            product={product}
+            onPress={() => openEditModal(product)}
             onMoveStock={(type) => onMoveStock(product, type, 1)}
           />
         ))}
@@ -1440,17 +1440,17 @@ type ProductEditorModalProps = {
   };
 };
 
-function ProductCard({ 
-  onPress, 
-  product, 
-  onMoveStock 
-}: { 
-  onPress: () => void; 
-  product: Product; 
+function ProductCard({
+  onPress,
+  product,
+  onMoveStock
+}: {
+  onPress: () => void;
+  product: Product;
   onMoveStock?: (type: StockMovement['type']) => void;
 }) {
   const status = getStockStatus(product);
-  
+
   return (
     <Pressable
       accessibilityRole="button"
@@ -1478,7 +1478,7 @@ function ProductCard({
             </View>
           </View>
           <Text numberOfLines={1} style={styles.productDescription}>{product.description}</Text>
-          
+
           <View style={styles.productCardFooter}>
             <View style={styles.productActionsRow}>
               <Pressable
@@ -1547,7 +1547,7 @@ function MovementPanel({ compact, movements }: { compact?: boolean; movements: S
               </View>
               <View style={{ height: 1, flex: 1, backgroundColor: theme.stroke }} />
             </View>
-            
+
             <View style={styles.timeline}>
               <View style={styles.timelineLine} />
               {items.map((movement) => (
@@ -1658,7 +1658,7 @@ function ProfileSection({
           <Text style={styles.profileAvatarText}>{getInitial(user.name)}</Text>
         </View>
         <Text style={styles.profileName}>{user.name}</Text>
-        <Text style={styles.profileRole}>{user.role ?? 'Administrador'}</Text>
+        <Text style={styles.profileRole}>{user.role}</Text>
 
         <View style={styles.profileMetaGrid}>
           <View style={styles.profileMetaCard}>
@@ -1877,14 +1877,14 @@ function OperationalRow({ color, maxQuantity, product }: { color: string; maxQua
   );
 }
 
-function MetricCard({ 
-  icon, 
-  label, 
-  value, 
-  color = 'blue' 
-}: { 
-  icon: AppIconName; 
-  label: string; 
+function MetricCard({
+  icon,
+  label,
+  value,
+  color = 'blue'
+}: {
+  icon: AppIconName;
+  label: string;
   value: string;
   color?: 'blue' | 'orange' | 'red' | 'green' | 'slate' | 'purple';
 }) {
@@ -1944,7 +1944,7 @@ function getOperationalProducts(products: Product[]): { highest: Product[]; lowe
   const highest = [...products]
     .sort((a, b) => b.quantity - a.quantity)
     .slice(0, 3);
-  
+
   const selectedIds = new Set(highest.map((product) => product.id));
 
   const lowest = products
@@ -2114,16 +2114,16 @@ function TermsSection({ onBack }: { onBack: () => void }) {
         <AppIcon name="chevron-back" size={20} color={theme.ink} />
         <Text style={styles.backButtonText}>Voltar</Text>
       </Pressable>
-      
+
       <View style={styles.panel}>
         <Text style={styles.legalTitle}>Termos de Uso</Text>
         <Text style={styles.legalSubtitle}>ESTOKAR INVENTORY OS</Text>
-        
+
         <View style={styles.legalContent}>
           <LegalBlock title="1. Aceitacao dos Termos">
             Ao acessar e utilizar o Estokar Inventory OS, voce concorda em cumprir e estar vinculado aos seguintes termos e condicoes de uso. Este sistema e destinado exclusivamente para gestao de inventario empresarial.
           </LegalBlock>
-          
+
           <LegalBlock title="2. Responsabilidade do Usuario">
             O usuario e responsavel pela veracidade das informacoes inseridas no sistema. O uso indevido para fins nao relacionados a gestao de estoque e proibido.
           </LegalBlock>
@@ -2144,16 +2144,16 @@ function PrivacySection({ onBack }: { onBack: () => void }) {
         <AppIcon name="chevron-back" size={20} color={theme.ink} />
         <Text style={styles.backButtonText}>Voltar</Text>
       </Pressable>
-      
+
       <View style={styles.panel}>
         <Text style={styles.legalTitle}>Privacidade e Dados</Text>
         <Text style={styles.legalSubtitle}>ESTOKAR INVENTORY OS</Text>
-        
+
         <View style={styles.legalContent}>
           <LegalBlock title="1. Coleta de Dados">
             Coletamos dados de usuario (nome, email), dados de inventario (produtos, quantidades) e historico de movimentacoes para fins de gestao e auditoria.
           </LegalBlock>
-          
+
           <LegalBlock title="2. Uso e Protecao">
             Os dados sao usados apenas para relatorios e alertas. Utilizamos criptografia SSL/TLS e as senhas sao protegidas por algoritmos de hash.
           </LegalBlock>
@@ -2174,16 +2174,16 @@ function AboutSection({ onBack }: { onBack: () => void }) {
         <AppIcon name="chevron-back" size={20} color={theme.ink} />
         <Text style={styles.backButtonText}>Voltar</Text>
       </Pressable>
-      
+
       <View style={[styles.panel, { alignItems: 'center', paddingVertical: 32 }]}>
         <AppLogo size={80} />
         <Text style={[styles.legalTitle, { marginTop: 16 }]}>Estokar Inventory OS</Text>
         <Text style={[styles.legalSubtitle, { color: theme.accent }]}>VERSAO 1.2.4</Text>
-        
+
         <Text style={[styles.sectionSubtitle, { textAlign: 'center', marginTop: 16, paddingHorizontal: 20 }]}>
           Uma plataforma moderna e intuitiva desenhada para simplificar o controle de estoque com foco em agilidade e precisao.
         </Text>
-        
+
         <View style={{ width: '100%', gap: 16, marginTop: 32 }}>
           <AboutItem icon="flash-outline" title="Agilidade Real-time" />
           <AboutItem icon="people-outline" title="Gestao Colaborativa" />
@@ -2410,7 +2410,7 @@ const styles = StyleSheet.create({
   metricsGrid: { flexDirection: 'row', gap: 12 },
   modalBackdrop: { ...StyleSheet.absoluteFillObject, backgroundColor: 'rgba(15, 23, 42, 0.4)' },
   modalButtonRow: { flexDirection: 'row', gap: 16, marginTop: 6 },
-    modalSheetWrap: { width: '100%', alignItems: 'center' },
+  modalSheetWrap: { width: '100%', alignItems: 'center' },
   modalCancelButton: { alignItems: 'center', justifyContent: 'center', minHeight: 44 },
   modalCancelText: { color: theme.muted, fontSize: 14, fontWeight: '700' },
   modalHandle: { display: 'none' },

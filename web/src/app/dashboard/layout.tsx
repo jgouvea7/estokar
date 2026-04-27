@@ -104,7 +104,6 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
           <div className="flex items-center gap-4">
             <div className="text-right">
               <p className="text-sm font-bold text-[#0f172a]">{session.user.name}</p>
-              <p className="text-[10px] font-medium text-slate-500 uppercase tracking-wider">Administrador</p>
             </div>
             <Link
               href="/dashboard/profile"
