@@ -98,16 +98,16 @@ export default function Home() {
           </div>
         </article>
       </section>
-
+      <section className="surface-card mt-8 rounded-3xl border border-slate-100 bg-blue-50/40 px-6 py-10 text-center">
+        <p className="text-xs font-bold uppercase tracking-[0.16em] text-slate-500">Pronto para evoluir sua operacao</p>
+        <h3 className="mt-2 text-3xl font-bold tracking-tight text-[#0f172a]">Leve sua gestao para o nivel profissional</h3>
+        <p className="mx-auto mt-2 max-w-xl text-sm font-medium text-slate-500">Use web e mobile com experiencia consistente, sincronizacao real e leitura operacional clara para tomar decisoes rapidas.</p>
+        <Link href="/register" className="mt-6 inline-flex rounded-xl bg-[image:var(--brand-gradient)] px-6 py-3 text-sm font-bold text-white shadow-[0_16px_32px_-22px_rgba(15,23,42,0.75)] ring-1 ring-white/15 transition-all hover:-translate-y-0.5">
+          Criar conta gratuitamente
+        </Link>
+      </section>
       <footer className="mt-12 border-t border-slate-200 pt-8">
         <div className="grid grid-cols-2 gap-6 text-sm md:grid-cols-3">
-          <div>
-            <h4 className="font-bold text-slate-900">Produto</h4>
-            <nav className="mt-3 space-y-2">
-              <p className="text-slate-600 hover:text-slate-900 transition-colors"><Link href="#features">Features</Link></p>
-              <p className="text-slate-600 hover:text-slate-900 transition-colors"><Link href="#pricing">Preços</Link></p>
-            </nav>
-          </div>
           <div>
             <h4 className="font-bold text-slate-900">Empresa</h4>
             <nav className="mt-3 space-y-2">
@@ -127,15 +127,6 @@ export default function Home() {
           <p>© 2026 Estokar - Inventory OS. Todos os direitos reservados.</p>
         </div>
       </footer>
-
-      <section className="surface-card mt-8 rounded-3xl border border-slate-100 bg-blue-50/40 px-6 py-10 text-center">
-        <p className="text-xs font-bold uppercase tracking-[0.16em] text-slate-500">Pronto para evoluir sua operacao</p>
-        <h3 className="mt-2 text-3xl font-bold tracking-tight text-[#0f172a]">Leve sua gestao para o nivel profissional</h3>
-        <p className="mx-auto mt-2 max-w-xl text-sm font-medium text-slate-500">Use web e mobile com experiencia consistente, sincronizacao real e leitura operacional clara para tomar decisoes rapidas.</p>
-        <Link href="/register" className="mt-6 inline-flex rounded-xl bg-[image:var(--brand-gradient)] px-6 py-3 text-sm font-bold text-white shadow-[0_16px_32px_-22px_rgba(15,23,42,0.75)] ring-1 ring-white/15 transition-all hover:-translate-y-0.5">
-          Criar conta gratuitamente
-        </Link>
-      </section>
     </main>
 
   );
