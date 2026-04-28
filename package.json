@@ -1,10 +1,5 @@
 {
   "dependencies": {
     "typeorm": "^0.3.28"
-  },
-  "scripts": {
-    "build": "nest build",
-    "start": "node dist/main.js",
-    "start:prod": "node dist/main.js"
   }
 }

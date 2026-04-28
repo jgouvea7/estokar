@@ -2,6 +2,7 @@ import { DarkTheme, DefaultTheme, ThemeProvider } from '@react-navigation/native
 import { Stack } from 'expo-router';
 import { StatusBar } from 'expo-status-bar';
 import 'react-native-reanimated';
+import * as Sentry from '@sentry/react-native';
 
 import { useColorScheme } from '@/hooks/use-color-scheme';
 
@@ -21,7 +22,14 @@ const PremiumLightTheme = {
   },
 };
 
-export default function RootLayout() {
+const sentryDsn = process.env.EXPO_PUBLIC_SENTRY_DSN || process.env.SENTRY_DSN;
+
+Sentry.init({
+  dsn: sentryDsn,
+  tracesSampleRate: 1.0,
+});
+
+function RootLayout() {
   const colorScheme = useColorScheme();
 
   return (
@@ -34,3 +42,5 @@ export default function RootLayout() {
     </ThemeProvider>
   );
 }
+
+export default Sentry.wrap(RootLayout);

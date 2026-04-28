@@ -4,6 +4,7 @@ import * as ImagePicker from 'expo-image-picker';
 import * as ExpoAuthSession from 'expo-auth-session';
 import * as Linking from 'expo-linking';
 import * as WebBrowser from 'expo-web-browser';
+import * as Sentry from '@sentry/react-native';
 import {
   AlertCircle,
   ArrowDown,
@@ -192,7 +193,16 @@ export default function AuthScreen() {
   useEffect(() => {
     async function boot() {
       await initializeLocalDb();
-      setSession(await getSession());
+      const storedSession = await getSession();
+      setSession(storedSession);
+      if (storedSession?.user) {
+        Sentry.setUser({
+          id: storedSession.user.id,
+          email: storedSession.user.email,
+        });
+      } else {
+        Sentry.setUser(null);
+      }
       setBooting(false);
     }
 
@@ -211,10 +221,20 @@ export default function AuthScreen() {
       const nextSession = await login({ email, password });
       await saveSession(nextSession);
       setSession(nextSession);
+      Sentry.setUser({
+        id: nextSession.user.id,
+        email: nextSession.user.email,
+      });
     } catch (error) {
       const storedSession = await getSession();
       if (storedSession) {
         setSession(storedSession);
+        if (storedSession.user) {
+          Sentry.setUser({
+            id: storedSession.user.id,
+            email: storedSession.user.email,
+          });
+        }
         setAuthMessage('Sem conexao. Abrindo dados salvos no aparelho.');
       } else {
         setAuthMessage(error instanceof Error ? error.message : 'Nao foi possivel entrar.');
@@ -227,6 +247,7 @@ export default function AuthScreen() {
   async function handleLogout() {
     await clearSession();
     setSession(null);
+    Sentry.setUser(null);
   }
 
   async function handleDeleteAccount() {
@@ -236,6 +257,7 @@ export default function AuthScreen() {
     await clearLocalInventoryData();
     await clearSession();
     setSession(null);
+    Sentry.setUser(null);
   }
 
   async function handleGoogleLogin() {
@@ -287,6 +309,10 @@ export default function AuthScreen() {
 
       await saveSession(nextSession);
       setSession(nextSession);
+      Sentry.setUser({
+        id: nextSession.user.id,
+        email: nextSession.user.email,
+      });
     } catch (error) {
       setAuthMessage(
         error instanceof Error ? error.message : 'Nao foi possivel entrar com Google.',
@@ -1090,9 +1116,9 @@ function ProductsSection({
 
         <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.filterRow}>
           <Chip
-            active={categoryFilter === 'Todos'}
-            label="Todos"
-            onPress={() => setCategoryFilter('Todos')}
+            active={categoryFilter === 'Todos os itens'}
+            label="Todos os itens"
+            onPress={() => setCategoryFilter('Todos os itens')}
             useGradient
           />
           {categories.map((category) => (
@@ -1586,8 +1612,9 @@ function MovementPanel({ compact, movements }: { compact?: boolean; movements: S
         ))
       ) : (
         <View style={[styles.panel, { alignItems: 'center', paddingVertical: 48, borderStyle: 'dashed' }]}>
-          <AppIcon name="receipt-outline" size={48} color={theme.stroke} />
-          <Text style={styles.emptyText}>Nenhuma movimentacao registrada.</Text>
+          <AppIcon name="history" size={48} color={theme.stroke} />
+          <Text style={[styles.emptyHeader]}>Sem movimentações.</Text>
+          <Text style={styles.emptyText}>As operações realizadas aparecerão nesta timeline.</Text>
         </View>
       )}
     </View>
@@ -1664,7 +1691,12 @@ function ProfileSection({
         <View style={styles.profileMetaGrid}>
           <View style={styles.profileMetaCard}>
             <Text style={styles.profileMetaLabel}>Desde</Text>
-            <Text style={styles.profileMetaValue}>Abril de 2024</Text>
+            <Text style={styles.profileMetaValue}>{user.createdAt
+              ? new Date(user.createdAt).toLocaleDateString('pt-BR', {
+                month: 'long',
+                year: 'numeric',
+              })
+              : '-'}</Text>
           </View>
           <View style={styles.profileMetaCard}>
             <Text style={styles.profileMetaLabel}>Status</Text>
@@ -2040,6 +2072,12 @@ function formatDate(value: string) {
 }
 
 function SettingsSection({ onNavigate }: { onNavigate: (section: AppSection) => void }) {
+  function handleSentryTest() {
+    const error = new Error('Sentry test error - mobile');
+    Sentry.captureException(error);
+    throw error;
+  }
+
   return (
     <View style={styles.section}>
       <View style={styles.sectionHeaderBlock}>
@@ -2057,9 +2095,34 @@ function SettingsSection({ onNavigate }: { onNavigate: (section: AppSection) => 
           <SettingsItem
             icon="smartphone-outline"
             label="Versão do aplicativo"
-            value="v1.0.2 (Build 20260428)"
+            value="v1.0.4 (Build 20260428)"
           />
         </View>
+
+        <Pressable
+          accessibilityRole="button"
+          onPress={handleSentryTest}
+          style={({ pressed }) => [
+            {
+              marginTop: 18,
+              flexDirection: 'row',
+              alignItems: 'center',
+              justifyContent: 'center',
+              gap: 10,
+              borderRadius: 14,
+              borderWidth: 1,
+              borderColor: theme.stroke,
+              paddingVertical: 12,
+              backgroundColor: '#ffffff',
+            },
+            pressed && { opacity: 0.7 },
+          ]}
+        >
+          <AppIcon name="alert-circle-outline" size={18} color={theme.critical} />
+          <Text style={{ fontSize: 13, fontWeight: '900', color: theme.ink }}>
+            Testar erro do Sentry
+          </Text>
+        </Pressable>
       </View>
 
       <View style={styles.panel}>
@@ -2179,7 +2242,7 @@ function AboutSection({ onBack }: { onBack: () => void }) {
       <View style={[styles.panel, { alignItems: 'center', paddingVertical: 32 }]}>
         <AppLogo size={80} />
         <Text style={[styles.legalTitle, { marginTop: 16 }]}>Estokar Inventory OS</Text>
-        <Text style={[styles.legalSubtitle, { color: theme.accent }]}>VERSÃO 1.0.2</Text>
+        <Text style={[styles.legalSubtitle, { color: theme.accent }]}>VERSÃO 1.0.4</Text>
 
         <Text style={[styles.sectionSubtitle, { textAlign: 'center', marginTop: 16, paddingHorizontal: 20 }]}>
           Uma plataforma moderna e intuitiva desenhada para simplificar o controle de estoque com foco em agilidade e precisao.
@@ -2340,7 +2403,8 @@ const styles = StyleSheet.create({
   editorLayer: { alignItems: 'center', flex: 1, justifyContent: 'center', padding: 8 },
   editorSheet: { backgroundColor: '#ffffff', borderRadius: 28, maxHeight: '96%', padding: 24, width: '94%', maxWidth: 590 },
   editorSubtitle: { color: theme.muted, fontSize: 13, marginTop: 4 },
-  emptyText: { color: theme.muted, fontSize: 14, textAlign: 'center', marginTop: 20, fontStyle: 'italic' },
+  emptyHeader: { color: theme.ink, fontSize: 15, fontWeight: '800', marginTop: 5 },
+  emptyText: { color: theme.muted, fontSize: 14, textAlign: 'center', marginTop: 5 },
   entryButton: { alignItems: 'center', backgroundColor: theme.okSoft, borderRadius: 12, flex: 1, justifyContent: 'center', minHeight: 40 },
   entryButtonText: { color: theme.ok, fontSize: 14, fontWeight: '700' },
   exitButton: { alignItems: 'center', backgroundColor: theme.criticalSoft, borderRadius: 12, flex: 1, justifyContent: 'center', minHeight: 40 },

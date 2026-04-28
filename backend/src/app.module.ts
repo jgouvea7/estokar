@@ -10,6 +10,7 @@ import { ProductsModule } from './products/products.module';
 import { AuthModule } from './auth/auth.module';
 import { CategoriesModule } from './categories/categories.module';
 import { StockMovementsModule } from './stock-movements/stock-movements.module';
+import { SentryModule } from '@sentry/nestjs/setup';
 
 @Module({
   imports: [

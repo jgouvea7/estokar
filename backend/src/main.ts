@@ -1,10 +1,16 @@
-import { NestFactory } from '@nestjs/core';
+import './instrument';
+
+import { NestFactory, HttpAdapterHost } from '@nestjs/core';
 import { ValidationPipe } from '@nestjs/common';
 import helmet from 'helmet';
 import { AppModule } from './app.module';
+import { HttpLoggerMiddleware } from './common/middleware/http-logger.middleware';
+import { SentryExceptionFilter } from './common/filters/sentry-exception.filter';
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
+
+  app.use(new HttpLoggerMiddleware().use);
 
   app.use(helmet());
 
@@ -45,7 +51,11 @@ async function bootstrap() {
 
   app.setGlobalPrefix('api');
 
+  const { httpAdapter } = app.get(HttpAdapterHost);
+  app.useGlobalFilters(new SentryExceptionFilter(httpAdapter));
+
   const port = process.env.PORT || 3000;
   await app.listen(port, '0.0.0.0');
 }
+
 bootstrap();

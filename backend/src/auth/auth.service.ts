@@ -141,7 +141,7 @@ export class AuthService {
 
     return {
       ...tokens,
-      user: { id: user.id, name: user.name, email: user.email },
+      user: { id: user.id, name: user.name, email: user.email, createdAt: user.createdAt },
     };
   }
 

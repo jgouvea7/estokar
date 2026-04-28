@@ -3,6 +3,7 @@ export type UserProfile = {
   name: string;
   email: string;
   role?: string;
+  createdAt?: string;
 };
 
 export type Product = {
