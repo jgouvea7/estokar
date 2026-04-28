@@ -136,7 +136,6 @@ export default function Home() {
           Criar conta gratuitamente
         </Link>
       </section>
-
     </main>
 
   );
