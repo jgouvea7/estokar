@@ -6,23 +6,17 @@ import { ChevronLeft, ShieldCheck } from 'lucide-react';
 export default function PublicPrivacyPage() {
   return (
     <div className="min-h-screen flex flex-col bg-gradient-to-br from-slate-50 to-blue-50/30">
-      {/* Header simples */}
       <header className="border-b border-slate-200 bg-white/80 backdrop-blur-sm">
         <nav className="mx-auto flex max-w-[1120px] items-center justify-between px-6 py-4 sm:px-8">
           <Link href="/" className="flex items-center gap-2 text-slate-900 hover:text-slate-600 transition-colors font-semibold">
             <ChevronLeft size={20} />
             Voltar
           </Link>
-          <Link href="/login" className="rounded-lg border border-slate-300 bg-white px-4 py-2 text-sm font-semibold text-slate-900 transition-colors hover:bg-slate-50">
-            Entrar
-          </Link>
         </nav>
       </header>
 
-      {/* Conteúdo Principal */}
       <main className="flex-1 mx-auto max-w-3xl w-full px-6 py-12 sm:px-8">
         <article className="space-y-8">
-          {/* Título */}
           <div className="space-y-3 text-center mb-12">
             <div className="flex justify-center mb-4">
               <div className="grid h-14 w-14 place-items-center rounded-2xl bg-blue-100 text-blue-600">
@@ -33,9 +27,7 @@ export default function PublicPrivacyPage() {
             <p className="text-base text-slate-600">Saiba como protegemos suas informações</p>
           </div>
 
-          {/* Card de conteúdo */}
           <section className="rounded-3xl border border-slate-200 bg-white p-8 space-y-8 text-slate-700 shadow-sm hover:shadow-md transition-shadow">
-            {/* Seção 1 */}
             <div className="space-y-4 pb-8 border-b border-slate-200">
               <h2 className="text-2xl font-black text-slate-900 flex items-center gap-3">
                 <span className="flex h-8 w-8 items-center justify-center rounded-lg bg-blue-100 text-blue-600 font-bold text-sm">
@@ -59,7 +51,6 @@ export default function PublicPrivacyPage() {
               </ul>
             </div>
 
-            {/* Seção 2 */}
             <div className="space-y-4 pb-8 border-b border-slate-200">
               <h2 className="text-2xl font-black text-slate-900 flex items-center gap-3">
                 <span className="flex h-8 w-8 items-center justify-center rounded-lg bg-blue-100 text-blue-600 font-bold text-sm">
@@ -77,7 +68,6 @@ export default function PublicPrivacyPage() {
               </ul>
             </div>
 
-            {/* Seção 3 */}
             <div className="space-y-4 pb-8 border-b border-slate-200">
               <h2 className="text-2xl font-black text-slate-900 flex items-center gap-3">
                 <span className="flex h-8 w-8 items-center justify-center rounded-lg bg-blue-100 text-blue-600 font-bold text-sm">
@@ -90,7 +80,6 @@ export default function PublicPrivacyPage() {
               </p>
             </div>
 
-            {/* Seção 4 */}
             <div className="space-y-4">
               <h2 className="text-2xl font-black text-slate-900 flex items-center gap-3">
                 <span className="flex h-8 w-8 items-center justify-center rounded-lg bg-blue-100 text-blue-600 font-bold text-sm">
@@ -103,7 +92,6 @@ export default function PublicPrivacyPage() {
               </p>
             </div>
 
-            {/* Rodapé */}
             <div className="pt-8 border-t border-slate-200 text-center">
               <p className="text-sm italic text-slate-600">
                 Compromisso com a LGPD e Segurança da Informação
@@ -114,7 +102,6 @@ export default function PublicPrivacyPage() {
             </div>
           </section>
 
-          {/* Links relacionados */}
           <div className="mt-12 text-center space-y-4 py-8 border-t border-slate-200">
             <p className="text-slate-600">Documentos relacionados:</p>
             <div className="flex flex-wrap gap-4 justify-center">
@@ -124,18 +111,11 @@ export default function PublicPrivacyPage() {
               >
                 Termos de Uso
               </Link>
-              <Link
-                href="/register"
-                className="inline-flex items-center gap-2 rounded-lg bg-blue-600 px-4 py-2 text-sm font-semibold text-white transition-colors hover:bg-blue-700"
-              >
-                Criar Conta
-              </Link>
             </div>
           </div>
         </article>
       </main>
 
-      {/* Footer */}
       <footer className="border-t border-slate-200 bg-slate-50/50 py-6">
         <div className="mx-auto max-w-[1120px] flex flex-col items-center justify-center gap-2 px-6 text-center text-xs text-slate-600 sm:px-8">
           <p>© 2026 Estokar - Inventory OS. Todos os direitos reservados.</p>

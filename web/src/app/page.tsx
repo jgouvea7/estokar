@@ -106,25 +106,45 @@ export default function Home() {
           Criar conta gratuitamente
         </Link>
       </section>
-      <footer className="mt-12 border-t border-slate-200 pt-8">
-        <div className="grid grid-cols-2 gap-6 text-sm md:grid-cols-3">
+      <footer className="border-t border-slate-200 mt-16 pt-10 pb-6">
+        <div className="max-w-6xl mx-auto px-6 grid grid-cols-2 md:grid-cols-4 gap-8">
+
           <div>
-            <h4 className="font-bold text-slate-900">Empresa</h4>
-            <nav className="mt-3 space-y-2">
-              <p className="text-slate-600 hover:text-slate-900 transition-colors"><Link href="#about">Sobre</Link></p>
-              <p className="text-slate-600 hover:text-slate-900 transition-colors"><Link href="#contact">Contato</Link></p>
-            </nav>
+            <h4 className="text-sm font-semibold text-slate-700 mb-3">Empresa</h4>
+            <ul className="space-y-2">
+              <li>
+                <a href="/about" className="text-sm text-slate-500 hover:text-blue-600 transition">
+                  Sobre
+                </a>
+              </li>
+              <li>
+                <a href="/contact" className="text-sm text-slate-500 hover:text-blue-600 transition">
+                  Contato
+                </a>
+              </li>
+            </ul>
           </div>
+
           <div>
-            <h4 className="font-bold text-slate-900">Legal</h4>
-            <nav className="mt-3 space-y-2">
-              <p><Link href="/privacy" className="text-slate-600 hover:text-slate-900 transition-colors">Privacidade</Link></p>
-              <p><Link href="/terms" className="text-slate-600 hover:text-slate-900 transition-colors">Termos</Link></p>
-            </nav>
+            <h4 className="text-sm font-semibold text-slate-700 mb-3">Legal</h4>
+            <ul className="space-y-2">
+              <li>
+                <a href="/privacy" className="text-sm text-slate-500 hover:text-blue-600 transition">
+                  Privacidade
+                </a>
+              </li>
+              <li>
+                <a href="/terms" className="text-sm text-slate-500 hover:text-blue-600 transition">
+                  Termos
+                </a>
+              </li>
+            </ul>
           </div>
+
         </div>
-        <div className="mt-8 border-t border-slate-200 pt-6 flex flex-col items-center justify-center gap-2 text-center text-xs text-slate-600">
-          <p>© 2026 Estokar - Inventory OS. Todos os direitos reservados.</p>
+
+        <div className="mt-10 text-center text-xs text-slate-400">
+          © {new Date().getFullYear()} Estokar - Inventory OS. Todos os direitos reservados.
         </div>
       </footer>
     </main>

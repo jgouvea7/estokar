@@ -13,6 +13,7 @@ export default function ProfilePage() {
   const clearSession = useAuthStore((state) => state.clearSession);
   const clearHistory = useHistoryStore((state) => state.clearHistory);
 
+
   if (!session) {
     return null;
   }
@@ -36,6 +37,7 @@ export default function ProfilePage() {
       toast.error(error instanceof Error ? error.message : 'Nao foi possivel excluir sua conta.');
     }
   }
+
 
   return (
     <div className="space-y-8 reveal-up">
@@ -113,5 +115,6 @@ export default function ProfilePage() {
         </section>
       </div>
     </div>
+
   );
 }
