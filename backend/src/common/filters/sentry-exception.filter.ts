@@ -2,7 +2,7 @@ import type { Request } from 'express';
 import { BaseExceptionFilter } from '@nestjs/core';
 import { HttpException, HttpStatus } from '@nestjs/common';
 import type { ArgumentsHost } from '@nestjs/common';
-import * as Sentry from '@sentry/nestjs';
+import * as Sentry from '@sentry/node';
 import type { HttpServer } from '@nestjs/common';
 
 export class SentryExceptionFilter extends BaseExceptionFilter {
