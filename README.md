@@ -6,14 +6,15 @@ O **Estokar** é uma solução completa para controle de inventário, desenvolvi
 
 ## Tecnologias
 
-O projeto utiliza uma arquitetura moderna e escalável:
+O projeto utiliza uma arquitetura moderna, escalável e totalmente integrada com observabilidade e CI/CD:
 
 ### **Backend**
 - **Framework:** [NestJS](https://nestjs.com/) (Node.js)
 - **Linguagem:** TypeScript
-- **Banco de Dados:** PostgreSQL
+- **Banco de Dados:** [Supabase](https://supabase.com/) (PostgreSQL + Real-time)
 - **ORM:** TypeORM
-- **Autenticação:** JWT (JSON Web Token) e Google OAuth2
+- **Autenticação:** OAuth2 (Google) + JWT (JSON Web Token)
+- **Observabilidade:** [Sentry](https://sentry.io/) para rastreamento de erros
 - **Documentação:** Swagger (disponível em `/api/docs`)
 
 ### **Frontend (Web)**
@@ -21,12 +22,38 @@ O projeto utiliza uma arquitetura moderna e escalável:
 - **Estilização:** Tailwind CSS
 - **Gerenciamento de Estado:** TanStack Query (React Query)
 - **UI Components:** Componentes customizados com foco em UX premium.
+- **Deploy:** [Vercel](https://vercel.com/)
 
 ### **Mobile**
 - **Plataforma:** [Expo](https://expo.dev/) / React Native
 - **Banco Local:** SQLite (via `expo-sqlite`)
 - **Sincronização:** Sistema de Outbox para operações offline.
 - **Navegação:** Expo Router (File-based routing)
+
+### **Infraestrutura & DevOps**
+- **Cloud:** [Azure](https://azure.microsoft.com/) (Backend) + [Vercel](https://vercel.com/) (Frontend)
+- **CI/CD:** [GitHub Actions](https://github.com/features/actions)
+  - Testes automatizados no backend e web
+  - Deploy automático após validação
+- **Observabilidade:** [Sentry](https://sentry.io/) para monitoramento de erros e performance
+- **Containerização:** Docker & Docker Compose
+
+---
+
+## Testes & CI/CD
+
+### **Testes Automatizados**
+- **Backend:** Jest com cobertura de unit tests e e2e tests
+- **Web:** Jest + React Testing Library
+- **Integração Contínua:** GitHub Actions valida todos os testes antes do deploy
+
+### **Pipeline de Deploy**
+```
+Push → GitHub Actions → Testes → Build → Deploy
+                  ↓
+         Backend: Azure
+         Frontend: Vercel
+```
 
 ---
 

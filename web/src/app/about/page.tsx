@@ -67,7 +67,7 @@ export default function PublicAboutPage() {
                         <div className="space-y-4">
                             <h2 className="text-2xl font-black text-slate-900">Responsabilidade</h2>
                             <p className="leading-relaxed">
-                                O sistema é fornecido "como está", sem garantias de disponibilidade contínua ou adequação
+                                O sistema é fornecido como está, sem garantias de disponibilidade contínua ou adequação
                                 para uso em ambientes críticos ou comerciais.
                             </p>
                             <p className="leading-relaxed">

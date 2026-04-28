@@ -85,6 +85,7 @@ export class AuthController {
       url.searchParams.set('id', String(tokens.user.id ?? ''));
       url.searchParams.set('name', String(tokens.user.name ?? ''));
       url.searchParams.set('email', String(tokens.user.email ?? ''));
+      url.searchParams.set('createdAt', String(tokens.user.createdAt ?? ''));
       res.redirect(url.toString());
       return;
     }
