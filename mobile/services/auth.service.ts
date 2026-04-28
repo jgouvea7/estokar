@@ -28,7 +28,6 @@ export async function loginUser(payload: LoginPayload): Promise<LoginResponse> {
   });
 }
 
-/** POST /auth/logout (requer JWT) */
 export async function logoutUser(token: string): Promise<void> {
   return apiRequest<void>('/auth/logout', {
     method: 'POST',
@@ -36,7 +35,6 @@ export async function logoutUser(token: string): Promise<void> {
   });
 }
 
-/** GET /auth/me (requer JWT) */
 export async function fetchProfile(token: string): Promise<User> {
   return apiRequest<User>('/auth/me', { accessToken: token });
 }

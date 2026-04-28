@@ -1,7 +1,7 @@
 "use client";
 
 import Link from 'next/link';
-import { ChevronLeft, ShieldCheck, Boxes } from 'lucide-react';
+import { ChevronLeft, ShieldCheck } from 'lucide-react';
 
 export default function PublicPrivacyPage() {
   return (

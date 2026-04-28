@@ -36,13 +36,14 @@ export default function LoginPage() {
     }
   }
 
-  function handleGoogleLogin() {    setGoogleLoading(true);
+  function handleGoogleLogin() {
+    setGoogleLoading(true);
     const redirectUri = `${window.location.origin}/auth/callback`;
     window.location.href = getGoogleOAuthUrl(redirectUri);
   }
 
- 
-  
+
+
 
   return (
     <main className="relative grid min-h-screen place-items-center bg-[var(--bg)] px-6 py-20 antialiased">

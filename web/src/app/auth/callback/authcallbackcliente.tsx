@@ -17,6 +17,7 @@ export default function AuthCallbackClient() {
         const id = searchParams.get('id') ?? '';
         const name = searchParams.get('name') ?? 'Usuario';
         const email = searchParams.get('email') ?? '';
+        const createdAt = searchParams.get('createdAt') ?? '';
 
         if (!accessToken || !refreshToken) {
             toast.error('Nao foi possivel concluir o login com Google.');
@@ -27,7 +28,7 @@ export default function AuthCallbackClient() {
         const session: AuthSession = {
             accessToken,
             refreshToken,
-            user: { id, name, email },
+            user: { id, name, email, createdAt },
         };
 
         setSession(session);
