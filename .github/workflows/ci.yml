@@ -81,6 +81,12 @@ jobs:
         run: ls -la dist
         working-directory: backend
 
+      - name: Prepare deployment package
+        run: |
+          cd backend
+          npm install --production
+        working-directory: .
+
       - name: Deploy to Azure
         uses: azure/webapps-deploy@v2
         with:
