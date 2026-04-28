@@ -80,8 +80,8 @@ export class AuthController {
 
     if (redirectUri && this.isAllowedRedirectUri(redirectUri)) {
       const url = new URL(redirectUri);
-      url.searchParams.set('access_token', tokens.access_token);
-      url.searchParams.set('refresh_token', tokens.refresh_token);
+      url.searchParams.set('accessToken', tokens.accessToken);
+      url.searchParams.set('refreshToken', tokens.refreshToken);
       url.searchParams.set('id', String(tokens.user.id ?? ''));
       url.searchParams.set('name', String(tokens.user.name ?? ''));
       url.searchParams.set('email', String(tokens.user.email ?? ''));

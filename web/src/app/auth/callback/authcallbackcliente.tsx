@@ -12,8 +12,8 @@ export default function AuthCallbackClient() {
     const setSession = useAuthStore((state) => state.setSession);
 
     useEffect(() => {
-        const accessToken = searchParams.get('access_token') ?? '';
-        const refreshToken = searchParams.get('refresh_token') ?? '';
+        const accessToken = searchParams.get('accessToken') ?? '';
+        const refreshToken = searchParams.get('refreshToken') ?? '';
         const id = searchParams.get('id') ?? '';
         const name = searchParams.get('name') ?? 'Usuario';
         const email = searchParams.get('email') ?? '';

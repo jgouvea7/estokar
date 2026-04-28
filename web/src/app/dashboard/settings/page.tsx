@@ -23,7 +23,7 @@ export default function SettingsPage() {
               <SettingsItem
                 icon={Smartphone}
                 label="Versão do aplicativo"
-                value="v1.0.1 (Build 20260427)"
+                value="v1.0.2 (Build 20260427)"
                 color="blue"
               />
             </div>

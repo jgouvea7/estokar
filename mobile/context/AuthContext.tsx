@@ -46,8 +46,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     setError(null);
     try {
       const response = await loginUser({ email, password });
-      setAccessToken(response.access_token);
-      setRefreshToken(response.refresh_token);
+      setAccessToken(response.accessToken);
+      setRefreshToken(response.refreshToken);
       setUser(response.user);
     } catch (err) {
       setError(parseApiError(err));
@@ -64,8 +64,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         await registerUser({ name, email, password });
         // Após cadastro, faz login automaticamente
         const response = await loginUser({ email, password });
-        setAccessToken(response.access_token);
-        setRefreshToken(response.refresh_token);
+        setAccessToken(response.accessToken);
+        setRefreshToken(response.refreshToken);
         setUser(response.user);
       } catch (err) {
         setError(parseApiError(err));

@@ -1,41 +1,19 @@
 import Constants from 'expo-constants';
-import { Platform } from 'react-native';
 
 type RequestOptions = RequestInit & {
   accessToken?: string;
 };
 
-function getDefaultApiUrl() {
-  const expoHostUri =
-    Constants.expoConfig?.hostUri ??
-    ((Constants as unknown as { expoGoConfig?: { debuggerHost?: string } }).expoGoConfig
-      ?.debuggerHost ??
-      (Constants as unknown as { manifest2?: { extra?: { expoGo?: { debuggerHost?: string } } } })
-        .manifest2?.extra?.expoGo?.debuggerHost);
-
-  if (typeof expoHostUri === 'string' && expoHostUri.length > 0) {
-    const [host] = expoHostUri.split(':');
-    if (host && host !== 'localhost' && host !== '127.0.0.1') {
-      return `http://${host}:3000`;
-    }
-  }
-
-  if (Platform.OS === 'android') {
-    return 'http://localhost:3000';
-  }
-
-  return 'http://localhost:3000';
-}
-
 export const API_URL =
   process.env.EXPO_PUBLIC_API_URL ??
   (Constants.expoConfig?.extra?.apiUrl as string | undefined) ??
-  getDefaultApiUrl();
+  'https://estokar-backend-c5bxevc3gycsefbu.eastus-01.azurewebsites.net';
 
 const API_PREFIX = '/api';
 
 function getApiBaseUrl() {
   const baseUrl = API_URL.replace(/\/$/, '');
+
   if (baseUrl.endsWith(API_PREFIX)) {
     return baseUrl;
   }
@@ -83,9 +61,10 @@ export async function apiRequest<T>(path: string, options: RequestOptions = {}):
 
     try {
       const body = await response.json();
-      message = Array.isArray(body.message) ? body.message.join('\n') : body.message ?? message;
+      message = Array.isArray(body.message)
+        ? body.message.join('\n')
+        : body.message ?? message;
     } catch {
-      // Keep default message when the server does not return JSON.
     }
 
     throw new ApiError(message, response.status);

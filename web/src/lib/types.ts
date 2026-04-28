@@ -3,6 +3,7 @@ export type UserProfile = {
   name: string;
   email: string;
   role?: string;
+  createdAt: string;
 };
 
 export type AuthSession = {
@@ -12,8 +13,8 @@ export type AuthSession = {
 };
 
 export type AuthResponse = {
-  access_token: string;
-  refresh_token: string;
+  accessToken: string;
+  refreshToken: string;
   user: UserProfile;
 };
 

@@ -28,7 +28,7 @@ export default function Home() {
         <article className="relative overflow-hidden reveal-up rounded-3xl bg-[image:var(--brand-gradient)] p-8 text-white shadow-[0_40px_80px_-30px_rgba(15,23,42,0.75)] lg:p-12">
           <div className="absolute -top-24 -left-24 h-64 w-64 rounded-full bg-[#6aa1ff] opacity-25 blur-3xl" />
           <div className="absolute -bottom-24 -right-24 h-64 w-64 rounded-full bg-[#1b3a8a] opacity-40 blur-3xl" />
-          
+
           <div className="relative z-10">
             <p className="text-xs font-bold uppercase tracking-[0.2em] text-blue-200/80">Controle inteligente de estoque</p>
             <h2 className="mt-5 max-w-xl text-5xl font-black leading-[1.1] tracking-tight lg:text-6xl">
@@ -66,7 +66,6 @@ export default function Home() {
           <div className="mt-5 rounded-2xl border border-[var(--stroke)] bg-white p-4 shadow-[0_20px_40px_-35px_rgba(8,11,18,0.45)]">
             <div className="mb-3 flex items-center justify-between">
               <span className="text-xs font-semibold uppercase tracking-[0.14em] text-[var(--muted)]">Painel ativo</span>
-              <span className="rounded-full bg-[var(--ok-soft)] px-3 py-1 text-xs font-bold text-[var(--ok)]">Sincronizado</span>
             </div>
             <div className="space-y-2">
               <MockupRow label="Refrigerante lata" quantity={82} status="high" />
@@ -166,9 +165,8 @@ function MockupRow({
     <div className="grid grid-cols-[1fr_auto] items-center rounded-xl bg-[var(--soft)] px-3 py-2 text-sm">
       <p className="truncate font-semibold">{label}</p>
       <span
-        className={`rounded-full px-2 py-1 text-xs font-bold ${
-          status === 'low' ? 'bg-[var(--critical-soft)] text-[var(--critical)]' : 'bg-[var(--ok-soft)] text-[var(--ok)]'
-        }`}>
+        className={`rounded-full px-2 py-1 text-xs font-bold ${status === 'low' ? 'bg-[var(--critical-soft)] text-[var(--critical)]' : 'bg-[var(--ok-soft)] text-[var(--ok)]'
+          }`}>
         {quantity} un.
       </span>
     </div>

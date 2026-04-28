@@ -15,8 +15,8 @@ import { LoginDto } from './dto/login.dto';
 import { RegisterDto } from './dto/register.dto';
 
 export interface AuthTokens {
-  access_token: string;
-  refresh_token: string;
+  accessToken: string;
+  refreshToken: string;
 }
 
 export interface GoogleUser {
@@ -77,7 +77,7 @@ export class AuthService {
     }
 
     const tokens = await this.generateTokens(user.id, user.email, user.name);
-    await this.saveRefreshToken(user.id, tokens.refresh_token);
+    await this.saveRefreshToken(user.id, tokens.refreshToken);
 
     return {
       ...tokens,
@@ -104,7 +104,7 @@ export class AuthService {
     }
 
     const tokens = await this.generateTokens(user.id, user.email, user.name);
-    await this.saveRefreshToken(user.id, tokens.refresh_token);
+    await this.saveRefreshToken(user.id, tokens.refreshToken);
     return tokens;
   }
 
@@ -137,7 +137,7 @@ export class AuthService {
     }
 
     const tokens = await this.generateTokens(user.id, user.email, user.name);
-    await this.saveRefreshToken(user.id, tokens.refresh_token);
+    await this.saveRefreshToken(user.id, tokens.refreshToken);
 
     return {
       ...tokens,
@@ -163,7 +163,7 @@ export class AuthService {
   ): Promise<AuthTokens> {
     const payload = { sub: userId, email, name };
 
-    const [access_token, refresh_token] = await Promise.all([
+    const [accessToken, refreshToken] = await Promise.all([
       this.jwtService.signAsync(payload, {
         secret: this.configService.get<string>('JWT_SECRET', 'fallback-secret-change-in-production'),
         expiresIn: (this.configService.get<string>('JWT_EXPIRES_IN', '15m')) as any,
@@ -174,7 +174,7 @@ export class AuthService {
       }),
     ]);
 
-    return { access_token, refresh_token };
+    return { accessToken, refreshToken };
   }
 
   private async saveRefreshToken(userId: string, refreshToken: string): Promise<void> {

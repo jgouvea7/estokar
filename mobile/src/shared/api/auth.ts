@@ -11,8 +11,8 @@ type RegisterPayload = LoginPayload & {
 };
 
 type AuthResponse = {
-  access_token: string;
-  refresh_token: string;
+  accessToken: string;
+  refreshToken: string;
   user: UserProfile;
 };
 
@@ -22,10 +22,20 @@ export async function login(payload: LoginPayload): Promise<AuthSession> {
     method: 'POST',
   });
 
+  const raw = (response as any).data ?? response;
+
+  const accessToken = raw?.accessToken || raw?.access_token;
+  const refreshToken = raw?.refreshToken || raw?.refresh_token;
+  const user = raw?.user;
+
+  if (!accessToken) {
+    throw new Error('Login não retornou accessToken');
+  }
+
   return {
-    accessToken: response.access_token,
-    refreshToken: response.refresh_token,
-    user: response.user,
+    accessToken,
+    refreshToken,
+    user,
   };
 }
 

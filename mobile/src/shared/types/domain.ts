@@ -21,6 +21,7 @@ export type Product = {
 
 export type AuthSession = {
   accessToken: string;
+  refreshToken: string;
   user: UserProfile;
 };
 

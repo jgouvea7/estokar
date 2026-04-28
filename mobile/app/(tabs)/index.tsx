@@ -243,14 +243,9 @@ export default function AuthScreen() {
     setAuthMessage('');
 
     try {
-      const redirectUri = ExpoAuthSession.makeRedirectUri({
-        useProxy: true,
-      });
+      const redirectUri = ExpoAuthSession.makeRedirectUri();
       const authUrl = getGoogleOAuthUrl(redirectUri);
-      console.log("REDIRECT URI:", redirectUri);
-      console.log("AUTH URL:", authUrl);
       const result = await WebBrowser.openAuthSessionAsync(authUrl, redirectUri);
-      console.log("RESULT:", result);
 
       if (result.type !== 'success' || !result.url) {
         setAuthMessage('Login com Google cancelado.');
@@ -261,6 +256,11 @@ export default function AuthScreen() {
       const accessToken =
         typeof parsed.queryParams?.access_token === 'string'
           ? parsed.queryParams.access_token
+          : '';
+
+      const refreshToken =
+        typeof parsed.queryParams?.refresh_token === 'string'
+          ? parsed.queryParams.refresh_token
           : '';
 
 
@@ -277,6 +277,7 @@ export default function AuthScreen() {
       const profile = await getProfile(accessToken).catch(() => fallbackUser);
       const nextSession: AuthSession = {
         accessToken,
+        refreshToken,
         user: {
           email: profile.email || fallbackUser.email,
           id: profile.id || fallbackUser.id,
@@ -2055,8 +2056,8 @@ function SettingsSection({ onNavigate }: { onNavigate: (section: AppSection) => 
         <View style={{ gap: 12, marginTop: 16 }}>
           <SettingsItem
             icon="smartphone-outline"
-            label="Versao do aplicativo"
-            value="v1.0.0 (Build 20260427)"
+            label="Versão do aplicativo"
+            value="v1.0.2 (Build 20260428)"
           />
         </View>
       </View>
@@ -2178,7 +2179,7 @@ function AboutSection({ onBack }: { onBack: () => void }) {
       <View style={[styles.panel, { alignItems: 'center', paddingVertical: 32 }]}>
         <AppLogo size={80} />
         <Text style={[styles.legalTitle, { marginTop: 16 }]}>Estokar Inventory OS</Text>
-        <Text style={[styles.legalSubtitle, { color: theme.accent }]}>VERSAO 1.2.4</Text>
+        <Text style={[styles.legalSubtitle, { color: theme.accent }]}>VERSÃO 1.0.2</Text>
 
         <Text style={[styles.sectionSubtitle, { textAlign: 'center', marginTop: 16, paddingHorizontal: 20 }]}>
           Uma plataforma moderna e intuitiva desenhada para simplificar o controle de estoque com foco em agilidade e precisao.

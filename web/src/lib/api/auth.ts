@@ -17,8 +17,8 @@ export async function login(payload: LoginPayload): Promise<AuthSession> {
   });
 
   return {
-    accessToken: response.access_token,
-    refreshToken: response.refresh_token,
+    accessToken: response.accessToken,
+    refreshToken: response.refreshToken,
     user: response.user,
   };
 }

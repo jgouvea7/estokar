@@ -9,8 +9,8 @@ export interface User {
 }
 
 export interface AuthTokens {
-  access_token: string;
-  refresh_token: string;
+  accessToken: string;
+  refreshToken: string;
 }
 
 export interface LoginResponse extends AuthTokens {

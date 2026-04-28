@@ -84,8 +84,8 @@ export async function initializeLocalDb() {
 
 export async function getSession(): Promise<AuthSession | null> {
   const row = await db.getFirstAsync<{
-    access_token: string;
-    refresh_token: string;
+    accessToken: string;
+    refreshToken: string;
     user_json: string;
   }>('SELECT access_token, refresh_token, user_json FROM auth_session WHERE id = ?', ['current']);
 
@@ -94,8 +94,8 @@ export async function getSession(): Promise<AuthSession | null> {
   }
 
   return {
-    accessToken: row.access_token,
-    refreshToken: row.refresh_token,
+    accessToken: row.accessToken,
+    refreshToken: row.refreshToken,
     user: JSON.parse(row.user_json),
   };
 }
@@ -259,16 +259,16 @@ export async function deleteLocalProduct(product: Product): Promise<void> {
 
 export async function replaceLocalProducts(remoteProducts: RemoteProduct[]) {
   const now = new Date().toISOString();
-  
+
   // Clear non-pending products to avoid duplicates or stale data
   // But wait, if we have pending products, we should keep them?
   // Actually, the user wants online-first.
-  
+
   await db.runAsync('DELETE FROM products WHERE sync_status = ?', ['synced']);
 
   for (const product of remoteProducts) {
     await db.runAsync(
-    `INSERT INTO products
+      `INSERT INTO products
         (local_id, remote_id, name, description, category_id, category, quantity, low_stock_limit, image, sync_status, updated_at)
        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
        ON CONFLICT(remote_id) DO UPDATE SET
