@@ -1,11 +1,25 @@
 "use client";
 
 import { useEffect } from "react";
+import * as Sentry from '@sentry/react';
 import { useAuthStore } from "@/store/auth-store";
 import { AuthSession } from "@/lib/types";
 
 export function AuthProvider({ children }: { children: React.ReactNode }) {
     const setSession = useAuthStore((state) => state.setSession);
+    const session = useAuthStore((state) => state.session);
+
+    useEffect(() => {
+        if (session?.user) {
+            Sentry.setUser({
+                id: session.user.id,
+                email: session.user.email,
+            });
+            return;
+        }
+
+        Sentry.setUser(null);
+    }, [session]);
 
     useEffect(() => {
         const token = localStorage.getItem("accessToken");

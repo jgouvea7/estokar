@@ -94,7 +94,12 @@ export default function ProfilePage() {
             <div className="mt-8 flex flex-col gap-2">
               <div className="rounded-xl bg-slate-50 p-3 text-left">
                 <p className="text-[10px] font-bold text-slate-400 uppercase">Desde</p>
-                <p className="text-xs font-bold text-slate-700">{session.user.createdAt}</p>
+                <p className="text-xs font-bold text-slate-700">{session.user.createdAt
+                  ? new Date(session.user.createdAt).toLocaleDateString('pt-BR', {
+                    month: 'long',
+                    year: 'numeric',
+                  })
+                  : '-'}</p>
               </div>
               <div className="rounded-xl bg-slate-50 p-3 text-left">
                 <p className="text-[10px] font-bold text-slate-400 uppercase">Status</p>

@@ -1,7 +1,10 @@
+'use client'
+
 import Link from 'next/link';
 import { Boxes, ChartNoAxesColumnIncreasing, CheckCheck, History, Layers3, ShieldCheck, Sparkles } from 'lucide-react';
 
 export default function Home() {
+
   return (
     <main className="mx-auto flex min-h-screen w-full max-w-[1120px] flex-col px-6 py-10 sm:px-8 lg:py-12">
       <header className="surface-card mb-12 flex items-center justify-between rounded-3xl border border-[var(--stroke)] px-5 py-4">
@@ -96,6 +99,35 @@ export default function Home() {
         </article>
       </section>
 
+      <footer className="mt-12 border-t border-slate-200 pt-8">
+        <div className="grid grid-cols-2 gap-6 text-sm md:grid-cols-3">
+          <div>
+            <h4 className="font-bold text-slate-900">Produto</h4>
+            <nav className="mt-3 space-y-2">
+              <p className="text-slate-600 hover:text-slate-900 transition-colors"><Link href="#features">Features</Link></p>
+              <p className="text-slate-600 hover:text-slate-900 transition-colors"><Link href="#pricing">Preços</Link></p>
+            </nav>
+          </div>
+          <div>
+            <h4 className="font-bold text-slate-900">Empresa</h4>
+            <nav className="mt-3 space-y-2">
+              <p className="text-slate-600 hover:text-slate-900 transition-colors"><Link href="#about">Sobre</Link></p>
+              <p className="text-slate-600 hover:text-slate-900 transition-colors"><Link href="#contact">Contato</Link></p>
+            </nav>
+          </div>
+          <div>
+            <h4 className="font-bold text-slate-900">Legal</h4>
+            <nav className="mt-3 space-y-2">
+              <p><Link href="/privacy" className="text-slate-600 hover:text-slate-900 transition-colors">Privacidade</Link></p>
+              <p><Link href="/terms" className="text-slate-600 hover:text-slate-900 transition-colors">Termos</Link></p>
+            </nav>
+          </div>
+        </div>
+        <div className="mt-8 border-t border-slate-200 pt-6 flex flex-col items-center justify-center gap-2 text-center text-xs text-slate-600">
+          <p>© 2026 Estokar - Inventory OS. Todos os direitos reservados.</p>
+        </div>
+      </footer>
+
       <section className="surface-card mt-8 rounded-3xl border border-slate-100 bg-blue-50/40 px-6 py-10 text-center">
         <p className="text-xs font-bold uppercase tracking-[0.16em] text-slate-500">Pronto para evoluir sua operacao</p>
         <h3 className="mt-2 text-3xl font-bold tracking-tight text-[#0f172a]">Leve sua gestao para o nivel profissional</h3>
@@ -104,7 +136,9 @@ export default function Home() {
           Criar conta gratuitamente
         </Link>
       </section>
+
     </main>
+
   );
 }
 

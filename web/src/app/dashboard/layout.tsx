@@ -39,8 +39,6 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
   const clearSession = useAuthStore((state) => state.clearSession);
 
   useEffect(() => {
-    // if there's no session yet, check for a persisted token in localStorage
-    // to avoid redirecting while the zustand persist middleware hydrates the store
     if (!session) {
       try {
         const token = localStorage.getItem('accessToken')
