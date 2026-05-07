@@ -203,7 +203,6 @@ export class ProductsService {
       where: { id, userId: requesterId },
       relations: ['user', 'category'],
     });
-    // O filtro por userId já foi feito na query acima
     if (!product) {
       throw new NotFoundException(`Produto com ID "${id}" não encontrado`);
     }

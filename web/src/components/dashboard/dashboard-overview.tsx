@@ -101,7 +101,6 @@ export function DashboardOverview({ data }: DashboardOverviewProps) {
           </section>
         </div>
 
-        {/* Coluna da Direita: Rankings e Alertas */}
         <div className="space-y-6 lg:col-span-1">
           <section className="surface-card p-6 lg:p-8">
             <div className="mb-6 flex items-start justify-between gap-4">

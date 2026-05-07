@@ -26,7 +26,7 @@ import { StockMovementsModule } from './stock-movements/stock-movements.module';
       },
       {
         name: 'auth',
-        ttl: 60000,
+        ttl: 30000,
         limit: 15,
       },
     ]),
