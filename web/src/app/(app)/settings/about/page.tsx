@@ -17,7 +17,7 @@ export default function AboutPage() {
           </div>
           <div>
             <h2 className="text-2xl font-black text-ink">Estokar Inventory OS</h2>
-            <p className="text-accent font-bold">Versão 1.0.5</p>
+            <p className="text-accent font-bold">Versão 1.5.0</p>
           </div>
           <p className="max-w-md mx-auto">
             Uma plataforma moderna e intuitiva desenhada para simplificar o controle de estoque de pequenas e medias empresas com foco em agilidade e precisao.

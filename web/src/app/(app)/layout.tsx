@@ -393,6 +393,11 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
                     </header>
 
                     <div className="surface-card space-y-4 p-6">
+                      <div className="space-y-2">
+                        <LegalLink href="/settings/terms" icon={FileText} label="Termos de uso" onClick={() => setIsSettingsOpen(false)} />
+                        <LegalLink href="/settings/privacy" icon={Shield} label="Privacidade" onClick={() => setIsSettingsOpen(false)} />
+                        <LegalLink href="/settings/about" icon={Info} label="Sobre o sistema" onClick={() => setIsSettingsOpen(false)} />
+                      </div>
                       <div className="flex items-center justify-between">
                         <div className="flex items-center gap-3">
                           <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-blue-50 text-blue-600">
@@ -404,12 +409,6 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
                           </div>
                         </div>
                         <span className="text-sm font-bold text-blue-600">v1.5.0 (Build 20260507)</span>
-                      </div>
-
-                      <div className="space-y-2">
-                        <LegalLink href="/settings/terms" icon={FileText} label="Termos de uso" onClick={() => setIsSettingsOpen(false)} />
-                        <LegalLink href="/settings/privacy" icon={Shield} label="Privacidade" onClick={() => setIsSettingsOpen(false)} />
-                        <LegalLink href="/settings/about" icon={Info} label="Sobre o sistema" onClick={() => setIsSettingsOpen(false)} />
                       </div>
                     </div>
                   </div>
