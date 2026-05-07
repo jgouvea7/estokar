@@ -4,10 +4,11 @@ import Link from 'next/link';
 import { usePathname, useRouter } from 'next/navigation';
 import { useEffect, useRef, useState } from 'react';
 import { useQueryClient } from '@tanstack/react-query';
-import { Boxes, FileText, Grid2x2, History, Info, LogOut, Package2, Settings, Shield, Smartphone, UserCircle2, X, type LucideIcon } from 'lucide-react';
+import { Boxes, FileText, Grid2x2, History, Info, LogOut, Package2, Settings, Shield, Smartphone, UserCircle2, X, ChevronRight, type LucideIcon } from 'lucide-react';
 import toast from 'react-hot-toast';
 import { useAuthStore } from '@/store/auth-store';
 import { updateUser } from '@/lib/api/users';
+import { VersionModal } from '@/components/settings/version-modal';
 
 const navItems = [
   { href: '/', icon: Grid2x2, label: 'Inicio' },
@@ -40,6 +41,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
   const setSession = useAuthStore((state) => state.setSession);
   const [isAccountMenuOpen, setIsAccountMenuOpen] = useState(false);
   const [isSettingsOpen, setIsSettingsOpen] = useState(false);
+  const [isVersionModalOpen, setIsVersionModalOpen] = useState(false);
   const [activeSettingsTab, setActiveSettingsTab] = useState('stock-alerts');
   const [stockAlertDays, setStockAlertDays] = useState('7');
   const accountMenuRef = useRef<HTMLDivElement | null>(null);
@@ -398,18 +400,25 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
                         <LegalLink href="/settings/privacy" icon={Shield} label="Privacidade" onClick={() => setIsSettingsOpen(false)} />
                         <LegalLink href="/settings/about" icon={Info} label="Sobre o sistema" onClick={() => setIsSettingsOpen(false)} />
                       </div>
-                      <div className="flex items-center justify-between">
+                      <button 
+                        type="button"
+                        onClick={() => setIsVersionModalOpen(true)}
+                        className="group/version flex w-full items-center justify-between rounded-2xl border border-slate-100 p-4 transition-all hover:bg-slate-50 hover:border-slate-200 active:scale-[0.98]"
+                      >
                         <div className="flex items-center gap-3">
-                          <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-blue-50 text-blue-600">
+                          <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-blue-50 text-blue-600 transition-transform group-hover/version:scale-110">
                             <Smartphone size={18} />
                           </div>
-                          <div>
-                            <p className="text-sm font-bold text-[#0f172a]">Versão do aplicativo</p>
+                          <div className="text-left">
+                            <p className="text-sm font-bold text-[#0f172a]">Versão do sistema</p>
                             <p className="text-xs font-medium text-slate-500">Estokar Inventory OS</p>
                           </div>
                         </div>
-                        <span className="text-sm font-bold text-blue-600">v1.5.0 (Build 20260507)</span>
-                      </div>
+                        <div className="flex items-center gap-2">
+                          <span className="text-sm font-bold text-blue-600">v1.5.0 (Build 20260507)</span>
+                          <ChevronRight size={16} className="text-slate-300 transition-transform group-hover/version:translate-x-1" />
+                        </div>
+                      </button>
                     </div>
                   </div>
                 ) : null}
@@ -418,6 +427,11 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
           </div>
         </div>
       ) : null}
+
+      <VersionModal 
+        isOpen={isVersionModalOpen} 
+        onClose={() => setIsVersionModalOpen(false)} 
+      />
     </main>
   );
 }

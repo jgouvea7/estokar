@@ -1,9 +1,12 @@
 "use client";
 
-import Link from 'next/link';
-import { Shield, FileText, Info, Smartphone, ChevronRight, LucideIcon } from 'lucide-react';
+import { useState } from 'react';
+import { VersionModal } from '@/components/settings/version-modal';
+import { ChevronRight, FileText, Info, Link, LucideIcon, Shield, Smartphone } from 'lucide-react';
 
 export default function SettingsPage() {
+  const [isVersionModalOpen, setIsVersionModalOpen] = useState(false);
+
   return (
     <div className="space-y-8 reveal-up">
       <section>
@@ -22,9 +25,10 @@ export default function SettingsPage() {
             <div className="space-y-4">
               <SettingsItem
                 icon={Smartphone}
-                label="Versão do aplicativo"
-                value="v1.0.5 (Build 20260427)"
+                label="Versão do sistema"
+                value="v1.5.0 (Build 20260507)"
                 color="blue"
+                onClick={() => setIsVersionModalOpen(true)}
               />
             </div>
           </article>
@@ -82,11 +86,16 @@ export default function SettingsPage() {
           </article>
         </section>
       </div>
+
+      <VersionModal
+        isOpen={isVersionModalOpen}
+        onClose={() => setIsVersionModalOpen(false)}
+      />
     </div>
   );
 }
 
-function SettingsItem({ icon: Icon, label, value, color }: { icon: LucideIcon, label: string, value: string, color: string }) {
+function SettingsItem({ icon: Icon, label, value, color, onClick }: { icon: LucideIcon, label: string, value: string, color: string, onClick?: () => void }) {
   const colorMap: Record<string, string> = {
     blue: 'bg-blue-50 text-blue-600',
     slate: 'bg-slate-100 text-slate-600',
@@ -94,9 +103,14 @@ function SettingsItem({ icon: Icon, label, value, color }: { icon: LucideIcon, l
     indigo: 'bg-indigo-50 text-indigo-600',
   };
 
+  const Component = onClick ? 'button' : 'div';
+
   return (
-    <div className="flex items-center justify-between p-4 rounded-2xl bg-white border border-slate-100 shadow-sm">
-      <div className="flex items-center gap-4">
+    <Component
+      onClick={onClick}
+      className={`flex w-full items-center justify-between p-4 rounded-2xl bg-white border border-slate-100 shadow-sm transition-all ${onClick ? 'hover:bg-slate-50 hover:border-slate-200 active:scale-[0.98]' : ''}`}
+    >
+      <div className="flex items-center gap-4 text-left">
         <div className={`flex h-12 w-12 items-center justify-center rounded-xl ${colorMap[color] || 'bg-slate-100 text-slate-600'}`}>
           <Icon size={24} />
         </div>
@@ -105,10 +119,14 @@ function SettingsItem({ icon: Icon, label, value, color }: { icon: LucideIcon, l
           <p className="text-xs font-medium text-slate-500">Sistema Estokar</p>
         </div>
       </div>
-      <span className="text-sm font-bold text-blue-600">{value}</span>
-    </div>
+      <div className="flex items-center gap-2">
+        <span className="text-sm font-bold text-blue-600">{value}</span>
+        {onClick && <ChevronRight size={16} className="text-slate-300" />}
+      </div>
+    </Component>
   );
 }
+
 
 function SettingsLink({ icon: Icon, label, description, href, color }: { icon: LucideIcon, label: string, description: string, href: string, color: string }) {
   const colorMap: Record<string, string> = {
