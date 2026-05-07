@@ -12,7 +12,6 @@ interface LoginPayload {
   password: string;
 }
 
-/** POST /auth/register */
 export async function registerUser(payload: RegisterPayload): Promise<User> {
   return apiRequest<User>('/auth/register', {
     method: 'POST',
@@ -20,7 +19,6 @@ export async function registerUser(payload: RegisterPayload): Promise<User> {
   });
 }
 
-/** POST /auth/login → retorna tokens + dados do usuário */
 export async function loginUser(payload: LoginPayload): Promise<LoginResponse> {
   return apiRequest<LoginResponse>('/auth/login', {
     method: 'POST',

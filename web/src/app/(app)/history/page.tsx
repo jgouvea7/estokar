@@ -53,7 +53,6 @@ export default function HistoryPage() {
                 </header>
 
                 <div className="relative ml-8 space-y-6 pt-3">
-                  {/* Vertical Line */}
                   <div className="absolute left-3 top-0 h-full w-px bg-slate-200" />
 
                   {entries.map((item) => (
@@ -61,17 +60,15 @@ export default function HistoryPage() {
                       key={item.id}
                       className="group relative pl-10">
 
-                      {/* Timeline Dot */}
-                      <div className={`absolute left-3 top-1/2 z-10 h-3 w-3 -translate-x-1/2 -translate-y-1/2 rounded-full ${
-                        item.type === 'in' ? 'bg-emerald-500' : 'bg-rose-500'
-                      }`} />
+                      <div className={`absolute left-3 top-1/2 z-10 h-3 w-3 -translate-x-1/2 -translate-y-1/2 rounded-full ${item.type === 'in' ? 'bg-emerald-500' : 'bg-rose-500'
+                        }`} />
 
                       <div className="surface-card flex items-center justify-between gap-6 p-5 transition-colors hover:bg-slate-50">
                         <div className="flex items-center gap-5">
                           <div
                             className={`flex h-12 w-12 items-center justify-center rounded-xl ${item.type === 'in'
-                                ? 'bg-emerald-50 text-emerald-600'
-                                : 'bg-rose-50 text-rose-600'
+                              ? 'bg-emerald-50 text-emerald-600'
+                              : 'bg-rose-50 text-rose-600'
                               }`}>
                             {item.type === 'in' ? <ArrowDownLeft size={24} /> : <ArrowUpRight size={24} />}
                           </div>
@@ -96,7 +93,7 @@ export default function HistoryPage() {
                           <span className="text-[10px] font-bold uppercase tracking-widest text-slate-400">Unidades</span>
                         </div>
                       </div>
-                     </div>
+                    </div>
                   ))}
                 </div>
               </article>
