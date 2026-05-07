@@ -24,6 +24,9 @@ export class User {
   @Column({ nullable: true })
   googleId: string;
 
+  @Column({ type: 'int', default: 7 })
+  alertDaysBefore: number;
+
   @Column()
   createdAt: Date;
 

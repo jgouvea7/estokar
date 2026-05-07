@@ -1,4 +1,4 @@
-import { IsEmail, IsString, MinLength, IsNotEmpty, MaxLength, IsOptional } from 'class-validator';
+import { IsEmail, IsInt, IsString, Min, MinLength, IsNotEmpty, MaxLength, IsOptional } from 'class-validator';
 
 export class UpdateUserDto {
   @IsOptional()
@@ -16,4 +16,9 @@ export class UpdateUserDto {
   @MinLength(8, { message: 'Senha deve ter pelo menos 8 caracteres' })
   @MaxLength(72)
   password?: string;
+
+  @IsOptional()
+  @IsInt({ message: 'Dias de alerta deve ser um numero inteiro' })
+  @Min(1, { message: 'Dias de alerta deve ser maior que zero' })
+  alertDaysBefore?: number;
 }

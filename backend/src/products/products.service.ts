@@ -12,6 +12,25 @@ import { Product } from './entities/product.entity';
 import { Repository } from 'typeorm';
 import { User } from '../users/entities/user.entity';
 import { StockMovementsService } from '../stock-movements/stock-movements.service';
+import { StockMovementType } from '../stock-movements/entities/stock-movement.entity';
+import { StockMovement } from '../stock-movements/entities/stock-movement.entity';
+import {
+  ProductDashboardResponseDto,
+  ProductDashboardMovementDto,
+} from './dto/product-dashboard-response.dto';
+
+type ProductMovementSummaryRaw = {
+  totalEntries: string | number;
+  totalOutputs: string | number;
+  recentSoldQuantity: string | number;
+};
+
+type ProductDashboardMovementRaw = {
+  createdAt: Date | string;
+  id: string;
+  quantity: string | number;
+  type: StockMovementType;
+};
 
 @Injectable()
 export class ProductsService {
@@ -22,8 +41,10 @@ export class ProductsService {
     private readonly usersRepository: Repository<User>,
     @InjectRepository(Category)
     private readonly categoriesRepository: Repository<Category>,
+    @InjectRepository(StockMovement)
+    private readonly stockMovementsRepository: Repository<StockMovement>,
     private readonly stockMovementsService: StockMovementsService,
-  ) {}
+  ) { }
 
   async findAll(requesterId: string): Promise<Product[]> {
     return this.productsRepository.find({
@@ -55,15 +76,14 @@ export class ProductsService {
 
     const savedProduct = await this.productsRepository.save(newProduct);
 
-    if (savedProduct.quantity > 0) {
-      await this.stockMovementsService.create({
-        productId: savedProduct.id,
-        productName: savedProduct.name,
-        type: 'in',
-        quantity: savedProduct.quantity,
-        userId: requesterId,
-      });
-    }
+    await this.stockMovementsService.create({
+      productId: savedProduct.id,
+      productName: savedProduct.name,
+      context: 'Estoque inicial',
+      type: StockMovementType.IN,
+      quantity: savedProduct.quantity,
+      userId: requesterId,
+    });
 
     return savedProduct;
   }
@@ -77,6 +97,101 @@ export class ProductsService {
       throw new NotFoundException(`Produto com ID "${id}" não encontrado`);
     }
     return product;
+  }
+
+  async getDetails(id: string, requesterId: string) {
+    const windowDays = 7;
+    const recentMovementsLimit = 10;
+
+    const [user, product, movementSummary, recentMovements] = await Promise.all([
+      this.usersRepository.findOne({
+        where: { id: requesterId },
+        select: ['id', 'alertDaysBefore'],
+      }),
+      this.productsRepository.findOne({
+        where: { id, userId: requesterId },
+        relations: ['category'],
+      }),
+      this.getMovementSummary(id, requesterId, windowDays),
+      this.getRecentMovements(id, requesterId, recentMovementsLimit),
+    ]);
+
+    if (!product) {
+      throw new NotFoundException(`Produto com ID "${id}" não encontrado`);
+    }
+
+    const totalEntries = this.toNumber(movementSummary?.totalEntries);
+    const totalOutputs = this.toNumber(movementSummary?.totalOutputs);
+    const recentSoldQuantity = this.toNumber(movementSummary?.recentSoldQuantity);
+    const forecast = this.calculateForecast(product.quantity, recentSoldQuantity, windowDays);
+
+    return {
+      product: {
+        id: product.id,
+        name: product.name,
+        description: product.description,
+        image: product.image,
+        categoryId: product.categoryId,
+        category: product.category ? { id: product.category.id, name: product.category.name } : null,
+      },
+      dashboard: {
+        alertDaysBefore: user?.alertDaysBefore ?? 7,
+        currentStock: product.quantity,
+        averageDailySales: forecast.averageDailySales,
+        estimatedDaysLeft: forecast.estimatedDaysLeft,
+        recentMovements: recentMovements.map(this.mapMovementToDto),
+        summary: {
+          totalEntries,
+          totalOutputs,
+        },
+      },
+    };
+  }
+
+  async getDashboard(id: string, requesterId: string): Promise<ProductDashboardResponseDto> {
+    const windowDays = 7;
+    const recentMovementsLimit = 10;
+
+    const [user, product, movementSummary, recentMovements] = await Promise.all([
+      this.usersRepository.findOne({
+        where: { id: requesterId },
+        select: ['id', 'alertDaysBefore'],
+      }),
+      this.productsRepository.findOne({
+        where: { id, userId: requesterId },
+        select: ['id', 'name', 'quantity', 'image'],
+      }),
+      this.getMovementSummary(id, requesterId, windowDays),
+      this.getRecentMovements(id, requesterId, recentMovementsLimit),
+    ]);
+
+    if (!product) {
+      throw new NotFoundException(`Produto com ID "${id}" não encontrado`);
+    }
+
+    const totalEntries = this.toNumber(movementSummary?.totalEntries);
+    const totalOutputs = this.toNumber(movementSummary?.totalOutputs);
+    const recentSoldQuantity = this.toNumber(movementSummary?.recentSoldQuantity);
+    const forecast = this.calculateForecast(product.quantity, recentSoldQuantity, windowDays);
+
+    return {
+      forecast: {
+        averageDailySales: forecast.averageDailySales,
+        estimatedDaysLeft: forecast.estimatedDaysLeft,
+      },
+      product: {
+        alertDaysBefore: user?.alertDaysBefore ?? 7,
+        currentStock: product.quantity,
+        id: product.id,
+        image: product.image,
+        name: product.name,
+      },
+      recentMovements: recentMovements.map(this.mapMovementToDto),
+      summary: {
+        totalEntries,
+        totalOutputs,
+      },
+    };
   }
 
   async update(
@@ -109,7 +224,7 @@ export class ProductsService {
       await this.stockMovementsService.create({
         productId: updatedProduct.id,
         productName: updatedProduct.name,
-        type: diff > 0 ? 'in' : 'out',
+        type: diff > 0 ? StockMovementType.IN : StockMovementType.OUT,
         quantity: Math.abs(diff),
         userId: requesterId,
       });
@@ -142,5 +257,81 @@ export class ProductsService {
     }
 
     return category;
+  }
+
+  private async getMovementSummary(id: string, requesterId: string, windowDays: number) {
+    const windowStart = new Date();
+    windowStart.setDate(windowStart.getDate() - windowDays);
+
+    return this.stockMovementsRepository
+      .createQueryBuilder('movement')
+      .select(
+        'COALESCE(SUM(CASE WHEN movement.type = :inType THEN movement.quantity ELSE 0 END), 0)',
+        'totalEntries',
+      )
+      .addSelect(
+        'COALESCE(SUM(CASE WHEN movement.type = :outType THEN movement.quantity ELSE 0 END), 0)',
+        'totalOutputs',
+      )
+      .addSelect(
+        'COALESCE(SUM(CASE WHEN movement.type = :outType AND movement.createdAt >= :windowStart THEN movement.quantity ELSE 0 END), 0)',
+        'recentSoldQuantity',
+      )
+      .where('movement.userId = :userId', { userId: requesterId })
+      .andWhere('movement.productId = :productId', { productId: id })
+      .setParameters({
+        inType: StockMovementType.IN,
+        outType: StockMovementType.OUT,
+        windowStart,
+      })
+      .getRawOne<ProductMovementSummaryRaw>();
+  }
+
+  private async getRecentMovements(id: string, requesterId: string, limit: number) {
+    return this.stockMovementsRepository
+      .createQueryBuilder('movement')
+      .where('movement.userId = :userId', { userId: requesterId })
+      .andWhere('movement.productId = :productId', { productId: id })
+      .orderBy('movement.createdAt', 'DESC')
+      .limit(limit)
+      .getMany();
+  }
+
+  private calculateForecast(currentStock: number, recentSoldQuantity: number, windowDays: number) {
+    if (!Number.isFinite(currentStock) || !Number.isFinite(recentSoldQuantity) || !Number.isFinite(windowDays)) {
+      return { averageDailySales: 0, estimatedDaysLeft: null as number | null };
+    }
+
+    if (recentSoldQuantity <= 0 || windowDays <= 0) {
+      return { averageDailySales: 0, estimatedDaysLeft: null as number | null };
+    }
+
+    const averageDailySales = recentSoldQuantity / windowDays;
+
+    if (averageDailySales <= 0) {
+      return { averageDailySales: 0, estimatedDaysLeft: null as number | null };
+    }
+
+    return {
+      averageDailySales,
+      estimatedDaysLeft: currentStock / averageDailySales,
+    };
+  }
+
+  private mapMovementToDto(movement: StockMovement): ProductDashboardMovementDto {
+    return {
+      createdAt: movement.createdAt,
+      id: movement.id,
+      quantity: movement.quantity,
+      type: movement.type,
+    };
+  }
+
+  private toNumber(value: string | number | undefined | null): number {
+    if (value === undefined || value === null) {
+      return 0;
+    }
+
+    return typeof value === 'number' ? value : Number(value);
   }
 }

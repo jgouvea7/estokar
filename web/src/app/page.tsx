@@ -1,10 +1,44 @@
 'use client'
 
+import { useEffect, useState } from 'react';
 import Link from 'next/link';
 import { Boxes, ChartNoAxesColumnIncreasing, CheckCheck, History, Layers3, ShieldCheck, Sparkles } from 'lucide-react';
+import { useAuthStore } from '@/store/auth-store';
+import DashboardLayout from './(app)/layout';
+import DashboardPage from './(app)/page';
 
 export default function Home() {
+  const session = useAuthStore((state) => state.session);
+  const [isChecking, setIsChecking] = useState(true);
 
+  useEffect(() => {
+    // Pequeno delay para garantir que o Zustand hidratou do localStorage
+    const timer = setTimeout(() => {
+      setIsChecking(false);
+    }, 10);
+    return () => clearTimeout(timer);
+  }, []);
+
+  if (isChecking) {
+    return (
+      <div className="flex min-h-screen items-center justify-center bg-[var(--bg)]">
+        <div className="h-8 w-8 animate-spin rounded-full border-4 border-[var(--accent)] border-t-transparent" />
+      </div>
+    );
+  }
+
+  if (session) {
+    return (
+      <DashboardLayout>
+        <DashboardPage />
+      </DashboardLayout>
+    );
+  }
+
+  return <LandingPage />;
+}
+
+function LandingPage() {
   return (
     <main className="mx-auto flex min-h-screen w-full max-w-[1120px] flex-col px-6 py-10 sm:px-8 lg:py-12">
       <header className="surface-card mb-12 flex items-center justify-between rounded-3xl border border-[var(--stroke)] px-5 py-4">
@@ -148,7 +182,6 @@ export default function Home() {
         </div>
       </footer>
     </main>
-
   );
 }
 

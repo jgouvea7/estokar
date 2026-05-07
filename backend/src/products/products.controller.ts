@@ -26,6 +26,15 @@ export class ProductsController {
     return this.productsService.findAll(requesterId);
   }
 
+  // GET /products/:id/details — autenticado
+  @Get(':id/details')
+  getDetails(
+    @Param('id', ParseUUIDPipe) id: string,
+    @CurrentUser('id') requesterId: string,
+  ) {
+    return this.productsService.getDetails(id, requesterId);
+  }
+
   // GET /products/:id — autenticado
   @Get(':id')
   findOne(
@@ -33,6 +42,15 @@ export class ProductsController {
     @CurrentUser('id') requesterId: string,
   ) {
     return this.productsService.findOne(id, requesterId);
+  }
+
+  // GET /products/:id/dashboard — autenticado
+  @Get(':id/dashboard')
+  getDashboard(
+    @Param('id', ParseUUIDPipe) id: string,
+    @CurrentUser('id') requesterId: string,
+  ) {
+    return this.productsService.getDashboard(id, requesterId);
   }
 
   // POST /products — requer autenticação (userId vem do JWT)

@@ -37,7 +37,7 @@ export default function SettingsPage() {
 
             <div className="space-y-2">
               <SettingsLink
-                href="/dashboard/settings/terms"
+                href="/settings/terms"
                 icon={FileText}
                 label="Termos de uso"
                 description="Direitos e deveres na utilização do Estokar."
@@ -45,7 +45,7 @@ export default function SettingsPage() {
               />
 
               <SettingsLink
-                href="/dashboard/settings/privacy"
+                href="/settings/privacy"
                 icon={Shield}
                 label="Privacidade e Dados"
                 description="Como protegemos sua segurança e informações."
@@ -53,7 +53,7 @@ export default function SettingsPage() {
               />
 
               <SettingsLink
-                href="/dashboard/settings/about"
+                href="/settings/about"
                 icon={Info}
                 label="Sobre o Estokar"
                 description="Conheça a história e os criadores por trás da ferramenta."

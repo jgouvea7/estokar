@@ -2,6 +2,12 @@ import { Entity, PrimaryGeneratedColumn, Column, ManyToOne, JoinColumn } from 't
 import { Product } from '../../products/entities/product.entity';
 import { User } from '../../users/entities/user.entity';
 
+export enum StockMovementType {
+  IN = 'in',
+  OUT = 'out',
+}
+
+
 @Entity('stock_movements')
 export class StockMovement {
   @PrimaryGeneratedColumn('uuid')
@@ -14,10 +20,13 @@ export class StockMovement {
   productName: string;
 
   @Column()
-  type: 'in' | 'out';
+  type: StockMovementType;
 
   @Column('int')
   quantity: number;
+
+  @Column({ nullable: true })
+  context?: string;
 
   @Column()
   userId: string;

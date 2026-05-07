@@ -269,6 +269,7 @@ export default function AuthScreen() {
       const authUrl = getGoogleOAuthUrl(redirectUri);
       const result = await WebBrowser.openAuthSessionAsync(authUrl, redirectUri);
 
+
       if (result.type !== 'success' || !result.url) {
         setAuthMessage('Login com Google cancelado.');
         return;
@@ -276,13 +277,13 @@ export default function AuthScreen() {
 
       const parsed = Linking.parse(result.url);
       const accessToken =
-        typeof parsed.queryParams?.access_token === 'string'
-          ? parsed.queryParams.access_token
+        typeof parsed.queryParams?.accessToken === 'string'
+          ? parsed.queryParams.accessToken
           : '';
 
       const refreshToken =
-        typeof parsed.queryParams?.refresh_token === 'string'
-          ? parsed.queryParams.refresh_token
+        typeof parsed.queryParams?.refreshToken === 'string'
+          ? parsed.queryParams.refreshToken
           : '';
 
 

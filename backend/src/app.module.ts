@@ -9,6 +9,7 @@ import { UsersModule } from './users/users.module';
 import { ProductsModule } from './products/products.module';
 import { AuthModule } from './auth/auth.module';
 import { CategoriesModule } from './categories/categories.module';
+import { DashboardModule } from './dashboard/dashboard.module';
 import { StockMovementsModule } from './stock-movements/stock-movements.module';
 
 @Module({
@@ -26,7 +27,7 @@ import { StockMovementsModule } from './stock-movements/stock-movements.module';
       {
         name: 'auth',
         ttl: 60000,
-        limit: 10,
+        limit: 15,
       },
     ]),
 
@@ -61,6 +62,7 @@ import { StockMovementsModule } from './stock-movements/stock-movements.module';
     ProductsModule,
     CategoriesModule,
     AuthModule,
+    DashboardModule,
     StockMovementsModule,
   ],
   controllers: [AppController],

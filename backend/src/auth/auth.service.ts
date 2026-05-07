@@ -60,7 +60,7 @@ export class AuthService {
   async login(dto: LoginDto): Promise<AuthTokens & { user: Partial<User> }> {
     const user = await this.usersRepository.findOne({
       where: { email: dto.email },
-      select: ['id', 'name', 'email', 'password'],
+      select: ['id', 'name', 'email', 'password', 'alertDaysBefore'],
     });
 
     if (!user) {
@@ -81,7 +81,12 @@ export class AuthService {
 
     return {
       ...tokens,
-      user: { id: user.id, name: user.name, email: user.email },
+      user: {
+        id: user.id,
+        name: user.name,
+        email: user.email,
+        alertDaysBefore: user.alertDaysBefore,
+      },
     };
   }
 
@@ -141,7 +146,13 @@ export class AuthService {
 
     return {
       ...tokens,
-      user: { id: user.id, name: user.name, email: user.email, createdAt: user.createdAt },
+      user: {
+        id: user.id,
+        name: user.name,
+        email: user.email,
+        createdAt: user.createdAt,
+        alertDaysBefore: user.alertDaysBefore,
+      },
     };
   }
 

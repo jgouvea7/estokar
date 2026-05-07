@@ -1,9 +1,10 @@
 "use client";
 
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useMemo, useState, Suspense } from 'react';
 import { createPortal } from 'react-dom';
+import { useRouter, useSearchParams } from 'next/navigation';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
-import { MoreVertical, Plus, Search, TrendingDown, Image as ImageIcon, Trash2, Edit2, PackageSearch } from 'lucide-react';
+import { ArrowUpRight, Edit2, Image as ImageIcon, MoreVertical, PackageSearch, Plus, Search, Trash2, TrendingDown } from 'lucide-react';
 import toast from 'react-hot-toast';
 import {
   createCategory,
@@ -32,12 +33,29 @@ type ProductForm = {
 };
 
 export default function ProductsPage() {
+  return (
+    <Suspense fallback={<ProductsSkeleton />}>
+      <ProductsPageContent />
+    </Suspense>
+  );
+}
+
+function ProductsPageContent() {
   const session = useAuthStore((state) => state.session);
   const addHistoryItem = useHistoryStore((state) => state.addHistoryItem);
   const queryClient = useQueryClient();
+  const router = useRouter();
+  const searchParams = useSearchParams();
 
   const [query, setQuery] = useState('');
   const [categoryFilter, setCategoryFilter] = useState('Todos');
+
+  useEffect(() => {
+    const categoryParam = searchParams.get('category');
+    if (categoryParam) {
+      setCategoryFilter(categoryParam);
+    }
+  }, [searchParams]);
   const [showProductModal, setShowProductModal] = useState(false);
   const [showCategoryModal, setShowCategoryModal] = useState(false);
   const [productEditing, setProductEditing] = useState<Product | null>(null);
@@ -241,6 +259,10 @@ export default function ProductsPage() {
     quickStockMutation.mutate({ product, type });
   }
 
+  function openProductPage(productId: string) {
+    router.push(`products/${productId}`);
+  }
+
   function handleDeleteProduct(product: Product) {
     const confirmed = window.confirm('Deseja excluir este produto?');
     if (!confirmed) return;
@@ -381,8 +403,17 @@ export default function ProductsPage() {
           return (
             <article
               key={product.id}
-              onClick={() => openEditProduct(product)}
-              className="surface-card group relative flex cursor-pointer flex-col gap-6 p-5 transition-shadow hover:shadow-lg sm:flex-row sm:items-center sm:gap-8">
+              role="link"
+              tabIndex={0}
+              aria-label={`Abrir produto ${product.name}`}
+              onClick={() => openProductPage(product.id)}
+              onKeyDown={(event) => {
+                if (event.key === 'Enter' || event.key === ' ') {
+                  event.preventDefault();
+                  openProductPage(product.id);
+                }
+              }}
+              className="surface-card group relative flex cursor-pointer flex-col gap-6 p-5 transition-all hover:-translate-y-0.5 hover:shadow-lg focus:outline-none focus-visible:ring-4 focus-visible:ring-blue-100/70 sm:flex-row sm:items-center sm:gap-8">
               <div className="relative h-24 w-24 shrink-0 overflow-hidden rounded-2xl bg-slate-50 shadow-inner">
                 {product.image && product.image !== NO_PHOTO_IMAGE ? (
                   <img src={product.image} alt={product.name} className="h-full w-full object-cover transition-transform group-hover:scale-110" />
@@ -407,6 +438,16 @@ export default function ProductsPage() {
                     <p className="mt-1 line-clamp-1 text-sm font-medium text-slate-500">{product.description}</p>
                   </div>
                   <div className="flex flex-col items-end gap-1">
+                    <button
+                      type="button"
+                      onClick={(event) => {
+                        event.stopPropagation();
+                        openEditProduct(product);
+                      }}
+                      className="flex items-center gap-1 rounded-full border border-slate-200 bg-white px-3 py-1 text-[10px] font-bold uppercase tracking-wider text-slate-500 transition-colors hover:border-slate-300 hover:text-[#0f172a]">
+                      <Edit2 size={11} />
+                      Editar
+                    </button>
                     <span className="text-2xl font-bold tracking-tight text-blue-600">{product.quantity}</span>
                     <span className="text-[10px] font-bold uppercase tracking-widest text-slate-400">Unidades</span>
                   </div>
@@ -432,8 +473,8 @@ export default function ProductsPage() {
                     </button>
                   </div>
                   <div className="flex items-center gap-2 opacity-0 transition-opacity group-hover:opacity-100">
-                    <span className="text-xs font-bold text-slate-400">Clique para editar</span>
-                    <Edit2 size={14} className="text-slate-300" />
+                    <span className="text-xs font-bold text-slate-400">Abrir produto</span>
+                    <ArrowUpRight size={14} className="text-slate-300" />
                   </div>
                 </div>
               </div>

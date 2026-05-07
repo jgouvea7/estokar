@@ -28,7 +28,7 @@ export default function LoginPage() {
       localStorage.setItem('refreshToken', session.refreshToken);
       setSession(session);
       toast.success('Login realizado com sucesso.');
-      router.replace('/dashboard');
+      router.replace('/');
     } catch (error) {
       toast.error(error instanceof Error ? error.message : 'Nao foi possivel entrar.');
     } finally {
