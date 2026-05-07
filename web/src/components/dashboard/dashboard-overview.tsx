@@ -25,12 +25,6 @@ type DashboardOverviewProps = {
 };
 
 export function DashboardOverview({ data }: DashboardOverviewProps) {
-  const soldTotal = data.topSellingProducts.reduce((total, item) => total + item.soldQuantity, 0);
-  const lowStockCount = data.lowStockProducts.length;
-  const movementCount = data.recentMovements.length;
-  const attentionCount = lowStockCount + data.topCategories.length;
-  console.log(data.weeklySales)
-
   return (
     <div className="space-y-8 reveal-up">
       <section
@@ -349,14 +343,6 @@ function MetricCard({
   );
 }
 
-function MiniPill({ label, value }: { label: string; value: string }) {
-  return (
-    <div className="rounded-2xl border border-white/10 bg-white/10 px-4 py-3 backdrop-blur-sm">
-      <p className="text-[10px] font-bold uppercase tracking-[0.18em] text-slate-300">{label}</p>
-      <p className="mt-1 text-lg font-bold text-white">{value}</p>
-    </div>
-  );
-}
 
 function EmptyState({
   icon: Icon,
@@ -380,18 +366,6 @@ function EmptyState({
 
 function formatNumber(value: number) {
   return new Intl.NumberFormat('pt-BR').format(value);
-}
-
-function formatDays(value: number) {
-  if (!Number.isFinite(value)) {
-    return 'Sem previsão';
-  }
-
-  if (value < 1) {
-    return '< 1 dia';
-  }
-
-  return `${value.toFixed(1)} dia(s)`;
 }
 
 function formatDateTime(value: string | Date) {

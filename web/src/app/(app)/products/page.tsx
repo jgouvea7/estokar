@@ -51,11 +51,15 @@ function ProductsPageContent() {
   const [categoryFilter, setCategoryFilter] = useState('Todos');
 
   useEffect(() => {
-    const categoryParam = searchParams.get('category');
+    const categoryParam = searchParams.get("category");
+
     if (categoryParam) {
-      setCategoryFilter(categoryParam);
+      queueMicrotask(() => {
+        setCategoryFilter(categoryParam);
+      });
     }
   }, [searchParams]);
+
   const [showProductModal, setShowProductModal] = useState(false);
   const [showCategoryModal, setShowCategoryModal] = useState(false);
   const [productEditing, setProductEditing] = useState<Product | null>(null);

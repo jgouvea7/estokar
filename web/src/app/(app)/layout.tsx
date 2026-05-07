@@ -61,6 +61,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
           router.replace('/');
         }
       } catch (e) {
+        console.error(e);
         router.replace('/');
       }
     }
@@ -93,17 +94,20 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
   }, [isSettingsOpen]);
 
   useEffect(() => {
-    if (!session?.user) {
-      return;
-    }
+    if (!session?.user) return;
 
     const fallback = session.user.alertDaysBefore ?? 7;
-    setStockAlertDays(String(fallback));
+
+    queueMicrotask(() => {
+      setStockAlertDays(String(fallback));
+    });
   }, [session?.user]);
 
   useEffect(() => {
-    setIsAccountMenuOpen(false);
-    setIsSettingsOpen(false);
+    queueMicrotask(() => {
+      setIsAccountMenuOpen(false);
+      setIsSettingsOpen(false);
+    });
   }, [pathname]);
 
   function handleLogout() {

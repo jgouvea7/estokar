@@ -5,6 +5,7 @@ import { Product } from './entities/product.entity';
 import { User } from '../users/entities/user.entity';
 import { Category } from '../categories/entities/category.entity';
 import { StockMovementsService } from '../stock-movements/stock-movements.service';
+import { StockMovement } from '../stock-movements/entities/stock-movement.entity';
 
 describe('ProductsService', () => {
   let service: ProductsService;
@@ -23,6 +24,10 @@ describe('ProductsService', () => {
         },
         {
           provide: getRepositoryToken(Category),
+          useValue: {},
+        },
+        {
+          provide: getRepositoryToken(StockMovement),
           useValue: {},
         },
         {

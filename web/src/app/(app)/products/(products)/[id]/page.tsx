@@ -62,7 +62,9 @@ export default function ProductDetailsPage() {
   }, [params]);
 
   useEffect(() => {
-    setMounted(true);
+    queueMicrotask(() => {
+      setMounted(true);
+    });
   }, []);
 
   useEffect(() => {
