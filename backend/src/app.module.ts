@@ -55,7 +55,7 @@ import { StockMovementsModule } from './stock-movements/stock-movements.module';
         }),
 
       autoLoadEntities: true,
-      synchronize: (process.env.DB_SYNCHRONIZE ?? 'false') === 'true',
+      synchronize: true,
       logging: true,
     }),
     UsersModule,
