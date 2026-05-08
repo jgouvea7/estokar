@@ -216,7 +216,6 @@ export class DashboardService {
   private calculateWeeklySales(movements: StockMovement[]) {
     const now = new Date();
 
-    // Definindo o início de "hoje" para evitar problemas de fuso
     const startOfToday = new Date(now);
     startOfToday.setHours(0, 0, 0, 0);
 

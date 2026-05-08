@@ -7,6 +7,7 @@ import {
 import { InjectRepository } from '@nestjs/typeorm';
 import { Product } from '../products/entities/product.entity';
 import { Repository } from 'typeorm';
+import { User } from '../users/entities/user.entity';
 import { CreateCategoryDto } from './dto/create-category.dto';
 import { UpdateCategoryDto } from './dto/update-category.dto';
 import { Category } from './entities/category.entity';
@@ -18,6 +19,8 @@ export class CategoriesService {
     private readonly categoriesRepository: Repository<Category>,
     @InjectRepository(Product)
     private readonly productsRepository: Repository<Product>,
+    @InjectRepository(User)
+    private readonly usersRepository: Repository<User>,
   ) {}
 
   async findAll(requesterId: string): Promise<Category[]> {
@@ -28,6 +31,7 @@ export class CategoriesService {
   }
 
   async create(createCategoryDto: CreateCategoryDto, requesterId: string): Promise<Category> {
+    await this.ensureUserExists(requesterId);
     const name = this.normalizeName(createCategoryDto.name);
     const existing = await this.categoriesRepository.findOneBy({ name, userId: requesterId });
 
@@ -91,5 +95,13 @@ export class CategoriesService {
 
   private normalizeName(name: string): string {
     return name.trim();
+  }
+
+  private async ensureUserExists(userId: string): Promise<void> {
+    const user = await this.usersRepository.findOneBy({ id: userId });
+
+    if (!user) {
+      throw new NotFoundException('Usuário não encontrado.');
+    }
   }
 }

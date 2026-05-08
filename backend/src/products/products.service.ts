@@ -46,10 +46,51 @@ export class ProductsService {
     private readonly stockMovementsService: StockMovementsService,
   ) { }
 
-  async findAll(requesterId: string): Promise<Product[]> {
-    return this.productsRepository.find({
-      where: { userId: requesterId },
-      relations: ['user', 'category'],
+  async findAll(requesterId: string): Promise<(Product & { estimatedDaysLeft: number | null; alertDaysBefore: number })[]> {
+    const windowDays = 7;
+    const windowStart = new Date();
+    windowStart.setDate(windowStart.getDate() - windowDays);
+
+    const [user, products, movementSummaries] = await Promise.all([
+      this.usersRepository.findOne({
+        where: { id: requesterId },
+        select: ['id', 'alertDaysBefore'],
+      }),
+      this.productsRepository.find({
+        where: { userId: requesterId },
+        relations: ['category'],
+        order: { updatedAt: 'DESC' },
+      }),
+      this.stockMovementsRepository
+        .createQueryBuilder('movement')
+        .select('movement.productId', 'productId')
+        .addSelect(
+          'COALESCE(SUM(CASE WHEN movement.type = :outType AND movement.createdAt >= :windowStart THEN movement.quantity ELSE 0 END), 0)',
+          'recentSoldQuantity',
+        )
+        .where('movement.userId = :userId', { userId: requesterId })
+        .setParameters({
+          outType: StockMovementType.OUT,
+          windowStart,
+        })
+        .groupBy('movement.productId')
+        .getRawMany<{ productId: string; recentSoldQuantity: string | number }>(),
+    ]);
+
+    const alertDaysBefore = user?.alertDaysBefore ?? 7;
+    const soldByProduct = new Map(
+      movementSummaries.map((row) => [row.productId, this.toNumber(row.recentSoldQuantity)]),
+    );
+
+    return products.map((product) => {
+      const recentSoldQuantity = soldByProduct.get(product.id) ?? 0;
+      const forecast = this.calculateForecast(product.quantity, recentSoldQuantity, windowDays);
+
+      return {
+        ...product,
+        estimatedDaysLeft: forecast.estimatedDaysLeft,
+        alertDaysBefore,
+      };
     });
   }
 
