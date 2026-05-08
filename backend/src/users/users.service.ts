@@ -21,7 +21,7 @@ export class UsersService {
     private readonly categoriesRepository: Repository<Category>,
     @InjectRepository(Product)
     private readonly productsRepository: Repository<Product>,
-  ) {}
+  ) { }
 
   async findAll(): Promise<User[]> {
     return this.usersRepository.find({
