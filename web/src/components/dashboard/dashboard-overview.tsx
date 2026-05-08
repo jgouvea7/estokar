@@ -131,8 +131,8 @@ export function DashboardOverview({ data }: DashboardOverviewProps) {
           <section className="surface-card p-6 lg:p-8">
             <div className="mb-6 flex items-start justify-between gap-4">
               <div>
-                <h4 className="text-xl font-bold text-[#0f172a]">Estoque baixo</h4>
-                <p className="text-sm font-medium text-slate-500">Alertas de reposição.</p>
+                <h4 className="text-xl font-bold text-[#0f172a]">Alertas de reposição.</h4>
+                <p className="text-sm font-medium text-slate-500">Conforme prazos definidos.</p>
               </div>
               <AlertCircle size={18} className="text-orange-500" />
             </div>

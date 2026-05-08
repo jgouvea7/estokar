@@ -97,8 +97,9 @@ export default function ProductDetailsPage() {
       };
     },
     enabled: mounted && Boolean(session?.accessToken && productId),
-    staleTime: 1000 * 60 * 5,
-    refetchOnWindowFocus: false,
+    staleTime: 0,
+    refetchOnWindowFocus: true,
+    refetchOnMount: 'always',
     retry: false,
   });
 
@@ -246,7 +247,7 @@ export default function ProductDetailsPage() {
                 <span className="rounded-full bg-accent-soft px-3 py-1 text-[10px] font-bold uppercase tracking-wider text-accent">
                   {dashboard.productCategory}
                 </span>
-                <span className={`rounded-full px-3 py-1 text-[10px] font-bold uppercase tracking-wider ${status.className}`}>
+                <span className={`rounded-full px-3 py-1 text-[10px] font-bold tracking-wider ${status.className}`}>
                   {status.label}
                 </span>
               </div>
@@ -620,7 +621,7 @@ function getStatusBadge(currentStock: number, estimatedDaysLeft: number | null, 
   return {
     accent: 'text-emerald-600',
     className: 'bg-emerald-100 text-emerald-700',
-    label: 'Saudável',
+    label: 'Estoque OK',
     tone: 'bg-emerald-50',
   };
 }

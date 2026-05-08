@@ -88,6 +88,7 @@ function ProductsPageContent() {
 
   const categories = useMemo(() => categoriesQuery.data ?? [], [categoriesQuery.data]);
   const products = useMemo(() => productsQuery.data ?? [], [productsQuery.data]);
+  const productsQueryKey = ['products', session?.user.id];
 
   const categoryMap = useMemo(() => {
     return new Map(categories.map((item) => [item.id, item]));
@@ -182,9 +183,9 @@ function ProductsPageContent() {
   });
 
   const quickStockMutation = useMutation({
-    mutationFn: ({ product, type }: { product: Product; type: 'in' | 'out' }) => {
+    mutationFn: async ({ product, type }: { product: Product; type: 'in' | 'out' }) => {
       const nextQuantity = type === 'in' ? product.quantity + 1 : Math.max(product.quantity - 1, 0);
-      return updateProduct(
+      const updated = await updateProduct(
         product.id,
         {
           name: product.name,
@@ -194,18 +195,40 @@ function ProductsPageContent() {
           image: product.image,
         },
         session!.accessToken,
-      ).then(() => ({ nextQuantity, product, type }));
+      );
+
+      return { nextQuantity, product: updated, type };
+    },
+    onMutate: async ({ product, type }) => {
+      await queryClient.cancelQueries({ queryKey: productsQueryKey });
+      const previous = queryClient.getQueryData<Product[]>(productsQueryKey);
+      const nextQuantity = type === 'in' ? product.quantity + 1 : Math.max(product.quantity - 1, 0);
+
+      queryClient.setQueryData<Product[]>(productsQueryKey, (current) =>
+        current?.map((item) =>
+          item.id === product.id
+            ? { ...item, quantity: nextQuantity, updatedAt: new Date().toISOString() }
+            : item,
+        ) ?? current,
+      );
+
+      return { previous };
     },
     onSuccess: ({ product, type }) => {
+      queryClient.setQueryData<Product[]>(productsQueryKey, (current) =>
+        current?.map((item) => (item.id === product.id ? { ...item, ...product } : item)) ?? current,
+      );
       addHistoryItem({
         productId: product.id,
         productName: product.name,
         quantity: 1,
         type,
       });
-      void queryClient.invalidateQueries({ queryKey: ['products', session?.user.id] });
     },
-    onError: (error) => {
+    onError: (error, _variables, context) => {
+      if (context?.previous) {
+        queryClient.setQueryData(productsQueryKey, context.previous);
+      }
       toast.error(error instanceof Error ? error.message : 'Erro ao atualizar estoque.');
     },
   });
@@ -395,14 +418,11 @@ function ProductsPageContent() {
 
         {filteredProducts.map((product) => {
           const categoryName = product.category?.name ?? categoryMap.get(product.categoryId ?? '')?.name ?? 'Sem Categoria';
-          const critical = product.quantity <= 0;
-          const low = product.quantity > 0 && product.quantity <= 5;
-          const statusLabel = critical ? 'Sem Estoque' : low ? 'Estoque Baixo' : 'Estoque OK';
-          const statusClass = critical
-            ? 'bg-rose-100 text-rose-700'
-            : low
-              ? 'bg-orange-100 text-orange-700'
-              : 'bg-emerald-100 text-emerald-700';
+          const status = getStatusBadge(
+            product.quantity,
+            product.estimatedDaysLeft ?? null,
+            product.alertDaysBefore ?? session?.user.alertDaysBefore ?? 7,
+          );
 
           return (
             <article
@@ -434,8 +454,8 @@ function ProductsPageContent() {
                     <div className="mb-1 flex items-center gap-2">
                       <span className="text-[10px] font-bold uppercase tracking-wider text-slate-400">{categoryName}</span>
                       <span className="h-1 w-1 rounded-full bg-slate-300" />
-                      <span className={`rounded-full px-2 py-0.5 text-[10px] font-bold tracking-tight ${statusClass}`}>
-                        {statusLabel}
+                      <span className={`rounded-full px-2 py-0.5 text-[10px] font-bold tracking-tight ${status.className}`}>
+                        {status.label}
                       </span>
                     </div>
                     <h5 className="text-xl font-bold tracking-tight text-[#0f172a]">{product.name}</h5>
@@ -623,6 +643,33 @@ function CategoryChip({
       {label}
     </button>
   );
+}
+
+function getStatusBadge(currentStock: number, estimatedDaysLeft: number | null, alertDaysBefore: number) {
+  if (currentStock <= 0) {
+    return {
+      accent: 'text-rose-600',
+      className: 'bg-rose-100 text-rose-700',
+      label: 'Sem estoque',
+      tone: 'bg-rose-50',
+    };
+  }
+
+  if (estimatedDaysLeft !== null && estimatedDaysLeft <= alertDaysBefore) {
+    return {
+      accent: 'text-orange-600',
+      className: 'bg-orange-100 text-orange-700',
+      label: 'Atenção',
+      tone: 'bg-orange-50',
+    };
+  }
+
+  return {
+    accent: 'text-emerald-600',
+    className: 'bg-emerald-100 text-emerald-700',
+    label: 'Estoque OK',
+    tone: 'bg-emerald-50',
+  };
 }
 
 function Modal({

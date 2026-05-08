@@ -16,33 +16,33 @@ interface VersionEntry {
 
 const changelog: VersionEntry[] = [
   {
-    version: 'v1.5.0',
-    date: '07 de Maio, 2026',
+    version: 'v1.6.0',
+    date: '08 de Maio, 2026',
     changes: [
-      {
-        type: 'feature',
-        text: 'Inteligência Preditiva: Implementação de algoritmo de Regressão Linear para previsão de falta de estoque.'
+      { 
+        type: 'improvement', 
+        text: 'Otimização de Performance em Produção: Redução no tempo de resposta das listagens de Produtos e Histórico para carregamento acelerado.' 
+      },
+      { 
+        type: 'improvement', 
+        text: 'Sincronização Instantânea de Saldo: Otimização no fluxo de entrada e saída de produtos, garantindo que o saldo seja atualizado em tempo real na interface do produto.' 
+      },
+      { 
+        type: 'fix', 
+        text: 'Persistência de Dados na Página de Produto: Corrigido delay de carregamento e inconsistência de informações em tempo real na visão detalhada.' 
+      },
+      { 
+        type: 'fix', 
+        text: 'Persistência de Sessão Estendida: Implementação de ciclo de vida de login de 7 dias para evitar desconexões automáticas durante o uso.' 
+      },      
+      { 
+        type: 'fix', 
+        text: 'Resiliência no Gerenciamento de Categorias: Corrigido erro de parsing JSON na exclusão e implementada atualização automática.' 
       },
       {
-        type: 'feature',
-        text: 'Novos KPIs Operacionais: Adição de métricas de Disponibilidade de Catálogo, Balanço Diário e Vendas Semanais centralizadas no Backend.'
-      },
-      {
-        type: 'improvement',
-        text: 'Refatoração de UI/UX: Novo Layout Assimétrico (Grid 2/3) com efeitos de Glassmorphism e desfoque de fundo (Backdrop Blur).'
-      },
-      {
-        type: 'improvement',
-        text: 'Navegação Dinâmica: Implementação de Deep Linking para acesso instantâneo aos detalhes específicos de cada produto diretamente do Dashboard.'
-      },
-      {
-        type: 'improvement',
-        text: 'Arquitetura de Performance: Sincronização em tempo real com React Query e carregamento assíncrono com React Suspense.'
-      },
-      {
-        type: 'fix',
-        text: 'Normalização de dados: Correção na lógica de contagem de transações, agora baseada em volume de itens vendidos e não apenas em ocorrências.'
-      },
+        type: 'fix', 
+        text: 'Correção de Inconsistência de Status: Sincronização dos indicadores visuais (badges) com as configurações de alerta e previsões de esgotamento do usuário.' 
+      }
     ],
   },
 ];

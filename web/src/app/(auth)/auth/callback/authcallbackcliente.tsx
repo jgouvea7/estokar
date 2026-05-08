@@ -32,6 +32,8 @@ export default function AuthCallbackClient() {
             user: { id, name, email, createdAt, alertDaysBefore },
         };
 
+        localStorage.setItem('accessToken', accessToken);
+        localStorage.setItem('refreshToken', refreshToken);
         setSession(session);
         toast.success('Login realizado com sucesso.');
         router.replace('/');

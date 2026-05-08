@@ -37,6 +37,19 @@ export async function getProfile(accessToken: string): Promise<UserProfile> {
   });
 }
 
+type RefreshResponse = {
+  accessToken: string;
+  refreshToken: string;
+};
+
+export async function refreshTokens(refreshToken: string): Promise<RefreshResponse> {
+  return apiRequest<RefreshResponse>('/auth/refresh', {
+    method: 'POST',
+    accessToken: refreshToken,
+    skipRefresh: true,
+  });
+}
+
 export function getGoogleOAuthUrl(redirectUri: string): string {
   const authUrl = buildApiUrl('/auth/google');
   const url = new URL(authUrl);

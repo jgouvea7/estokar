@@ -4,9 +4,11 @@ import { useEffect } from "react";
 import * as Sentry from '@sentry/react';
 import { useAuthStore } from "@/store/auth-store";
 import { AuthSession } from "@/lib/types";
+import { getProfile, refreshTokens } from "@/lib/api/auth";
 
 export function AuthProvider({ children }: { children: React.ReactNode }) {
     const setSession = useAuthStore((state) => state.setSession);
+    const clearSession = useAuthStore((state) => state.clearSession);
     const session = useAuthStore((state) => state.session);
 
     useEffect(() => {
@@ -27,24 +29,36 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
         if (!token || !refreshToken) return;
 
-        fetch(`${process.env.I_URL}/auth/me`, {
-            headers: {
-                Authorization: `Bearer ${token}`,
-            },
-        })
-            .then((res) => res.json())
-            .then((user) => {
+        const loadSession = async () => {
+            try {
+                const user = await getProfile(token);
                 setSession({
                     user,
                     accessToken: token,
-                    refreshToken: token,
+                    refreshToken,
                 } as AuthSession);
-            })
-            .catch(() => {
-                localStorage.removeItem("accessToken");
-                localStorage.removeItem("refreshToken");
-            });
-    }, [setSession]);
+                return;
+            } catch {
+                try {
+                    const refreshed = await refreshTokens(refreshToken);
+                    localStorage.setItem("accessToken", refreshed.accessToken);
+                    localStorage.setItem("refreshToken", refreshed.refreshToken);
+                    const user = await getProfile(refreshed.accessToken);
+                    setSession({
+                        user,
+                        accessToken: refreshed.accessToken,
+                        refreshToken: refreshed.refreshToken,
+                    } as AuthSession);
+                } catch {
+                    localStorage.removeItem("accessToken");
+                    localStorage.removeItem("refreshToken");
+                    clearSession();
+                }
+            }
+        };
+
+        void loadSession();
+    }, [clearSession, setSession]);
 
     return <>{children}</>;
 }

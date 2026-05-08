@@ -34,6 +34,7 @@ export type Product = {
   category?: Category | null;
   quantity: number;
   alertDaysBefore?: number;
+  estimatedDaysLeft?: number | null;
   image: string;
   createdAt?: string;
   updatedAt?: string;

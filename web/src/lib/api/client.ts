@@ -1,5 +1,6 @@
 type RequestOptions = RequestInit & {
   accessToken?: string;
+  skipRefresh?: boolean;
 };
 
 const API_PREFIX = '/api';
@@ -49,6 +50,18 @@ export async function apiRequest<T>(path: string, options: RequestOptions = {}):
     cache: 'no-store',
   });
 
+  if (response.status === 401 && options.accessToken && !options.skipRefresh) {
+    const refreshed = await tryRefreshTokens();
+
+    if (refreshed) {
+      return apiRequest<T>(path, {
+        ...options,
+        accessToken: refreshed,
+        skipRefresh: true,
+      });
+    }
+  }
+
   if (!response.ok) {
     let message = 'Nao foi possivel completar a requisicao.';
 
@@ -66,5 +79,61 @@ export async function apiRequest<T>(path: string, options: RequestOptions = {}):
     return undefined as T;
   }
 
-  return response.json() as Promise<T>;
+  const text = await response.text();
+
+  if (!text) {
+    return undefined as T;
+  }
+
+  try {
+    return JSON.parse(text) as T;
+  } catch {
+    return text as T;
+  }
+}
+
+async function tryRefreshTokens(): Promise<string | null> {
+  if (typeof window === 'undefined') {
+    return null;
+  }
+
+  const refreshToken = window.localStorage.getItem('refreshToken');
+
+  if (!refreshToken) {
+    return null;
+  }
+
+  const response = await fetch(buildApiUrl('/auth/refresh'), {
+    method: 'POST',
+    headers: {
+      Authorization: `Bearer ${refreshToken}`,
+    },
+    cache: 'no-store',
+  });
+
+  if (!response.ok) {
+    return null;
+  }
+
+  const payload = await response.json() as { accessToken: string; refreshToken: string };
+
+  if (!payload?.accessToken || !payload?.refreshToken) {
+    return null;
+  }
+
+  window.localStorage.setItem('accessToken', payload.accessToken);
+  window.localStorage.setItem('refreshToken', payload.refreshToken);
+
+  const { useAuthStore } = await import('@/store/auth-store');
+  const currentSession = useAuthStore.getState().session;
+
+  if (currentSession?.user) {
+    useAuthStore.getState().setSession({
+      ...currentSession,
+      accessToken: payload.accessToken,
+      refreshToken: payload.refreshToken,
+    });
+  }
+
+  return payload.accessToken;
 }
