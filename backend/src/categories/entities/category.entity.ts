@@ -1,6 +1,14 @@
 import { Product } from '../../products/entities/product.entity';
 import { User } from '../../users/entities/user.entity';
-import { Column, Entity, Index, JoinColumn, ManyToOne, OneToMany, PrimaryGeneratedColumn } from 'typeorm';
+import {
+  Column,
+  Entity,
+  Index,
+  JoinColumn,
+  ManyToOne,
+  OneToMany,
+  PrimaryGeneratedColumn,
+} from 'typeorm';
 
 @Entity()
 @Index(['userId', 'name'], { unique: true })

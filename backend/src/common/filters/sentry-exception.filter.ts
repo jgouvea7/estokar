@@ -21,9 +21,7 @@ export class SentryExceptionFilter extends BaseExceptionFilter {
         : HttpStatus.INTERNAL_SERVER_ERROR;
 
     const message =
-      exception instanceof Error
-        ? exception.message
-        : 'Unhandled exception';
+      exception instanceof Error ? exception.message : 'Unhandled exception';
 
     const stack = exception instanceof Error ? exception.stack : undefined;
     const user = request?.user;

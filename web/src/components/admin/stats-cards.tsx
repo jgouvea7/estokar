@@ -1,6 +1,6 @@
 "use client";
 
-import { Users, ShieldCheck, User as UserIcon, TrendingUp } from 'lucide-react';
+import { Package, TrendingUp, Users } from 'lucide-react';
 import type { AdminStats } from '@/lib/types';
 
 interface StatsCardsProps {
@@ -18,23 +18,16 @@ export function StatsCards({ stats, isLoading }: StatsCardsProps) {
       gradient: 'from-blue-500 to-indigo-600',
     },
     {
-      label: 'Administradores',
-      value: stats?.totalAdmins ?? 0,
-      icon: ShieldCheck,
-      color: 'indigo',
-      gradient: 'from-indigo-500 to-purple-600',
-    },
-    {
-      label: 'Usuários FREE',
-      value: stats?.totalFree ?? 0,
-      icon: UserIcon,
-      color: 'slate',
-      gradient: 'from-slate-500 to-slate-700',
+      label: 'Total de Produtos',
+      value: stats?.totalProducts ?? 0,
+      icon: Package,
+      color: 'emerald',
+      gradient: 'from-emerald-500 to-teal-600',
     },
   ];
 
   return (
-    <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
+    <div className="grid gap-6 sm:grid-cols-2">
       {items.map((item, index) => {
         const Icon = item.icon;
         

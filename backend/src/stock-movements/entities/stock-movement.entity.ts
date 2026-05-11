@@ -1,4 +1,10 @@
-import { Entity, PrimaryGeneratedColumn, Column, ManyToOne, JoinColumn } from 'typeorm';
+import {
+  Entity,
+  PrimaryGeneratedColumn,
+  Column,
+  ManyToOne,
+  JoinColumn,
+} from 'typeorm';
 import { Product } from '../../products/entities/product.entity';
 import { User } from '../../users/entities/user.entity';
 
@@ -6,7 +12,6 @@ export enum StockMovementType {
   IN = 'in',
   OUT = 'out',
 }
-
 
 @Entity('stock_movements')
 export class StockMovement {

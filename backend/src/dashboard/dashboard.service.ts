@@ -19,7 +19,7 @@ export class DashboardService {
 
     @InjectRepository(StockMovement)
     private readonly stockMovementsRepository: Repository<StockMovement>,
-  ) { }
+  ) {}
 
   async getDashboard(userId: string) {
     const [user, products, movements] = await Promise.all([
@@ -85,7 +85,6 @@ export class DashboardService {
       .sort((a, b) => b.soldQuantity - a.soldQuantity)
       .slice(0, 5);
 
-
     const forecastedProducts = products
       .map((product) => {
         const sales = salesMap.get(product.id);
@@ -100,8 +99,7 @@ export class DashboardService {
           return null;
         }
 
-        const estimatedDaysLeft =
-          product.quantity / averageDailySales;
+        const estimatedDaysLeft = product.quantity / averageDailySales;
 
         return {
           productId: product.id,
@@ -113,17 +111,13 @@ export class DashboardService {
         };
       })
       .filter(Boolean)
-      .sort(
-        (a, b) =>
-          a!.estimatedDaysLeft - b!.estimatedDaysLeft,
-      )
+      .sort((a, b) => a!.estimatedDaysLeft - b!.estimatedDaysLeft)
       .slice(0, 5);
 
     const lowStockProducts = forecastedProducts
       .filter(
         (product) =>
-          product &&
-          product.estimatedDaysLeft <= (user?.alertDaysBefore ?? 7),
+          product && product.estimatedDaysLeft <= (user?.alertDaysBefore ?? 7),
       )
       .map((product) => ({
         productId: product!.productId,
@@ -137,14 +131,16 @@ export class DashboardService {
 
     const alertDaysBefore = user?.alertDaysBefore ?? 7;
 
-    const alerts = forecastedProducts.filter((product) =>
-      product!.estimatedDaysLeft <= alertDaysBefore,
+    const alerts = forecastedProducts.filter(
+      (product) => product!.estimatedDaysLeft <= alertDaysBefore,
     );
 
     const totalStock = products.reduce((acc, p) => acc + p.quantity, 0);
-    const catalogAvailability = products.length > 0
-      ? (products.filter((p) => p.quantity > 0).length / products.length) * 100
-      : 0;
+    const catalogAvailability =
+      products.length > 0
+        ? (products.filter((p) => p.quantity > 0).length / products.length) *
+          100
+        : 0;
 
     const startOfToday = new Date();
     startOfToday.setHours(0, 0, 0, 0);
@@ -177,8 +173,13 @@ export class DashboardService {
     return dashboard.alerts;
   }
 
-  private calculateTopCategories(products: Product[], movements: StockMovement[]) {
-    const productById = new Map(products.map((product) => [product.id, product]));
+  private calculateTopCategories(
+    products: Product[],
+    movements: StockMovement[],
+  ) {
+    const productById = new Map(
+      products.map((product) => [product.id, product]),
+    );
     const salesByCategory = new Map<string, number>();
 
     for (const movement of movements) {
@@ -196,7 +197,10 @@ export class DashboardService {
       salesByCategory.set(categoryName, current + movement.quantity);
     }
 
-    const totalSold = Array.from(salesByCategory.values()).reduce((total, quantity) => total + quantity, 0);
+    const totalSold = Array.from(salesByCategory.values()).reduce(
+      (total, quantity) => total + quantity,
+      0,
+    );
 
     return Array.from(salesByCategory.entries())
       .map(([categoryName, soldQuantity], index) => ({
@@ -205,7 +209,11 @@ export class DashboardService {
         rank: index + 1,
         soldQuantity,
       }))
-      .sort((a, b) => b.soldQuantity - a.soldQuantity || a.categoryName.localeCompare(b.categoryName))
+      .sort(
+        (a, b) =>
+          b.soldQuantity - a.soldQuantity ||
+          a.categoryName.localeCompare(b.categoryName),
+      )
       .slice(0, 3)
       .map((item, index) => ({
         ...item,
@@ -225,17 +233,35 @@ export class DashboardService {
     const previousWeekStart = new Date(now);
     previousWeekStart.setDate(previousWeekStart.getDate() - 14);
 
-    const outMovements = movements.filter((movement) => movement.type === StockMovementType.OUT);
+    const outMovements = movements.filter(
+      (movement) => movement.type === StockMovementType.OUT,
+    );
 
-    const currentWeekSales = this.countMovementsInRange(outMovements, currentWeekStart, now);
-    const previousWeekSales = this.countMovementsInRange(outMovements, previousWeekStart, currentWeekStart);
+    const currentWeekSales = this.countMovementsInRange(
+      outMovements,
+      currentWeekStart,
+      now,
+    );
+    const previousWeekSales = this.countMovementsInRange(
+      outMovements,
+      previousWeekStart,
+      currentWeekStart,
+    );
 
-    const variationPercentage = this.calculateVariationPercentage(currentWeekSales, previousWeekSales);
+    const variationPercentage = this.calculateVariationPercentage(
+      currentWeekSales,
+      previousWeekSales,
+    );
 
     return {
       comparisonLabel: `${this.formatSignedPercentage(variationPercentage)} vs. semana anterior`,
       currentWeekSales,
-      direction: variationPercentage > 0 ? 'up' : variationPercentage < 0 ? 'down' : 'flat',
+      direction:
+        variationPercentage > 0
+          ? 'up'
+          : variationPercentage < 0
+            ? 'down'
+            : 'flat',
       previousWeekSales,
       valueLabel: currentWeekSales.toString(),
       variationPercentage,
@@ -253,7 +279,10 @@ export class DashboardService {
     }).length;
   }
 
-  private calculateVariationPercentage(currentValue: number, previousValue: number) {
+  private calculateVariationPercentage(
+    currentValue: number,
+    previousValue: number,
+  ) {
     if (previousValue <= 0) {
       if (currentValue <= 0) {
         return 0;

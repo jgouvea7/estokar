@@ -1,5 +1,5 @@
 import { apiRequest } from './client';
-import type { AdminStats, AdminUser, PaginatedResponse } from '@/lib/types';
+import type { AdminStats, AdminStatsPeriod, AdminUser, PaginatedResponse } from '@/lib/types';
 
 export async function getAdminUsers(params: {
   page?: number;
@@ -38,10 +38,23 @@ export async function deleteUser(userId: string, accessToken: string): Promise<v
   });
 }
 
-export async function getAdminStats(accessToken: string, signal?: AbortSignal): Promise<AdminStats> {
-  return apiRequest<AdminStats>('/admin/stats', {
+export async function getAdminStats(params: {
+  accessToken: string;
+  period?: AdminStatsPeriod;
+  signal?: AbortSignal;
+}): Promise<AdminStats> {
+  const query = new URLSearchParams();
+
+  if (params.period) {
+    query.set('period', params.period);
+  }
+
+  const suffix = query.toString();
+  const path = suffix ? `/admin/stats?${suffix}` : '/admin/stats';
+
+  return apiRequest<AdminStats>(path, {
     method: 'GET',
-    accessToken,
-    signal,
+    accessToken: params.accessToken,
+    signal: params.signal,
   });
 }

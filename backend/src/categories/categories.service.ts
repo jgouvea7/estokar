@@ -30,10 +30,16 @@ export class CategoriesService {
     });
   }
 
-  async create(createCategoryDto: CreateCategoryDto, requesterId: string): Promise<Category> {
+  async create(
+    createCategoryDto: CreateCategoryDto,
+    requesterId: string,
+  ): Promise<Category> {
     await this.ensureUserExists(requesterId);
     const name = this.normalizeName(createCategoryDto.name);
-    const existing = await this.categoriesRepository.findOneBy({ name, userId: requesterId });
+    const existing = await this.categoriesRepository.findOneBy({
+      name,
+      userId: requesterId,
+    });
 
     if (existing) {
       throw new ConflictException('Já existe uma categoria com este nome.');
@@ -59,7 +65,10 @@ export class CategoriesService {
 
     if (updateCategoryDto.name) {
       const name = this.normalizeName(updateCategoryDto.name);
-      const existing = await this.categoriesRepository.findOneBy({ name, userId: requesterId });
+      const existing = await this.categoriesRepository.findOneBy({
+        name,
+        userId: requesterId,
+      });
 
       if (existing && existing.id !== id) {
         throw new ConflictException('Já existe uma categoria com este nome.');
@@ -84,7 +93,10 @@ export class CategoriesService {
   }
 
   private async findOne(id: string, requesterId: string): Promise<Category> {
-    const category = await this.categoriesRepository.findOneBy({ id, userId: requesterId });
+    const category = await this.categoriesRepository.findOneBy({
+      id,
+      userId: requesterId,
+    });
 
     if (!category) {
       throw new NotFoundException(`Categoria com ID "${id}" não encontrada`);

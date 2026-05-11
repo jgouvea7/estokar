@@ -19,4 +19,4 @@ import { User } from '../users/entities/user.entity';
   providers: [AuthService, JwtStrategy, JwtRefreshStrategy, GoogleStrategy],
   exports: [AuthService, JwtModule, PassportModule],
 })
-export class AuthModule { }
+export class AuthModule {}

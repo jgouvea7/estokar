@@ -21,13 +21,10 @@ import { CurrentUser } from '../common/decorators/current-user.decorator';
 @Roles(UserRole.ADMIN)
 @Throttle({ default: { limit: 30, ttl: 60000 } })
 export class AdminController {
-  constructor(private readonly adminService: AdminService) { }
+  constructor(private readonly adminService: AdminService) {}
 
   @Get('users')
-  listUsers(
-    @Query('page') page = 1,
-    @Query('perPage') perPage = 10,
-  ) {
+  listUsers(@Query('page') page = 1, @Query('perPage') perPage = 10) {
     return this.adminService.listUsers(Number(page), Number(perPage));
   }
 
@@ -48,7 +45,8 @@ export class AdminController {
   }
 
   @Get('stats')
-  getStats() {
-    return this.adminService.getStats();
+  getStats(@Query('period') period?: 'total' | 'monthly') {
+    const normalizedPeriod = period === 'monthly' ? 'monthly' : 'total';
+    return this.adminService.getStats(normalizedPeriod);
   }
 }

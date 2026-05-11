@@ -50,7 +50,7 @@ export default function HistoryPage() {
   const groupedEntries = Object.entries(groupedByDate);
 
   return (
-    <div className="space-y-8 reveal-up">
+    <div className="space-y-8 overflow-x-hidden reveal-up">
       <section>
         <h3 className="text-3xl font-bold tracking-tight text-[#0f172a]">Histórico de Operações</h3>
         <p className="mt-2 text-sm font-medium text-slate-500">Acompanhe cada entrada e saída do seu estoque em tempo real.</p>
@@ -68,19 +68,19 @@ export default function HistoryPage() {
                   <span className="h-px flex-1 bg-slate-200" />
                 </header>
 
-                <div className="relative ml-8 space-y-6 pt-3">
-                  <div className="absolute left-3 top-0 h-full w-px bg-slate-200" />
+                <div className="relative ml-4 space-y-6 pt-3 sm:ml-8">
+                  <div className="absolute left-2 top-0 h-full w-px bg-slate-200 sm:left-3" />
 
                   {entries.map((item) => (
                     <div
                       key={item.id}
-                      className="group relative pl-10">
+                      className="group relative pl-8 sm:pl-10">
 
                       <div className={`absolute left-3 top-1/2 z-10 h-3 w-3 -translate-x-1/2 -translate-y-1/2 rounded-full ${item.type === 'in' ? 'bg-emerald-500' : 'bg-rose-500'
                         }`} />
 
-                      <div className="surface-card flex items-center justify-between gap-6 p-5 transition-colors hover:bg-slate-50">
-                        <div className="flex items-center gap-5">
+                      <div className="surface-card flex flex-col items-start justify-between gap-4 p-5 transition-colors hover:bg-slate-50 sm:flex-row sm:items-center sm:gap-6">
+                        <div className="flex min-w-0 flex-1 items-center gap-4 sm:gap-5">
                           <div
                             className={`flex h-12 w-12 items-center justify-center rounded-xl ${item.type === 'in'
                               ? 'bg-emerald-50 text-emerald-600'
@@ -102,7 +102,7 @@ export default function HistoryPage() {
                           </div>
                         </div>
 
-                        <div className="flex flex-col items-end gap-1">
+                        <div className="flex w-full flex-col items-start gap-1 sm:w-auto sm:items-end">
                           <p className={`text-2xl font-bold tracking-tight ${item.type === 'in' ? 'text-emerald-600' : 'text-rose-600'}`}>
                             {item.type === 'in' ? '+' : '-'}{item.quantity}
                           </p>

@@ -87,15 +87,10 @@ export function AdminUsersTable({
               ) : (
                 users.map((user) => (
                   <tr key={user.id} className="group hover:bg-slate-50/50 transition-colors">
-                    <td className="px-3 py-3 sm:px-6 sm:py-4">
-                      <div className="flex items-center gap-2 sm:gap-3">
-                        <div className="flex h-8 w-8 items-center justify-center rounded-xl bg-slate-100 text-xs font-bold text-slate-600 sm:h-10 sm:w-10 sm:text-sm">
-                          {user.name.charAt(0).toUpperCase()}
-                        </div>
-                        <span className="text-xs font-bold text-slate-900 sm:text-sm break-words">
-                          {user.name}
-                        </span>
-                      </div>
+                    <td className="px-2 py-2 sm:px-5 sm:py-3">
+                      <span className="text-xs font-bold text-slate-900 sm:text-sm break-words">
+                        {user.name}
+                      </span>
                     </td>
                     <td className="px-3 py-3 text-xs font-medium text-slate-500 break-all sm:px-6 sm:py-4 sm:text-sm">{user.email}</td>
                     <td className="px-3 py-3 sm:px-6 sm:py-4">

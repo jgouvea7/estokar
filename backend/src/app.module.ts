@@ -37,27 +37,27 @@ import { AdminModule } from './admin/admin.module';
 
       ...(process.env.DATABASE_URL
         ? {
-          url: process.env.DATABASE_URL,
-          ssl: {
-            rejectUnauthorized: false,
-          },
-          extra: {
+            url: process.env.DATABASE_URL,
             ssl: {
               rejectUnauthorized: false,
             },
-          },
-        }
+            extra: {
+              ssl: {
+                rejectUnauthorized: false,
+              },
+            },
+          }
         : {
-          host: process.env.DB_HOST,
-          port: Number(process.env.DB_PORT),
-          username: process.env.DB_USER,
-          password: process.env.DB_PASSWORD,
-          database: process.env.DB_NAME,
-        }),
+            host: process.env.DB_HOST,
+            port: Number(process.env.DB_PORT),
+            username: process.env.DB_USER,
+            password: process.env.DB_PASSWORD,
+            database: process.env.DB_NAME,
+          }),
 
       autoLoadEntities: true,
       synchronize: (process.env.DB_SYNCHRONIZE ?? 'false') === 'true',
-      logging: ["error"],
+      logging: ['error'],
     }),
     UsersModule,
     ProductsModule,
@@ -76,4 +76,4 @@ import { AdminModule } from './admin/admin.module';
     },
   ],
 })
-export class AppModule { }
+export class AppModule {}

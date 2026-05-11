@@ -17,7 +17,7 @@ import { CurrentUser } from '../common/decorators/current-user.decorator';
 @Controller('users')
 @UseGuards(JwtAuthGuard)
 export class UsersController {
-  constructor(private readonly usersService: UsersService) { }
+  constructor(private readonly usersService: UsersService) {}
 
   // GET /users/me — detalhe do usuário autenticado
   @Get('me')
@@ -32,7 +32,9 @@ export class UsersController {
     @CurrentUser('id') requesterId: string,
   ) {
     if (id !== requesterId) {
-      throw new ForbiddenException('Você não tem permissão para acessar os dados de outro usuário.');
+      throw new ForbiddenException(
+        'Você não tem permissão para acessar os dados de outro usuário.',
+      );
     }
     return this.usersService.findOne(id);
   }

@@ -34,9 +34,11 @@ export class AuthService {
     private readonly usersRepository: Repository<User>,
     private readonly jwtService: JwtService,
     private readonly configService: ConfigService,
-  ) { }
+  ) {}
 
-  async register(dto: RegisterDto): Promise<Omit<User, 'password' | 'refreshToken'>> {
+  async register(
+    dto: RegisterDto,
+  ): Promise<Omit<User, 'password' | 'refreshToken'>> {
     const existing = await this.usersRepository.findOneBy({ email: dto.email });
     if (existing) {
       throw new ConflictException('Já existe uma conta com este e-mail.');
@@ -79,7 +81,12 @@ export class AuthService {
     }
 
     const role = user.role ?? UserRole.FREE;
-    const tokens = await this.generateTokens(user.id, user.email, user.name, role);
+    const tokens = await this.generateTokens(
+      user.id,
+      user.email,
+      user.name,
+      role,
+    );
     await this.saveRefreshToken(user.id, tokens.refreshToken);
 
     return {
@@ -113,7 +120,12 @@ export class AuthService {
     }
 
     const role = user.role ?? UserRole.FREE;
-    const tokens = await this.generateTokens(user.id, user.email, user.name, role);
+    const tokens = await this.generateTokens(
+      user.id,
+      user.email,
+      user.name,
+      role,
+    );
     await this.saveRefreshToken(user.id, tokens.refreshToken);
     return tokens;
   }
@@ -122,12 +134,18 @@ export class AuthService {
     await this.usersRepository.update(userId, { refreshToken: undefined });
   }
 
-  async googleLogin(googleUser: GoogleUser): Promise<AuthTokens & { user: Partial<User> }> {
+  async googleLogin(
+    googleUser: GoogleUser,
+  ): Promise<AuthTokens & { user: Partial<User> }> {
     if (!googleUser.email) {
-      throw new UnauthorizedException('Não foi possível obter e-mail da conta Google.');
+      throw new UnauthorizedException(
+        'Não foi possível obter e-mail da conta Google.',
+      );
     }
 
-    let user = await this.usersRepository.findOneBy({ email: googleUser.email });
+    let user = await this.usersRepository.findOneBy({
+      email: googleUser.email,
+    });
 
     if (!user) {
       const now = new Date();
@@ -148,7 +166,12 @@ export class AuthService {
     }
 
     const role = user.role ?? UserRole.FREE;
-    const tokens = await this.generateTokens(user.id, user.email, user.name, role);
+    const tokens = await this.generateTokens(
+      user.id,
+      user.email,
+      user.name,
+      role,
+    );
     await this.saveRefreshToken(user.id, tokens.refreshToken);
 
     return {
@@ -185,19 +208,34 @@ export class AuthService {
 
     const [accessToken, refreshToken] = await Promise.all([
       this.jwtService.signAsync(payload, {
-        secret: this.configService.get<string>('JWT_SECRET', 'fallback-secret-change-in-production'),
-        expiresIn: (this.configService.get<string>('JWT_EXPIRES_IN', '7d')) as any,
+        secret: this.configService.get<string>(
+          'JWT_SECRET',
+          'fallback-secret-change-in-production',
+        ),
+        expiresIn: this.configService.get<string>(
+          'JWT_EXPIRES_IN',
+          '7d',
+        ) as any,
       }),
       this.jwtService.signAsync(payload, {
-        secret: this.configService.get<string>('JWT_REFRESH_SECRET', 'fallback-refresh-secret-change-in-production'),
-        expiresIn: (this.configService.get<string>('JWT_REFRESH_EXPIRES_IN', '7d')) as any,
+        secret: this.configService.get<string>(
+          'JWT_REFRESH_SECRET',
+          'fallback-refresh-secret-change-in-production',
+        ),
+        expiresIn: this.configService.get<string>(
+          'JWT_REFRESH_EXPIRES_IN',
+          '7d',
+        ) as any,
       }),
     ]);
 
     return { accessToken, refreshToken };
   }
 
-  private async saveRefreshToken(userId: string, refreshToken: string): Promise<void> {
+  private async saveRefreshToken(
+    userId: string,
+    refreshToken: string,
+  ): Promise<void> {
     const hashedRefreshToken = await bcrypt.hash(refreshToken, 10);
     await this.usersRepository.update(userId, {
       refreshToken: hashedRefreshToken,

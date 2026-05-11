@@ -1,6 +1,7 @@
 "use client";
 
 import Link from 'next/link';
+import Image from 'next/image';
 import { useParams, useRouter } from 'next/navigation';
 import { useEffect, useMemo, useState, type ComponentType } from 'react';
 import { useQuery } from '@tanstack/react-query';
@@ -232,7 +233,14 @@ export default function ProductDetailsPage() {
           <div className="flex items-center gap-4">
             <div className="relative h-20 w-20 overflow-hidden rounded-3xl bg-slate-50 shadow-inner ring-1 ring-slate-100 sm:h-24 sm:w-24">
               {dashboard.productImage && dashboard.productImage !== NO_PHOTO_IMAGE ? (
-                <img src={dashboard.productImage} alt={dashboard.productName} className="h-full w-full object-cover" />
+                <Image
+                  src={dashboard.productImage}
+                  alt={dashboard.productName}
+                  width={96}
+                  height={96}
+                  unoptimized
+                  className="h-full w-full object-cover"
+                />
               ) : (
                 <div className="grid h-full w-full place-items-center text-slate-300">
                   <ImageIcon size={34} strokeWidth={1.5} />

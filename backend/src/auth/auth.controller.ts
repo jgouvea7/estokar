@@ -26,7 +26,7 @@ export class AuthController {
   constructor(
     private readonly authService: AuthService,
     private readonly configService: ConfigService,
-  ) { }
+  ) {}
 
   @Post('register')
   @HttpCode(HttpStatus.CREATED)
@@ -65,8 +65,7 @@ export class AuthController {
 
   @Get('google')
   @UseGuards(GoogleOAuthGuard)
-  googleAuth(@Query('redirect_uri') _redirectUri?: string) {
-  }
+  googleAuth(@Query('redirect_uri') _redirectUri?: string) {}
 
   @Get('google/callback')
   @UseGuards(GoogleOAuthGuard)
@@ -76,7 +75,8 @@ export class AuthController {
     @Res({ passthrough: true }) res: Response,
   ) {
     const tokens = await this.authService.googleLogin(req.user as GoogleUser);
-    const redirectUri = typeof req.query.state === 'string' ? req.query.state : undefined;
+    const redirectUri =
+      typeof req.query.state === 'string' ? req.query.state : undefined;
 
     if (redirectUri && this.isAllowedRedirectUri(redirectUri)) {
       const url = new URL(redirectUri);
@@ -86,7 +86,10 @@ export class AuthController {
       url.searchParams.set('name', String(tokens.user.name ?? ''));
       url.searchParams.set('email', String(tokens.user.email ?? ''));
       url.searchParams.set('createdAt', String(tokens.user.createdAt ?? ''));
-      url.searchParams.set('alertDaysBefore', String((tokens.user as any).alertDaysBefore ?? ''));
+      url.searchParams.set(
+        'alertDaysBefore',
+        String((tokens.user as any).alertDaysBefore ?? ''),
+      );
       res.redirect(url.toString());
       return;
     }
@@ -95,16 +98,17 @@ export class AuthController {
   }
 
   private isAllowedRedirectUri(redirectUri: string): boolean {
-    const allowedRedirectPrefixes = (
-      this.configService.get<string>(
+    const allowedRedirectPrefixes = this.configService
+      .get<string>(
         'GOOGLE_ALLOWED_REDIRECT_PREFIXES',
-        'mobile://,exp://,exps://,http://localhost,https://auth.expo.io,https://auth.expo.dev,https://expo.dev,https://estokar.vercel.app'
+        'mobile://,exp://,exps://,http://localhost,https://auth.expo.io,https://auth.expo.dev,https://expo.dev,https://estokar.vercel.app',
       )
-    )
       .split(',')
       .map((prefix) => prefix.trim())
       .filter(Boolean);
 
-    return allowedRedirectPrefixes.some((prefix) => redirectUri.startsWith(prefix));
+    return allowedRedirectPrefixes.some((prefix) =>
+      redirectUri.startsWith(prefix),
+    );
   }
 }

@@ -186,9 +186,10 @@ export type AdminUser = {
 
 export type AdminStats = {
   totalUsers: number;
-  totalAdmins: number;
-  totalFree: number;
+  totalProducts: number;
 };
+
+export type AdminStatsPeriod = 'total' | 'monthly';
 
 export type PaginatedResponse<T> = {
   data: T[];

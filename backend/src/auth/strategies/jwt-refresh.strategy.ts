@@ -14,12 +14,18 @@ export interface JwtRefreshPayload {
 }
 
 @Injectable()
-export class JwtRefreshStrategy extends PassportStrategy(Strategy, 'jwt-refresh') {
+export class JwtRefreshStrategy extends PassportStrategy(
+  Strategy,
+  'jwt-refresh',
+) {
   constructor(configService: ConfigService) {
     super({
       jwtFromRequest: ExtractJwt.fromAuthHeaderAsBearerToken(),
       ignoreExpiration: false,
-      secretOrKey: configService.get<string>('JWT_REFRESH_SECRET', 'fallback-refresh-secret-change-in-production'),
+      secretOrKey: configService.get<string>(
+        'JWT_REFRESH_SECRET',
+        'fallback-refresh-secret-change-in-production',
+      ),
       passReqToCallback: true,
     });
   }

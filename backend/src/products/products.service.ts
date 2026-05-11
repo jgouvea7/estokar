@@ -44,9 +44,13 @@ export class ProductsService {
     @InjectRepository(StockMovement)
     private readonly stockMovementsRepository: Repository<StockMovement>,
     private readonly stockMovementsService: StockMovementsService,
-  ) { }
+  ) {}
 
-  async findAll(requesterId: string): Promise<(Product & { estimatedDaysLeft: number | null; alertDaysBefore: number })[]> {
+  async findAll(
+    requesterId: string,
+  ): Promise<
+    (Product & { estimatedDaysLeft: number | null; alertDaysBefore: number })[]
+  > {
     const windowDays = 7;
     const windowStart = new Date();
     windowStart.setDate(windowStart.getDate() - windowDays);
@@ -74,17 +78,27 @@ export class ProductsService {
           windowStart,
         })
         .groupBy('movement.productId')
-        .getRawMany<{ productId: string; recentSoldQuantity: string | number }>(),
+        .getRawMany<{
+          productId: string;
+          recentSoldQuantity: string | number;
+        }>(),
     ]);
 
     const alertDaysBefore = user?.alertDaysBefore ?? 7;
     const soldByProduct = new Map(
-      movementSummaries.map((row) => [row.productId, this.toNumber(row.recentSoldQuantity)]),
+      movementSummaries.map((row) => [
+        row.productId,
+        this.toNumber(row.recentSoldQuantity),
+      ]),
     );
 
     return products.map((product) => {
       const recentSoldQuantity = soldByProduct.get(product.id) ?? 0;
-      const forecast = this.calculateForecast(product.quantity, recentSoldQuantity, windowDays);
+      const forecast = this.calculateForecast(
+        product.quantity,
+        recentSoldQuantity,
+        windowDays,
+      );
 
       return {
         ...product,
@@ -94,7 +108,10 @@ export class ProductsService {
     });
   }
 
-  async create(createProductDto: CreateProductDto, requesterId: string): Promise<Product> {
+  async create(
+    createProductDto: CreateProductDto,
+    requesterId: string,
+  ): Promise<Product> {
     const userId = requesterId;
 
     const user = await this.usersRepository.findOneBy({ id: userId });
@@ -102,7 +119,10 @@ export class ProductsService {
       throw new NotFoundException(`Usuário com ID "${userId}" não encontrado`);
     }
 
-    const category = await this.resolveCategory(createProductDto.categoryId, requesterId);
+    const category = await this.resolveCategory(
+      createProductDto.categoryId,
+      requesterId,
+    );
 
     const now = new Date();
     const newProduct = this.productsRepository.create({
@@ -144,18 +164,20 @@ export class ProductsService {
     const windowDays = 7;
     const recentMovementsLimit = 10;
 
-    const [user, product, movementSummary, recentMovements] = await Promise.all([
-      this.usersRepository.findOne({
-        where: { id: requesterId },
-        select: ['id', 'alertDaysBefore'],
-      }),
-      this.productsRepository.findOne({
-        where: { id, userId: requesterId },
-        relations: ['category'],
-      }),
-      this.getMovementSummary(id, requesterId, windowDays),
-      this.getRecentMovements(id, requesterId, recentMovementsLimit),
-    ]);
+    const [user, product, movementSummary, recentMovements] = await Promise.all(
+      [
+        this.usersRepository.findOne({
+          where: { id: requesterId },
+          select: ['id', 'alertDaysBefore'],
+        }),
+        this.productsRepository.findOne({
+          where: { id, userId: requesterId },
+          relations: ['category'],
+        }),
+        this.getMovementSummary(id, requesterId, windowDays),
+        this.getRecentMovements(id, requesterId, recentMovementsLimit),
+      ],
+    );
 
     if (!product) {
       throw new NotFoundException(`Produto com ID "${id}" não encontrado`);
@@ -163,8 +185,14 @@ export class ProductsService {
 
     const totalEntries = this.toNumber(movementSummary?.totalEntries);
     const totalOutputs = this.toNumber(movementSummary?.totalOutputs);
-    const recentSoldQuantity = this.toNumber(movementSummary?.recentSoldQuantity);
-    const forecast = this.calculateForecast(product.quantity, recentSoldQuantity, windowDays);
+    const recentSoldQuantity = this.toNumber(
+      movementSummary?.recentSoldQuantity,
+    );
+    const forecast = this.calculateForecast(
+      product.quantity,
+      recentSoldQuantity,
+      windowDays,
+    );
 
     return {
       product: {
@@ -173,7 +201,9 @@ export class ProductsService {
         description: product.description,
         image: product.image,
         categoryId: product.categoryId,
-        category: product.category ? { id: product.category.id, name: product.category.name } : null,
+        category: product.category
+          ? { id: product.category.id, name: product.category.name }
+          : null,
       },
       dashboard: {
         alertDaysBefore: user?.alertDaysBefore ?? 7,
@@ -189,22 +219,27 @@ export class ProductsService {
     };
   }
 
-  async getDashboard(id: string, requesterId: string): Promise<ProductDashboardResponseDto> {
+  async getDashboard(
+    id: string,
+    requesterId: string,
+  ): Promise<ProductDashboardResponseDto> {
     const windowDays = 7;
     const recentMovementsLimit = 10;
 
-    const [user, product, movementSummary, recentMovements] = await Promise.all([
-      this.usersRepository.findOne({
-        where: { id: requesterId },
-        select: ['id', 'alertDaysBefore'],
-      }),
-      this.productsRepository.findOne({
-        where: { id, userId: requesterId },
-        select: ['id', 'name', 'quantity', 'image'],
-      }),
-      this.getMovementSummary(id, requesterId, windowDays),
-      this.getRecentMovements(id, requesterId, recentMovementsLimit),
-    ]);
+    const [user, product, movementSummary, recentMovements] = await Promise.all(
+      [
+        this.usersRepository.findOne({
+          where: { id: requesterId },
+          select: ['id', 'alertDaysBefore'],
+        }),
+        this.productsRepository.findOne({
+          where: { id, userId: requesterId },
+          select: ['id', 'name', 'quantity', 'image'],
+        }),
+        this.getMovementSummary(id, requesterId, windowDays),
+        this.getRecentMovements(id, requesterId, recentMovementsLimit),
+      ],
+    );
 
     if (!product) {
       throw new NotFoundException(`Produto com ID "${id}" não encontrado`);
@@ -212,8 +247,14 @@ export class ProductsService {
 
     const totalEntries = this.toNumber(movementSummary?.totalEntries);
     const totalOutputs = this.toNumber(movementSummary?.totalOutputs);
-    const recentSoldQuantity = this.toNumber(movementSummary?.recentSoldQuantity);
-    const forecast = this.calculateForecast(product.quantity, recentSoldQuantity, windowDays);
+    const recentSoldQuantity = this.toNumber(
+      movementSummary?.recentSoldQuantity,
+    );
+    const forecast = this.calculateForecast(
+      product.quantity,
+      recentSoldQuantity,
+      windowDays,
+    );
 
     return {
       forecast: {
@@ -248,7 +289,10 @@ export class ProductsService {
       throw new NotFoundException(`Produto com ID "${id}" não encontrado`);
     }
 
-    const category = await this.resolveCategory(updateProductDto.categoryId, requesterId);
+    const category = await this.resolveCategory(
+      updateProductDto.categoryId,
+      requesterId,
+    );
 
     const oldQuantity = product.quantity;
     const updatedProduct = await this.productsRepository.save({
@@ -274,7 +318,10 @@ export class ProductsService {
   }
 
   async remove(id: string, requesterId: string): Promise<Product> {
-    const product = await this.productsRepository.findOneBy({ id, userId: requesterId });
+    const product = await this.productsRepository.findOneBy({
+      id,
+      userId: requesterId,
+    });
     if (!product) {
       throw new NotFoundException(`Produto com ID "${id}" não encontrado`);
     }
@@ -290,16 +337,25 @@ export class ProductsService {
       return undefined;
     }
 
-    const category = await this.categoriesRepository.findOneBy({ id: categoryId, userId: requesterId });
+    const category = await this.categoriesRepository.findOneBy({
+      id: categoryId,
+      userId: requesterId,
+    });
 
     if (!category) {
-      throw new NotFoundException(`Categoria com ID "${categoryId}" não encontrada`);
+      throw new NotFoundException(
+        `Categoria com ID "${categoryId}" não encontrada`,
+      );
     }
 
     return category;
   }
 
-  private async getMovementSummary(id: string, requesterId: string, windowDays: number) {
+  private async getMovementSummary(
+    id: string,
+    requesterId: string,
+    windowDays: number,
+  ) {
     const windowStart = new Date();
     windowStart.setDate(windowStart.getDate() - windowDays);
 
@@ -327,7 +383,11 @@ export class ProductsService {
       .getRawOne<ProductMovementSummaryRaw>();
   }
 
-  private async getRecentMovements(id: string, requesterId: string, limit: number) {
+  private async getRecentMovements(
+    id: string,
+    requesterId: string,
+    limit: number,
+  ) {
     return this.stockMovementsRepository
       .createQueryBuilder('movement')
       .where('movement.userId = :userId', { userId: requesterId })
@@ -337,8 +397,16 @@ export class ProductsService {
       .getMany();
   }
 
-  private calculateForecast(currentStock: number, recentSoldQuantity: number, windowDays: number) {
-    if (!Number.isFinite(currentStock) || !Number.isFinite(recentSoldQuantity) || !Number.isFinite(windowDays)) {
+  private calculateForecast(
+    currentStock: number,
+    recentSoldQuantity: number,
+    windowDays: number,
+  ) {
+    if (
+      !Number.isFinite(currentStock) ||
+      !Number.isFinite(recentSoldQuantity) ||
+      !Number.isFinite(windowDays)
+    ) {
       return { averageDailySales: 0, estimatedDaysLeft: null as number | null };
     }
 
@@ -358,7 +426,9 @@ export class ProductsService {
     };
   }
 
-  private mapMovementToDto(movement: StockMovement): ProductDashboardMovementDto {
+  private mapMovementToDto(
+    movement: StockMovement,
+  ): ProductDashboardMovementDto {
     return {
       createdAt: movement.createdAt,
       id: movement.id,

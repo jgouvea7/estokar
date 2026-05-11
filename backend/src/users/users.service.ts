@@ -21,7 +21,7 @@ export class UsersService {
     private readonly categoriesRepository: Repository<Category>,
     @InjectRepository(Product)
     private readonly productsRepository: Repository<Product>,
-  ) { }
+  ) {}
 
   async findAll(): Promise<User[]> {
     return this.usersRepository.find({
@@ -50,7 +50,9 @@ export class UsersService {
     requesterId: string,
   ): Promise<User> {
     if (id !== requesterId) {
-      throw new ForbiddenException('Você não tem permissão para editar este usuário.');
+      throw new ForbiddenException(
+        'Você não tem permissão para editar este usuário.',
+      );
     }
 
     const user = await this.usersRepository.findOneBy({ id });
@@ -59,7 +61,9 @@ export class UsersService {
     }
 
     if (updateUserDto.email && updateUserDto.email !== user.email) {
-      const emailInUse = await this.usersRepository.findOneBy({ email: updateUserDto.email });
+      const emailInUse = await this.usersRepository.findOneBy({
+        email: updateUserDto.email,
+      });
       if (emailInUse) {
         throw new ConflictException('Este e-mail já está em uso.');
       }
@@ -79,7 +83,9 @@ export class UsersService {
 
   async remove(id: string, requesterId: string): Promise<User> {
     if (id !== requesterId) {
-      throw new ForbiddenException('Você não tem permissão para remover este usuário.');
+      throw new ForbiddenException(
+        'Você não tem permissão para remover este usuário.',
+      );
     }
 
     const user = await this.usersRepository.findOneBy({ id });

@@ -1,10 +1,11 @@
 "use client";
 
-import { useEffect, useMemo, useState, Suspense } from 'react';
+import { useEffect, useMemo, useRef, useState, Suspense } from 'react';
 import { createPortal } from 'react-dom';
+import Image from 'next/image';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
-import { ArrowUpRight, Edit2, Image as ImageIcon, MoreVertical, PackageSearch, Plus, Search, Trash2, TrendingDown } from 'lucide-react';
+import { ArrowUpRight, Check, Edit2, Image as ImageIcon, MoreVertical, PackageSearch, Plus, Search, Trash2, TrendingDown, Upload } from 'lucide-react';
 import toast from 'react-hot-toast';
 import {
   createCategory,
@@ -21,8 +22,16 @@ import {
 import type { Category, CreateProductPayload, Product } from '@/lib/types';
 import { useAuthStore } from '@/store/auth-store';
 import { useHistoryStore } from '@/store/history-store';
+import { getSupabaseClient } from '@/lib/supabase/client';
 
 const NO_PHOTO_IMAGE = 'sem-foto';
+const MAX_IMAGE_SIZE_BYTES = 2 * 1024 * 1024;
+const ACCEPTED_IMAGE_TYPES = new Set([
+  'image/png',
+  'image/jpeg',
+  'image/jpg',
+  'image/webp',
+]);
 
 type ProductForm = {
   name: string;
@@ -73,6 +82,11 @@ function ProductsPageContent() {
     categoryId: '',
     image: '',
   });
+  const [imageFile, setImageFile] = useState<File | null>(null);
+  const [imagePreviewUrl, setImagePreviewUrl] = useState('');
+  const [isImageUploading, setIsImageUploading] = useState(false);
+  const imageInputRef = useRef<HTMLInputElement | null>(null);
+  const imageObjectUrlRef = useRef<string | null>(null);
 
   const categoriesQuery = useQuery({
     queryKey: ['categories', session?.user.id],
@@ -146,8 +160,7 @@ function ProductsPageContent() {
     mutationFn: (payload: CreateProductPayload) => createProduct(payload, session!.accessToken),
     onSuccess: () => {
       void queryClient.invalidateQueries({ queryKey: ['products', session?.user.id] });
-      setShowProductModal(false);
-      setForm({ name: '', description: '', quantity: '', categoryId: '', image: '' });
+      handleCloseProductModal();
       toast.success('Produto criado com sucesso.');
     },
     onError: (error) => {
@@ -160,8 +173,7 @@ function ProductsPageContent() {
       updateProduct(id, payload, session!.accessToken),
     onSuccess: () => {
       void queryClient.invalidateQueries({ queryKey: ['products', session?.user.id] });
-      setShowProductModal(false);
-      setProductEditing(null);
+      handleCloseProductModal();
       toast.success('Produto atualizado com sucesso.');
     },
     onError: (error) => {
@@ -173,8 +185,7 @@ function ProductsPageContent() {
     mutationFn: (id: string) => deleteProduct(id, session!.accessToken),
     onSuccess: () => {
       void queryClient.invalidateQueries({ queryKey: ['products', session?.user.id] });
-      setShowProductModal(false);
-      setProductEditing(null);
+      handleCloseProductModal();
       toast.success('Produto excluido com sucesso.');
     },
     onError: (error) => {
@@ -233,13 +244,46 @@ function ProductsPageContent() {
     },
   });
 
+  useEffect(() => {
+    return () => {
+      if (imageObjectUrlRef.current) {
+        URL.revokeObjectURL(imageObjectUrlRef.current);
+        imageObjectUrlRef.current = null;
+      }
+    };
+  }, []);
+
   if (!session) {
     return null;
+  }
+
+  function clearImagePreview() {
+    if (imageObjectUrlRef.current) {
+      URL.revokeObjectURL(imageObjectUrlRef.current);
+      imageObjectUrlRef.current = null;
+    }
+    setImagePreviewUrl('');
+  }
+
+  function resetImageState() {
+    setImageFile(null);
+    clearImagePreview();
+    if (imageInputRef.current) {
+      imageInputRef.current.value = '';
+    }
+  }
+
+  function handleCloseProductModal() {
+    setShowProductModal(false);
+    setProductEditing(null);
+    setForm({ name: '', description: '', quantity: '', categoryId: '', image: '' });
+    resetImageState();
   }
 
   function openCreateProduct() {
     setProductEditing(null);
     setForm({ name: '', description: '', quantity: '', categoryId: '', image: '' });
+    resetImageState();
     setShowProductModal(true);
   }
 
@@ -252,7 +296,74 @@ function ProductsPageContent() {
       categoryId: product.categoryId ?? '',
       image: product.image === NO_PHOTO_IMAGE ? '' : product.image,
     });
+    resetImageState();
+    if (product.image && product.image !== NO_PHOTO_IMAGE) {
+      setImagePreviewUrl(product.image);
+    }
     setShowProductModal(true);
+  }
+
+  function handleImageFileChange(event: React.ChangeEvent<HTMLInputElement>) {
+    const file = event.target.files?.[0];
+    if (!file) return;
+
+    if (!ACCEPTED_IMAGE_TYPES.has(file.type)) {
+      toast.error('Formato invalido. Use PNG, JPG ou WEBP.');
+      event.target.value = '';
+      return;
+    }
+
+    if (file.size > MAX_IMAGE_SIZE_BYTES) {
+      toast.error('Arquivo muito grande. Limite de 2MB.');
+      event.target.value = '';
+      return;
+    }
+
+    if (imageObjectUrlRef.current) {
+      URL.revokeObjectURL(imageObjectUrlRef.current);
+    }
+
+    const previewUrl = URL.createObjectURL(file);
+    imageObjectUrlRef.current = previewUrl;
+    setImageFile(file);
+    setImagePreviewUrl(previewUrl);
+  }
+
+  async function uploadProductImage(file: File) {
+    const supabase = getSupabaseClient();
+    const extension = file.name.split('.').pop()?.toLowerCase() || 'png';
+    const safeExtension = extension.replace(/[^a-z0-9]/g, '') || 'png';
+    const fileName = `${crypto.randomUUID()}.${safeExtension}`;
+    const filePath = `products/${session?.user.id}/${fileName}`;
+
+    const { data, error } = await supabase.storage
+      .from('product-images')
+      .upload(filePath, file, {
+        cacheControl: '3600',
+        contentType: file.type,
+        upsert: false,
+      });
+
+    if (error || !data) {
+      throw new Error(error?.message ?? 'Falha ao enviar imagem.');
+    }
+
+    const { data: publicData } = supabase.storage
+      .from('product-images')
+      .getPublicUrl(data.path);
+
+    if (!publicData?.publicUrl) {
+      throw new Error('Nao foi possivel gerar a URL publica.');
+    }
+
+    return publicData.publicUrl;
+  }
+
+  function getSupabaseImagePath(imageUrl: string) {
+    const marker = '/storage/v1/object/public/product-images/';
+    const index = imageUrl.indexOf(marker);
+    if (index === -1) return null;
+    return imageUrl.slice(index + marker.length);
   }
 
   function toPayload(input: ProductForm): CreateProductPayload {
@@ -265,14 +376,46 @@ function ProductsPageContent() {
     };
   }
 
-  function handleSaveProduct() {
+  async function handleSaveProduct() {
     const quantity = Number(form.quantity);
     if (!form.name.trim() || !form.description.trim() || !Number.isFinite(quantity)) {
       toast.error('Preencha nome, descricao e quantidade valida.');
       return;
     }
 
-    const payload = toPayload(form);
+    let imageUrl = form.image || NO_PHOTO_IMAGE;
+
+    if (imageFile) {
+      try {
+        setIsImageUploading(true);
+        const previousImageUrl = form.image;
+        imageUrl = await uploadProductImage(imageFile);
+        if (imageObjectUrlRef.current) {
+          URL.revokeObjectURL(imageObjectUrlRef.current);
+          imageObjectUrlRef.current = null;
+        }
+        setForm((current) => ({ ...current, image: imageUrl }));
+        setImagePreviewUrl(imageUrl);
+        setImageFile(null);
+        if (imageInputRef.current) {
+          imageInputRef.current.value = '';
+        }
+        if (previousImageUrl && previousImageUrl !== NO_PHOTO_IMAGE) {
+          const previousPath = getSupabaseImagePath(previousImageUrl);
+          if (previousPath) {
+            const supabase = getSupabaseClient();
+            await supabase.storage.from('product-images').remove([previousPath]);
+          }
+        }
+      } catch (error) {
+        toast.error(error instanceof Error ? error.message : 'Erro ao enviar imagem.');
+        return;
+      } finally {
+        setIsImageUploading(false);
+      }
+    }
+
+    const payload = toPayload({ ...form, image: imageUrl });
 
     if (!productEditing) {
       createProductMutation.mutate(payload);
@@ -307,7 +450,7 @@ function ProductsPageContent() {
         <button
           type="button"
           onClick={openCreateProduct}
-          className="group flex h-12 items-center justify-center gap-2 rounded-xl bg-[image:var(--brand-gradient)] px-6 text-sm font-bold text-white shadow-[0_18px_40px_-20px_rgba(15,23,42,0.7)] ring-1 ring-white/15 transition-all hover:-translate-y-0.5 hover:shadow-[0_22px_45px_-20px_rgba(15,23,42,0.85)]">
+          className="group flex h-[3rem] items-center justify-center gap-2 rounded-xl bg-[image:var(--brand-gradient)] px-[1.5rem] text-sm font-bold text-white shadow-[0_18px_40px_-20px_rgba(15,23,42,0.7)] ring-1 ring-white/15 transition-all hover:-translate-y-0.5 hover:shadow-[0_22px_45px_-20px_rgba(15,23,42,0.85)]">
           <Plus size={18} strokeWidth={2.5} />
           Novo Produto
         </button>
@@ -440,7 +583,14 @@ function ProductsPageContent() {
               className="surface-card group relative flex cursor-pointer flex-col gap-6 p-5 transition-all hover:-translate-y-0.5 hover:shadow-lg focus:outline-none focus-visible:ring-4 focus-visible:ring-blue-100/70 sm:flex-row sm:items-center sm:gap-8">
               <div className="relative h-24 w-24 shrink-0 overflow-hidden rounded-2xl bg-slate-50 shadow-inner">
                 {product.image && product.image !== NO_PHOTO_IMAGE ? (
-                  <img src={product.image} alt={product.name} className="h-full w-full object-cover transition-transform group-hover:scale-110" />
+                  <Image
+                    src={product.image}
+                    alt={product.name}
+                    width={96}
+                    height={96}
+                    unoptimized
+                    className="h-full w-full object-cover transition-transform group-hover:scale-110"
+                  />
                 ) : (
                   <div className="grid h-full w-full place-items-center text-slate-300">
                     <ImageIcon size={32} strokeWidth={1.5} />
@@ -509,22 +659,46 @@ function ProductsPageContent() {
 
 
       {showProductModal ? (
-        <Modal title={productEditing ? 'Editar produto' : 'Novo produto'} onClose={() => setShowProductModal(false)}>
+        <Modal title={productEditing ? 'Editar produto' : 'Novo produto'} onClose={handleCloseProductModal}>
           <div className="space-y-4">
-            <div className="flex items-center gap-3">
-              <div className="relative h-16 w-16 shrink-0 overflow-hidden rounded-xl bg-soft">
-                {form.image ? (
-                  <img src={form.image} alt="Preview" className="h-full w-full object-cover" />
-                ) : (
-                  <div className="grid h-full w-full place-items-center text-muted/40">
-                    <ImageIcon size={20} />
-                  </div>
-                )}
+            <div className="space-y-3">
+              <div className="flex items-center gap-3">
+                <div className="relative h-16 w-16 shrink-0 overflow-hidden rounded-xl bg-soft">
+                  {imagePreviewUrl ? (
+                    <Image
+                      src={imagePreviewUrl}
+                      alt="Imagem do produto"
+                      width={64}
+                      height={64}
+                      unoptimized
+                      className="h-full w-full object-cover"
+                    />
+                  ) : (
+                    <div className="grid h-full w-full place-items-center text-muted/40">
+                      <ImageIcon size={20} />
+                    </div>
+                  )}
+                </div>
+                <div className="flex-1">
+                  <p className="text-xs font-bold text-ink">Imagem do produto</p>
+                  <p className="text-[10px] text-muted">PNG, JPG ou WEBP ate 2MB</p>
+                </div>
+                {imagePreviewUrl ? (
+                  <button
+                    type="button"
+                    onClick={() => {
+                      resetImageState();
+                      setForm((current) => ({ ...current, image: NO_PHOTO_IMAGE }));
+                    }}
+                    className="rounded-xl border border-slate-200 px-3 py-2 text-xs font-bold text-slate-500 transition-colors hover:bg-slate-50"
+                  >
+                    Remover
+                  </button>
+                ) : null}
               </div>
-              <div className="flex-1">
-                <p className="text-xs font-bold text-ink">Imagem do produto</p>
-                <p className="text-[10px] text-muted">Cole uma URL de imagem abaixo</p>
-              </div>
+              {isImageUploading ? (
+                <p className="text-xs font-semibold text-blue-600">Enviando imagem...</p>
+              ) : null}
             </div>
 
             <Input label="Nome" value={form.name} placeholder="Ex: Boneco Sasuke" onChange={(value) => setForm((current) => ({ ...current, name: value }))} />
@@ -543,12 +717,34 @@ function ProductsPageContent() {
                 placeholder="0"
                 onChange={(value) => setForm((current) => ({ ...current, quantity: value }))}
               />
-              <Input
-                label="Imagem (URL)"
-                value={form.image}
-                placeholder="Opcional"
-                onChange={(value) => setForm((current) => ({ ...current, image: value }))}
-              />
+              <div className="flex flex-col gap-2">
+                <label className="text-xs font-bold text-[#0f172a] uppercase tracking-wider">Upload da imagem</label>
+                <label
+                  className={`flex h-full cursor-pointer items-center justify-between gap-3 rounded-xl border border-dashed px-4 py-3.5 text-sm font-semibold transition-all ${imageFile
+                    ? 'border-blue-400 bg-blue-50/70 text-blue-700 shadow-sm'
+                    : 'border-slate-200 bg-slate-50 text-[#0f172a] hover:bg-white hover:shadow-sm'}
+                  `}
+                >
+                  <span className="inline-flex items-center gap-2">
+                    <Upload size={16} className={imageFile ? 'text-blue-600' : 'text-slate-400'} />
+                    {imageFile ? 'Arquivo selecionado' : 'Clique para selecionar'}
+                  </span>
+                  <input
+                    ref={imageInputRef}
+                    type="file"
+                    accept="image/png,image/jpeg,image/jpg,image/webp"
+                    onChange={handleImageFileChange}
+                    disabled={isImageUploading}
+                    className="sr-only"
+                  />
+                  {imageFile ? (
+                    <span className="ml-auto inline-flex items-center gap-2 text-xs font-medium text-blue-700">
+                      <Check size={14} className="text-emerald-600" />
+                      <span className="max-w-[140px] truncate sm:max-w-[180px]">{imageFile.name}</span>
+                    </span>
+                  ) : null}
+                </label>
+              </div>
             </div>
 
             <div>
@@ -570,9 +766,13 @@ function ProductsPageContent() {
               <button
                 type="button"
                 onClick={handleSaveProduct}
-                disabled={createProductMutation.isPending || updateProductMutation.isPending}
+                disabled={isImageUploading || createProductMutation.isPending || updateProductMutation.isPending}
                 className="w-full rounded-2xl bg-[image:var(--brand-gradient)] py-4 text-sm font-bold text-white shadow-[0_18px_35px_-20px_rgba(15,23,42,0.75)] ring-1 ring-white/15 transition-all hover:-translate-y-0.5 hover:brightness-110 disabled:opacity-60">
-                {productEditing ? 'Salvar alterações' : 'Criar produto'}
+                {isImageUploading
+                  ? 'Enviando imagem...'
+                  : productEditing
+                    ? 'Salvar alterações'
+                    : 'Criar produto'}
               </button>
 
               {productEditing && (

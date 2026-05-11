@@ -20,12 +20,12 @@ const changelog: VersionEntry[] = [
     date: '10 de Maio, 2026',
     changes: [
       {
-        type: 'fix',
-        text: 'Correção de Camadas: Resolvido bug onde o modal de configurações era renderizado atrás da navegação lateral.'
+        type: 'improvement',
+        text: 'Sistema de upload nativo de arquivos (PC/Mobile).'
       },
       {
         type: 'improvement',
-        text: 'Refinamento Mobile: Redução da largura da Sidebar para melhor aproveitamento de espaço em dispositivos móveis.'
+        text: 'Melhorias de responsividade para dispositivos móveis.'
       }
     ],
   },
@@ -49,7 +49,7 @@ export function VersionModal({ isOpen, onClose }: VersionModalProps) {
   if (!isOpen) return null;
 
   return (
-    <div className="fixed inset-0 z-[100] flex items-center justify-center p-2 sm:p-6">
+    <div className="fixed inset-0 z-[140] flex items-center justify-center p-2 sm:p-6">
       <div
         className="absolute inset-0 bg-slate-900/60 backdrop-blur-sm transition-opacity"
         onClick={onClose}

@@ -6,21 +6,15 @@ import { DashboardService } from './dashboard.service';
 @Controller('dashboard')
 @UseGuards(JwtAuthGuard)
 export class DashboardController {
-  constructor(
-    private readonly dashboardService: DashboardService,
-  ) {}
+  constructor(private readonly dashboardService: DashboardService) {}
 
   @Get()
-  getDashboard(
-    @CurrentUser('id') userId: string,
-  ) {
+  getDashboard(@CurrentUser('id') userId: string) {
     return this.dashboardService.getDashboard(userId);
   }
 
   @Get('alerts')
-  getAlerts(
-    @CurrentUser('id') userId: string,
-  ) {
+  getAlerts(@CurrentUser('id') userId: string) {
     return this.dashboardService.getAlerts(userId);
   }
 }

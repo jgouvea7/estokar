@@ -1,6 +1,10 @@
-import { ForbiddenException, Injectable, NotFoundException } from '@nestjs/common';
+import {
+  ForbiddenException,
+  Injectable,
+  NotFoundException,
+} from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository } from 'typeorm';
+import { Between, Repository } from 'typeorm';
 import { AdminLog, AdminLogAction } from './entities/admin-log.entity';
 import { User } from '../users/entities/user.entity';
 import { UserRole } from '../users/enums/user-role.enum';
@@ -18,7 +22,7 @@ export class AdminService {
     private readonly categoriesRepository: Repository<Category>,
     @InjectRepository(Product)
     private readonly productsRepository: Repository<Product>,
-  ) { }
+  ) {}
 
   async listUsers(page = 1, perPage = 10) {
     const [users, total] = await this.usersRepository.findAndCount({
@@ -52,7 +56,11 @@ export class AdminService {
     if (user.role !== UserRole.ADMIN) {
       user.role = UserRole.ADMIN;
       await this.usersRepository.save({ ...user, updatedAt: new Date() });
-      await this.createAdminLog(actorId, targetUserId, AdminLogAction.PROMOTE_USER);
+      await this.createAdminLog(
+        actorId,
+        targetUserId,
+        AdminLogAction.PROMOTE_USER,
+      );
     }
 
     return user;
@@ -60,7 +68,9 @@ export class AdminService {
 
   async removeUser(actorId: string, targetUserId: string) {
     if (actorId === targetUserId) {
-      throw new ForbiddenException('Não é permitido remover a própria conta admin.');
+      throw new ForbiddenException(
+        'Não é permitido remover a própria conta admin.',
+      );
     }
 
     const user = await this.usersRepository.findOne({
@@ -76,22 +86,45 @@ export class AdminService {
     await this.categoriesRepository.delete({ userId: targetUserId });
     await this.usersRepository.delete({ id: targetUserId });
 
-    await this.createAdminLog(actorId, targetUserId, AdminLogAction.DELETE_USER);
+    await this.createAdminLog(
+      actorId,
+      targetUserId,
+      AdminLogAction.DELETE_USER,
+    );
 
     return user;
   }
 
-  async getStats() {
-    const [totalUsers, admins, freeUsers] = await Promise.all([
+  async getStats(period: 'total' | 'monthly' = 'total') {
+    if (period === 'monthly') {
+      const now = new Date();
+      const startOfMonth = new Date(now.getFullYear(), now.getMonth(), 1);
+      const startOfNextMonth = new Date(
+        now.getFullYear(),
+        now.getMonth() + 1,
+        1,
+      );
+      const dateFilter = { createdAt: Between(startOfMonth, startOfNextMonth) };
+
+      const [totalUsers, totalProducts] = await Promise.all([
+        this.usersRepository.count({ where: dateFilter }),
+        this.productsRepository.count({ where: dateFilter }),
+      ]);
+
+      return {
+        totalUsers,
+        totalProducts,
+      };
+    }
+
+    const [totalUsers, totalProducts] = await Promise.all([
       this.usersRepository.count(),
-      this.usersRepository.count({ where: { role: UserRole.ADMIN } }),
-      this.usersRepository.count({ where: { role: UserRole.FREE } }),
+      this.productsRepository.count(),
     ]);
 
     return {
       totalUsers,
-      admins,
-      freeUsers,
+      totalProducts,
     };
   }
 
