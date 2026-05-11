@@ -239,8 +239,8 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
       {/* Sidebar */}
       <aside
         className={`fixed inset-y-0 left-0 z-[70] flex flex-col bg-[image:var(--brand-gradient)] text-white shadow-[0_30px_80px_-40px_rgba(15,23,42,0.9)] transition-all duration-300 ease-in-out
-          ${isMobileOpen ? 'w-75 p-6' : 'w-24 p-4'}
-          ${isDesktopCollapsed ? 'lg:w-24 lg:p-4' : 'lg:w-75 lg:p-6'}
+          ${isMobileOpen ? 'w-75 p-6' : 'w-18 p-4'}
+          ${isDesktopCollapsed ? 'lg:w-20 lg:p-4' : 'lg:w-75 lg:p-6'}
         `}
       >
         <div className={`mb-10 flex items-center transition-all duration-300 ${isMobileOpen ? 'justify-between gap-3' : 'flex-col-reverse gap-6'} ${isDesktopCollapsed ? 'lg:flex-col-reverse lg:gap-6' : 'lg:flex-row lg:justify-between lg:gap-3'}`}>
@@ -280,7 +280,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
                 href={item.href}
                 className={`group flex items-center rounded-xl py-3 text-sm font-semibold transition-all ${active
                   ? 'bg-white/12 text-white shadow-lg shadow-black/20 ring-1 ring-white/15'
-                  : 'text-slate-300/80 hover:bg-white/10 hover:text-white'
+                  : 'text-slate-300/80 lg:hover:bg-white/10 lg:hover:text-white'
                   } ${isMobileOpen ? 'justify-start px-4 gap-3' : 'justify-center px-0 gap-0'} ${isDesktopCollapsed ? 'lg:justify-center lg:px-0 lg:gap-0' : 'lg:justify-start lg:px-4 lg:gap-3'}`}
                 title={(isDesktopCollapsed || !isMobileOpen) ? item.label : ''}
               >
@@ -309,7 +309,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
                     href={item.href}
                     className={`group flex items-center rounded-xl py-3 text-sm font-semibold transition-all ${active
                       ? 'bg-white/12 text-white shadow-lg shadow-black/20 ring-1 ring-white/15'
-                      : 'text-slate-300/80 hover:bg-white/10 hover:text-white'
+                      : 'text-slate-300/80 lg:hover:bg-white/10 lg:hover:text-white'
                       } ${isMobileOpen ? 'justify-start px-4 gap-3' : 'justify-center px-0 gap-0'} ${isDesktopCollapsed ? 'lg:justify-center lg:px-0 lg:gap-0' : 'lg:justify-start lg:px-4 lg:gap-3'}`}
                     title={(isDesktopCollapsed || !isMobileOpen) ? item.label : ''}
                   >
@@ -330,7 +330,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
             <button
               type="button"
               onClick={() => setIsAccountMenuOpen((current) => !current)}
-              className={`flex w-full items-center justify-between gap-3 rounded-xl py-3 text-left text-sm font-semibold text-slate-200/90 transition-all hover:bg-white/10 hover:text-white ${isMobileOpen ? 'px-5' : 'justify-center px-0'} ${isDesktopCollapsed ? 'lg:justify-center lg:px-0' : 'lg:justify-between lg:px-5'}`}
+              className={`flex w-full items-center justify-between gap-3 rounded-xl py-3 text-left text-sm font-semibold text-slate-200/90 transition-all lg:hover:bg-white/10 lg:hover:text-white ${isMobileOpen ? 'px-5' : 'justify-center px-0'} ${isDesktopCollapsed ? 'lg:justify-center lg:px-0' : 'lg:justify-between lg:px-5'}`}
               aria-haspopup="menu"
               aria-expanded={isAccountMenuOpen}
             >
@@ -347,7 +347,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
             </button>
 
             {isAccountMenuOpen ? (
-              <div className="absolute bottom-full left-0 mb-3 w-65 rounded-2xl border border-gray-700 bg-white/1 p-2 shadow-[0_20px_40px_-20px_rgba(15,23,42,0.3)] backdrop-blur-md">
+              <div className="absolute bottom-full left-0 mb-3 w-65 rounded-2xl border border-white/15 bg-[image:var(--brand-gradient)] p-2 shadow-[0_20px_40px_-20px_rgba(15,23,42,0.3)]">
                 <div className="px-3 pb-2 pt-1">
                   <p className="text-xs font-bold uppercase tracking-[0.2em] text-white/70">Conta</p>
                   <p className="text-sm font-semibold text-white">{session.user.name}</p>
@@ -359,7 +359,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
                       setIsAccountMenuOpen(false);
                       router.push('/profile');
                     }}
-                    className="flex w-full items-center gap-3 rounded-xl px-3 py-2 text-sm font-semibold text-white/80 hover:bg-white/10"
+                    className="flex w-full items-center gap-3 rounded-xl px-3 py-2 text-sm font-semibold text-white/80 lg:hover:bg-white/10"
                   >
                     <UserCircle2 size={16} />
                     Perfil
@@ -370,7 +370,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
                       setIsAccountMenuOpen(false);
                       openSettings();
                     }}
-                    className="flex w-full items-center gap-3 rounded-xl px-3 py-2 text-sm font-semibold text-white/80 hover:bg-white/10"
+                    className="flex w-full items-center gap-3 rounded-xl px-3 py-2 text-sm font-semibold text-white/80 lg:hover:bg-white/10"
                   >
                     <Settings size={16} />
                     Configuracoes
@@ -383,7 +383,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
                       setIsAccountMenuOpen(false);
                       handleLogout();
                     }}
-                    className="flex w-full items-center gap-3 rounded-xl px-3 py-2 text-sm font-semibold text-rose-600 hover:bg-white/20"
+                    className="flex w-full items-center gap-3 rounded-xl px-3 py-2 text-sm font-semibold text-rose-600 lg:hover:bg-white/20"
                   >
                     <LogOut size={16} />
                     Sair
@@ -410,13 +410,13 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
       </div>
 
       {isSettingsOpen ? (
-        <div className="fixed inset-0 z-[60] flex items-center justify-center bg-slate-900/40 px-6 py-10">
+        <div className="fixed inset-0 z-[120] flex items-center justify-center bg-[rgba(11,18,32,0.55)] backdrop-blur-[6px] px-6 py-10">
           <div
             className="absolute inset-0"
             onClick={() => setIsSettingsOpen(false)}
             aria-hidden="true"
           />
-          <div className="relative w-full max-w-5xl overflow-hidden rounded-3xl border border-slate-200 bg-white shadow-[0_30px_80px_-50px_rgba(15,23,42,0.5)] reveal-up">
+          <div className="relative w-full max-w-5xl overflow-hidden rounded-3xl border border-slate-200 bg-white shadow-[0_30px_80px_-50px_rgba(15,23,42,0.5)] ring-1 ring-blue-500/20 reveal-up">
             <div className="flex items-center justify-between border-b border-slate-200 px-6 py-5">
               <div>
                 <p className="text-xs font-bold uppercase tracking-[0.2em] text-slate-400">Configuracoes</p>
@@ -540,7 +540,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
                           </div>
                         </div>
                         <div className="flex items-center gap-2">
-                          <span className="text-sm font-bold text-blue-600">v1.7.0 (Build 20260510)</span>
+                          <span className="text-sm font-bold text-blue-600">v1.7.1 (Build 20260510)</span>
                           <ChevronRight size={16} className="text-slate-300 transition-transform group-hover/version:translate-x-1" />
                         </div>
                       </button>

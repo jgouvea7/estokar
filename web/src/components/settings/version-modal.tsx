@@ -16,16 +16,16 @@ interface VersionEntry {
 
 const changelog: VersionEntry[] = [
   {
-    version: 'v1.7.0',
+    version: 'v1.7.1',
     date: '10 de Maio, 2026',
     changes: [
       {
         type: 'fix',
-        text: 'Eliminação de Overhead de Renderização: Otimização de scripts e remoção de processos redundantes que causavam instabilidade na interface Web.'
+        text: 'Correção de Camadas: Resolvido bug onde o modal de configurações era renderizado atrás da navegação lateral.'
       },
       {
         type: 'improvement',
-        text: 'Nova Sidebar Híbrida: Implementação de navegação responsiva com suporte total a abertura/fechamento dinâmico em dispositivos Mobile e Desktop.'
+        text: 'Refinamento Mobile: Redução da largura da Sidebar para melhor aproveitamento de espaço em dispositivos móveis.'
       }
     ],
   },
