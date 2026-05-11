@@ -545,7 +545,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
                           </div>
                         </div>
                         <div className="flex items-center gap-2">
-                          <span className="text-sm font-bold text-blue-600">v1.7.1 (Build 20260510)</span>
+                          <span className="text-sm font-bold text-blue-600">v1.8.1 (Build 20260511)</span>
                           <ChevronRight size={16} className="text-slate-300 transition-transform group-hover/version:translate-x-1" />
                         </div>
                       </button>
