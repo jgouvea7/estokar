@@ -16,7 +16,7 @@ interface VersionEntry {
 
 const changelog: VersionEntry[] = [
   {
-    version: 'v1.8.0',
+    version: 'v1.8.1',
     date: '11 de Maio, 2026',
     changes: [
       {
@@ -26,6 +26,10 @@ const changelog: VersionEntry[] = [
       {
         type: 'improvement',
         text: 'Melhorias de responsividade para dispositivos móveis.'
+      },
+      {
+        type: 'fix',
+        text: 'Ajuste no comportamento do backdrop com a sidebar colapsada.'
       }
     ],
   },

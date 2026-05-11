@@ -145,7 +145,6 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
     });
   }, [pathname]);
 
-  // ESC key to close mobile sidebar
   useEffect(() => {
     if (!isMobileOpen) return;
 
@@ -228,7 +227,6 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
 
   return (
     <main className="flex min-h-screen bg-[#f5f7fb]">
-      {/* Mobile Overlay */}
       {isMobileOpen && (
         <div
           className="fixed inset-0 z-[60] bg-slate-900/40 backdrop-blur-sm transition-opacity duration-300 lg:hidden"
@@ -236,9 +234,16 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
         />
       )}
 
-      {/* Sidebar */}
+      {isAccountMenuOpen && (
+        <div
+          className="fixed inset-0 z-[65] transition-opacity duration-300"
+          onClick={() => setIsAccountMenuOpen(false)}
+        />
+      )}
+
+
       <aside
-        className={`fixed inset-y-0 left-0 z-[70] flex flex-col overflow-y-auto overscroll-contain bg-[image:var(--brand-gradient)] text-white shadow-[0_30px_80px_-40px_rgba(15,23,42,0.9)] transition-all duration-300 ease-in-out
+        className={`fixed inset-y-0 left-0 z-[70] flex flex-col ${isAccountMenuOpen ? 'overflow-visible' : 'overflow-y-auto'} overscroll-contain bg-[image:var(--brand-gradient)] text-white shadow-[0_30px_80px_-40px_rgba(15,23,42,0.9)] transition-all duration-300 ease-in-out
           ${isMobileOpen ? 'w-75 p-6' : 'w-18 p-4'}
           ${isDesktopCollapsed ? 'lg:w-20 lg:p-4' : 'lg:w-75 lg:p-6'}
         `}
@@ -540,7 +545,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
                           </div>
                         </div>
                         <div className="flex items-center gap-2">
-                          <span className="text-sm font-bold text-blue-600">v1.8.0 (Build 20260511)</span>
+                          <span className="text-sm font-bold text-blue-600">v1.7.1 (Build 20260510)</span>
                           <ChevronRight size={16} className="text-slate-300 transition-transform group-hover/version:translate-x-1" />
                         </div>
                       </button>
