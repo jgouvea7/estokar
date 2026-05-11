@@ -16,8 +16,8 @@ interface VersionEntry {
 
 const changelog: VersionEntry[] = [
   {
-    version: 'v1.7.1',
-    date: '10 de Maio, 2026',
+    version: 'v1.8.0',
+    date: '11 de Maio, 2026',
     changes: [
       {
         type: 'improvement',
