@@ -395,7 +395,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
         </div>
       </aside>
 
-      <div className={`flex flex-1 flex-col transition-all duration-300 ease-in-out ${isDesktopCollapsed ? 'lg:pl-24' : 'lg:pl-80'} pl-24`}>
+      <div className={`flex flex-1 flex-col transition-all duration-300 ease-in-out ${isDesktopCollapsed ? 'lg:pl-24' : 'lg:pl-80'} pl-19`}>
         <header className="sticky top-0 z-40 flex h-16 items-center justify-between border-b border-slate-200 bg-white/80 px-6 backdrop-blur-md">
           <div className="flex items-center gap-4">
             <h2 className="text-lg font-bold tracking-tight text-[#0f172a]">{getHeaderTitle(pathname)}</h2>
