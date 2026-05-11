@@ -4,7 +4,7 @@ import Link from 'next/link';
 import { usePathname, useRouter } from 'next/navigation';
 import { useEffect, useRef, useState } from 'react';
 import { useQueryClient } from '@tanstack/react-query';
-import { Boxes, FileText, Grid2x2, History, Info, LogOut, Package2, Settings, Shield, Smartphone, UserCircle2, X, ChevronRight, Users, BarChart3, Lock, Menu, PanelLeftClose, PanelLeftOpen, type LucideIcon } from 'lucide-react';
+import { Boxes, FileText, Grid2x2, History, Info, LogOut, Package2, Settings, Shield, Smartphone, UserCircle2, X, ChevronRight, Users, BarChart3, Menu, type LucideIcon } from 'lucide-react';
 import toast from 'react-hot-toast';
 import { useAuthStore } from '@/store/auth-store';
 import { useUIStore } from '@/store/ui-store';
@@ -48,7 +48,6 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
   const clearSession = useAuthStore((state) => state.clearSession);
   const setSession = useAuthStore((state) => state.setSession);
 
-  // UI State
   const isDesktopCollapsed = useUIStore((state) => state.isDesktopCollapsed);
   const toggleDesktopCollapsed = useUIStore((state) => state.toggleDesktopCollapsed);
   const [isMobileOpen, setIsMobileOpen] = useState(false);
@@ -254,7 +253,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
               <h1 className="text-lg font-bold tracking-tight whitespace-nowrap">Inventory OS</h1>
             </div>
           </div>
-          
+
           <button
             type="button"
             onClick={() => {

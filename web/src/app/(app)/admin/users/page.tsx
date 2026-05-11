@@ -15,7 +15,6 @@ export default function AdminUsersPage() {
   const [page, setPage] = useState(1);
   const [search, setSearch] = useState('');
 
-  // Modals state
   const [userToPromote, setUserToPromote] = useState<AdminUser | null>(null);
   const [userToDelete, setUserToDelete] = useState<AdminUser | null>(null);
   const [isActionLoading, setIsActionLoading] = useState(false);
@@ -46,7 +45,7 @@ export default function AdminUsersPage() {
   useEffect(() => {
     const controller = new AbortController();
     let active = true;
-
+    /* eslint-disable react-hooks/set-state-in-effect */
     fetchUsers({
       signal: controller.signal,
       isActive: () => active,
