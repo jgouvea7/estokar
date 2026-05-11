@@ -9,6 +9,7 @@ const nextConfig: NextConfig = {
 	async rewrites() {
 		const backendApiUrl = getBackendApiUrl().replace(/\/$/, '');
 
+
 		return [
 			{
 				source: '/api/:path*',
@@ -16,6 +17,7 @@ const nextConfig: NextConfig = {
 			},
 		];
 	},
+	reactStrictMode: false,
 };
 
 export default withSentryConfig(nextConfig, {

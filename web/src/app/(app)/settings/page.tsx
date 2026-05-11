@@ -26,7 +26,7 @@ export default function SettingsPage() {
               <SettingsItem
                 icon={Smartphone}
                 label="Versão do sistema"
-                value="v1.6.0 (Build 20260508)"
+                value="v1.7.0 (Build 20260510)"
                 color="blue"
                 onClick={() => setIsVersionModalOpen(true)}
               />

@@ -11,6 +11,7 @@ import { AuthModule } from './auth/auth.module';
 import { CategoriesModule } from './categories/categories.module';
 import { DashboardModule } from './dashboard/dashboard.module';
 import { StockMovementsModule } from './stock-movements/stock-movements.module';
+import { AdminModule } from './admin/admin.module';
 
 @Module({
   imports: [
@@ -64,6 +65,7 @@ import { StockMovementsModule } from './stock-movements/stock-movements.module';
     AuthModule,
     DashboardModule,
     StockMovementsModule,
+    AdminModule,
   ],
   controllers: [AppController],
   providers: [

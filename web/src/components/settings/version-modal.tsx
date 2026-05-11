@@ -1,6 +1,6 @@
 "use client";
 
-import { X, CheckCircle2, Rocket, Bug, Zap } from 'lucide-react';
+import { X, Rocket, Bug, Zap } from 'lucide-react';
 import { useEffect } from 'react';
 
 interface VersionChange {
@@ -16,32 +16,16 @@ interface VersionEntry {
 
 const changelog: VersionEntry[] = [
   {
-    version: 'v1.6.0',
-    date: '08 de Maio, 2026',
+    version: 'v1.7.0',
+    date: '10 de Maio, 2026',
     changes: [
-      { 
-        type: 'improvement', 
-        text: 'Otimização de Performance em Produção: Redução no tempo de resposta das listagens de Produtos e Histórico para carregamento acelerado.' 
-      },
-      { 
-        type: 'improvement', 
-        text: 'Sincronização Instantânea de Saldo: Otimização no fluxo de entrada e saída de produtos, garantindo que o saldo seja atualizado em tempo real na interface do produto.' 
-      },
-      { 
-        type: 'fix', 
-        text: 'Persistência de Dados na Página de Produto: Corrigido delay de carregamento e inconsistência de informações em tempo real na visão detalhada.' 
-      },
-      { 
-        type: 'fix', 
-        text: 'Persistência de Sessão Estendida: Implementação de ciclo de vida de login de 7 dias para evitar desconexões automáticas durante o uso.' 
-      },      
-      { 
-        type: 'fix', 
-        text: 'Resiliência no Gerenciamento de Categorias: Corrigido erro de parsing JSON na exclusão e implementada atualização automática.' 
+      {
+        type: 'fix',
+        text: 'Eliminação de Overhead de Renderização: Otimização de scripts e remoção de processos redundantes que causavam instabilidade na interface Web.'
       },
       {
-        type: 'fix', 
-        text: 'Correção de Inconsistência de Status: Sincronização dos indicadores visuais (badges) com as configurações de alerta e previsões de esgotamento do usuário.' 
+        type: 'improvement',
+        text: 'Nova Sidebar Híbrida: Implementação de navegação responsiva com suporte total a abertura/fechamento dinâmico em dispositivos Mobile e Desktop.'
       }
     ],
   },

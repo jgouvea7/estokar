@@ -7,6 +7,7 @@ import { buildDashboardOverviewData } from '@/lib/dashboard/dashboard-data';
 import { useAuthStore } from '@/store/auth-store';
 
 export default function DashboardPage() {
+  const isDev = process.env.NODE_ENV === 'development';
   const session = useAuthStore((state) => state.session);
 
   const dashboardQuery = useQuery({
@@ -16,7 +17,7 @@ export default function DashboardPage() {
     }),
     enabled: Boolean(session?.accessToken),
     staleTime: 0,
-    refetchOnWindowFocus: true,
+    refetchOnWindowFocus: !isDev,
     retry: false,
   });
 

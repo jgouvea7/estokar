@@ -12,10 +12,12 @@ export async function updateUser(
   userId: string,
   payload: Partial<Pick<UserProfile, 'alertDaysBefore' | 'email' | 'name'>>,
   accessToken: string,
+  signal?: AbortSignal,
 ): Promise<UserProfile> {
   return apiRequest<UserProfile>(`/users/${userId}`, {
     method: 'PATCH',
     accessToken,
     body: JSON.stringify(payload),
+    signal,
   });
 }

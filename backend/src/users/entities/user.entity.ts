@@ -1,5 +1,6 @@
 import { Product } from '../../products/entities/product.entity';
 import { Column, Entity, OneToMany, PrimaryGeneratedColumn } from 'typeorm';
+import { UserRole } from '../enums/user-role.enum';
 
 @Entity()
 export class User {
@@ -14,6 +15,9 @@ export class User {
 
   @Column({ unique: true })
   email: string;
+
+  @Column({ type: 'enum', enum: UserRole, default: UserRole.FREE })
+  role: UserRole;
 
   @Column({ select: false })
   password: string;

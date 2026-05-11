@@ -42,6 +42,7 @@ type StockPoint = {
 };
 
 export default function ProductDetailsPage() {
+  const isDev = process.env.NODE_ENV === 'development';
   const router = useRouter();
   const params = useParams<{ id?: string | string[] }>();
   const session = useAuthStore((state) => state.session);
@@ -98,8 +99,8 @@ export default function ProductDetailsPage() {
     },
     enabled: mounted && Boolean(session?.accessToken && productId),
     staleTime: 0,
-    refetchOnWindowFocus: true,
-    refetchOnMount: 'always',
+    refetchOnWindowFocus: !isDev,
+    refetchOnMount: isDev ? false : 'always',
     retry: false,
   });
 

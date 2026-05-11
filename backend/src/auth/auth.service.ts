@@ -11,6 +11,7 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import * as bcrypt from 'bcrypt';
 import { User } from '../users/entities/user.entity';
+import { UserRole } from '../users/enums/user-role.enum';
 import { LoginDto } from './dto/login.dto';
 import { RegisterDto } from './dto/register.dto';
 
@@ -48,6 +49,7 @@ export class AuthService {
       name: dto.name,
       email: dto.email,
       password: hashedPassword,
+      role: UserRole.FREE,
       createdAt: now,
       updatedAt: now,
     });
@@ -60,7 +62,7 @@ export class AuthService {
   async login(dto: LoginDto): Promise<AuthTokens & { user: Partial<User> }> {
     const user = await this.usersRepository.findOne({
       where: { email: dto.email },
-      select: ['id', 'name', 'email', 'password', 'alertDaysBefore'],
+      select: ['id', 'name', 'email', 'password', 'alertDaysBefore', 'role'],
     });
 
     if (!user) {
@@ -76,7 +78,8 @@ export class AuthService {
       throw new UnauthorizedException('Credenciais inválidas.');
     }
 
-    const tokens = await this.generateTokens(user.id, user.email, user.name);
+    const role = user.role ?? UserRole.FREE;
+    const tokens = await this.generateTokens(user.id, user.email, user.name, role);
     await this.saveRefreshToken(user.id, tokens.refreshToken);
 
     return {
@@ -86,6 +89,7 @@ export class AuthService {
         name: user.name,
         email: user.email,
         alertDaysBefore: user.alertDaysBefore,
+        role,
       },
     };
   }
@@ -96,7 +100,7 @@ export class AuthService {
   ): Promise<AuthTokens> {
     const user = await this.usersRepository.findOne({
       where: { id: userId },
-      select: ['id', 'name', 'email', 'refreshToken'],
+      select: ['id', 'name', 'email', 'refreshToken', 'role'],
     });
 
     if (!user || !user.refreshToken) {
@@ -108,7 +112,8 @@ export class AuthService {
       throw new ForbiddenException('Refresh token inválido.');
     }
 
-    const tokens = await this.generateTokens(user.id, user.email, user.name);
+    const role = user.role ?? UserRole.FREE;
+    const tokens = await this.generateTokens(user.id, user.email, user.name, role);
     await this.saveRefreshToken(user.id, tokens.refreshToken);
     return tokens;
   }
@@ -131,6 +136,7 @@ export class AuthService {
         email: googleUser.email,
         googleId: googleUser.googleId,
         password: await bcrypt.hash(crypto.randomUUID(), 12),
+        role: UserRole.FREE,
         createdAt: now,
         updatedAt: now,
       });
@@ -141,7 +147,8 @@ export class AuthService {
       user = await this.usersRepository.save(user);
     }
 
-    const tokens = await this.generateTokens(user.id, user.email, user.name);
+    const role = user.role ?? UserRole.FREE;
+    const tokens = await this.generateTokens(user.id, user.email, user.name, role);
     await this.saveRefreshToken(user.id, tokens.refreshToken);
 
     return {
@@ -152,6 +159,7 @@ export class AuthService {
         email: user.email,
         createdAt: user.createdAt,
         alertDaysBefore: user.alertDaysBefore,
+        role,
       },
     };
   }
@@ -171,8 +179,9 @@ export class AuthService {
     userId: string,
     email: string,
     name: string,
+    role: UserRole,
   ): Promise<AuthTokens> {
-    const payload = { sub: userId, email, name };
+    const payload = { sub: userId, email, name, role };
 
     const [accessToken, refreshToken] = await Promise.all([
       this.jwtService.signAsync(payload, {

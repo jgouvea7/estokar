@@ -5,11 +5,13 @@ import { ConfigService } from '@nestjs/config';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { User } from '../../users/entities/user.entity';
+import { UserRole } from '../../users/enums/user-role.enum';
 
 export interface JwtPayload {
   sub: string;
   email: string;
   name: string;
+  role: UserRole;
 }
 
 @Injectable()
@@ -29,7 +31,7 @@ export class JwtStrategy extends PassportStrategy(Strategy, 'jwt') {
   async validate(payload: JwtPayload) {
     const user = await this.usersRepository.findOne({
       where: { id: payload.sub },
-      select: ['id'],
+      select: ['id', 'role'],
     });
 
     if (!user) {
@@ -40,6 +42,7 @@ export class JwtStrategy extends PassportStrategy(Strategy, 'jwt') {
       id: payload.sub,
       email: payload.email,
       name: payload.name,
+      role: user.role,
     };
   }
 }

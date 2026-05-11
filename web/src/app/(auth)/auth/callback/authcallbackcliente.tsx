@@ -4,7 +4,7 @@ import { useEffect } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import toast from 'react-hot-toast';
 import { useAuthStore } from '@/store/auth-store';
-import type { AuthSession } from '@/lib/types';
+import type { AuthSession, UserRole } from '@/lib/types';
 
 export default function AuthCallbackClient() {
     const router = useRouter();
@@ -17,6 +17,9 @@ export default function AuthCallbackClient() {
         const id = searchParams.get('id') ?? '';
         const name = searchParams.get('name') ?? 'Usuario';
         const email = searchParams.get('email') ?? '';
+        const roleParam = searchParams.get('role');
+        const role: UserRole =
+            roleParam === 'ADMIN' ? 'ADMIN' : 'FREE';
         const createdAt = searchParams.get('createdAt') ?? '';
         const alertDaysBefore = Number(searchParams.get('alertDaysBefore') ?? '') || undefined;
 
@@ -29,7 +32,7 @@ export default function AuthCallbackClient() {
         const session: AuthSession = {
             accessToken,
             refreshToken,
-            user: { id, name, email, createdAt, alertDaysBefore },
+            user: { id, name, email, role, createdAt, alertDaysBefore },
         };
 
         localStorage.setItem('accessToken', accessToken);

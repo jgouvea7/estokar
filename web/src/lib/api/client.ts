@@ -59,6 +59,13 @@ export async function apiRequest<T>(path: string, options: RequestOptions = {}):
         accessToken: refreshed,
         skipRefresh: true,
       });
+    } else {
+      // Refresh failed, clear session and redirect
+      if (typeof window !== 'undefined') {
+        const { useAuthStore } = await import('@/store/auth-store');
+        useAuthStore.getState().clearSession();
+        window.location.href = '/';
+      }
     }
   }
 

@@ -12,9 +12,25 @@ export default function HistoryPage() {
   const session = useAuthStore((state) => state.session);
 
   useEffect(() => {
-    if (session?.accessToken) {
-      getStockMovements(session.accessToken).then(setItems);
-    }
+    if (!session?.accessToken) return;
+
+    const controller = new AbortController();
+    let active = true;
+
+    getStockMovements(session.accessToken, controller.signal)
+      .then((items) => {
+        if (!active) return;
+        setItems(items);
+      })
+      .catch((error) => {
+        if (controller.signal.aborted) return;
+        console.error(error);
+      });
+
+    return () => {
+      active = false;
+      controller.abort();
+    };
   }, [session, setItems]);
   const groupedByDate = items.reduce<Record<string, typeof items>>((acc, item) => {
     const key = new Date(item.createdAt).toLocaleDateString('pt-BR', {

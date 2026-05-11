@@ -1,8 +1,10 @@
+export type UserRole = 'FREE' | 'ADMIN';
+
 export type UserProfile = {
   id: string;
   name: string;
   email: string;
-  role?: string;
+  role: UserRole;
   createdAt: string;
   alertDaysBefore?: number;
 };
@@ -172,4 +174,28 @@ export type DashboardSummary = {
   totalStock: number;
   catalogAvailability: number;
   dailyBalance: number;
+};
+
+export type AdminUser = {
+  id: string;
+  name: string;
+  email: string;
+  role: UserRole;
+  createdAt: string;
+};
+
+export type AdminStats = {
+  totalUsers: number;
+  totalAdmins: number;
+  totalFree: number;
+};
+
+export type PaginatedResponse<T> = {
+  data: T[];
+  meta: {
+    total: number;
+    page: number;
+    lastPage: number;
+    perPage: number;
+  };
 };

@@ -3,11 +3,13 @@ import { PassportStrategy } from '@nestjs/passport';
 import { ExtractJwt, Strategy } from 'passport-jwt';
 import { ConfigService } from '@nestjs/config';
 import { Request } from 'express';
+import { UserRole } from '../../users/enums/user-role.enum';
 
 export interface JwtRefreshPayload {
   sub: string;
   email: string;
   name: string;
+  role: UserRole;
   refreshToken: string;
 }
 
@@ -29,6 +31,7 @@ export class JwtRefreshStrategy extends PassportStrategy(Strategy, 'jwt-refresh'
       id: payload.sub,
       email: payload.email,
       name: payload.name,
+      role: payload.role,
       refreshToken,
     };
   }

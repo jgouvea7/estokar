@@ -12,7 +12,6 @@ export default function Home() {
   const [isChecking, setIsChecking] = useState(true);
 
   useEffect(() => {
-    // Pequeno delay para garantir que o Zustand hidratou do localStorage
     const timer = setTimeout(() => {
       setIsChecking(false);
     }, 10);
