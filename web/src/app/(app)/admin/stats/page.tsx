@@ -23,13 +23,6 @@ export default function AdminStatsPage() {
     }),
     staleTime: 60000,
     gcTime: 300000,
-    onError: (error) => {
-      toast.error(
-        error instanceof Error
-          ? error.message
-          : 'Falha ao carregar estatísticas.'
-      );
-    },
   });
 
   const stats = statsQuery.data ?? null;
@@ -55,11 +48,10 @@ export default function AdminStatsPage() {
               <button
                 key={option.value}
                 onClick={() => setPeriod(option.value)}
-                className={`rounded-2xl px-4 py-2 text-xs font-bold uppercase tracking-wider transition-all ${
-                  period === option.value
+                className={`rounded-2xl px-4 py-2 text-xs font-bold uppercase tracking-wider transition-all ${period === option.value
                     ? 'bg-white text-slate-900 shadow-sm'
                     : 'text-slate-500 hover:text-slate-700'
-                }`}
+                  }`}
                 type="button"
                 aria-pressed={period === option.value}
               >
