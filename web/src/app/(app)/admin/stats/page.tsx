@@ -6,7 +6,6 @@ import { useAuthStore } from '@/store/auth-store';
 import { getAdminStats } from '@/lib/api/admin';
 import { StatsCards } from '@/components/admin/stats-cards';
 import type { AdminStatsPeriod } from '@/lib/types';
-import toast from 'react-hot-toast';
 import { RefreshCcw } from 'lucide-react';
 
 export default function AdminStatsPage() {

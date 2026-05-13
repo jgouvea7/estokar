@@ -16,21 +16,13 @@ interface VersionEntry {
 
 const changelog: VersionEntry[] = [
   {
-    version: 'v1.8.1',
+    version: 'v1.9.9',
     date: '11 de Maio, 2026',
     changes: [
       {
         type: 'improvement',
-        text: 'Sistema de upload nativo de arquivos (PC/Mobile).'
+        text: 'Agora é possível adicionar e remover múltiplos itens do estoque de uma vez e a criação/edição de produtos ficou mais simples e organizada.'
       },
-      {
-        type: 'improvement',
-        text: 'Melhorias de responsividade para dispositivos móveis.'
-      },
-      {
-        type: 'fix',
-        text: 'Ajuste no comportamento do backdrop com a sidebar colapsada.'
-      }
     ],
   },
 ];

@@ -5,7 +5,7 @@ import { createPortal } from 'react-dom';
 import Image from 'next/image';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
-import { ArrowUpRight, Check, Edit2, Image as ImageIcon, MoreVertical, PackageSearch, Plus, Search, Trash2, TrendingDown, Upload } from 'lucide-react';
+import { ArrowUpRight, Edit2, Image as ImageIcon, MoreVertical, PackageSearch, Plus, Search, Trash2, TrendingDown } from 'lucide-react';
 import toast from 'react-hot-toast';
 import {
   createCategory,
@@ -69,7 +69,8 @@ function ProductsPageContent() {
     }
   }, [searchParams]);
 
-  const [showProductModal, setShowProductModal] = useState(false);
+  const [showCreateProductModal, setShowCreateProductModal] = useState(false);
+  const [showEditProductModal, setShowEditProductModal] = useState(false);
   const [showCategoryModal, setShowCategoryModal] = useState(false);
   const [productEditing, setProductEditing] = useState<Product | null>(null);
   const [categoryEditing, setCategoryEditing] = useState<Category | null>(null);
@@ -78,10 +79,11 @@ function ProductsPageContent() {
   const [form, setForm] = useState<ProductForm>({
     name: '',
     description: '',
-    quantity: '',
+    quantity: '0',
     categoryId: '',
     image: '',
   });
+  const [stockAdjustments, setStockAdjustments] = useState<Record<string, { in: string; out: string }>>({});
   const [imageFile, setImageFile] = useState<File | null>(null);
   const [imagePreviewUrl, setImagePreviewUrl] = useState('');
   const [isImageUploading, setIsImageUploading] = useState(false);
@@ -194,8 +196,8 @@ function ProductsPageContent() {
   });
 
   const quickStockMutation = useMutation({
-    mutationFn: async ({ product, type }: { product: Product; type: 'in' | 'out' }) => {
-      const nextQuantity = type === 'in' ? product.quantity + 1 : Math.max(product.quantity - 1, 0);
+    mutationFn: async ({ product, quantity, type }: { product: Product; quantity: number; type: 'in' | 'out' }) => {
+      const nextQuantity = type === 'in' ? product.quantity + quantity : Math.max(product.quantity - quantity, 0);
       const updated = await updateProduct(
         product.id,
         {
@@ -208,12 +210,12 @@ function ProductsPageContent() {
         session!.accessToken,
       );
 
-      return { nextQuantity, product: updated, type };
+      return { nextQuantity, product: updated, type, quantity };
     },
-    onMutate: async ({ product, type }) => {
+    onMutate: async ({ product, quantity, type }) => {
       await queryClient.cancelQueries({ queryKey: productsQueryKey });
       const previous = queryClient.getQueryData<Product[]>(productsQueryKey);
-      const nextQuantity = type === 'in' ? product.quantity + 1 : Math.max(product.quantity - 1, 0);
+      const nextQuantity = type === 'in' ? product.quantity + quantity : Math.max(product.quantity - quantity, 0);
 
       queryClient.setQueryData<Product[]>(productsQueryKey, (current) =>
         current?.map((item) =>
@@ -225,15 +227,25 @@ function ProductsPageContent() {
 
       return { previous };
     },
-    onSuccess: ({ product, type }) => {
+    onSuccess: ({ product, type }, variables) => {
       queryClient.setQueryData<Product[]>(productsQueryKey, (current) =>
         current?.map((item) => (item.id === product.id ? { ...item, ...product } : item)) ?? current,
       );
       addHistoryItem({
         productId: product.id,
         productName: product.name,
-        quantity: 1,
+        quantity: variables.quantity,
         type,
+      });
+      setStockAdjustments((current) => {
+        const previousValue = current[product.id] ?? { in: '1', out: '1' };
+        return {
+          ...current,
+          [product.id]: {
+            ...previousValue,
+            [type]: '1',
+          },
+        };
       });
     },
     onError: (error, _variables, context) => {
@@ -274,17 +286,18 @@ function ProductsPageContent() {
   }
 
   function handleCloseProductModal() {
-    setShowProductModal(false);
+    setShowCreateProductModal(false);
+    setShowEditProductModal(false);
     setProductEditing(null);
-    setForm({ name: '', description: '', quantity: '', categoryId: '', image: '' });
+    setForm({ name: '', description: '', quantity: '0', categoryId: '', image: '' });
     resetImageState();
   }
 
   function openCreateProduct() {
     setProductEditing(null);
-    setForm({ name: '', description: '', quantity: '', categoryId: '', image: '' });
+    setForm({ name: '', description: '', quantity: '0', categoryId: '', image: '' });
     resetImageState();
-    setShowProductModal(true);
+    setShowCreateProductModal(true);
   }
 
   function openEditProduct(product: Product) {
@@ -300,7 +313,7 @@ function ProductsPageContent() {
     if (product.image && product.image !== NO_PHOTO_IMAGE) {
       setImagePreviewUrl(product.image);
     }
-    setShowProductModal(true);
+    setShowEditProductModal(true);
   }
 
   function handleImageFileChange(event: React.ChangeEvent<HTMLInputElement>) {
@@ -367,10 +380,13 @@ function ProductsPageContent() {
   }
 
   function toPayload(input: ProductForm): CreateProductPayload {
+    const parsedQuantity = Number(input.quantity);
+    const normalizedQuantity = Number.isFinite(parsedQuantity) ? Math.max(Math.trunc(parsedQuantity), 0) : 0;
+
     return {
       name: input.name.trim(),
       description: input.description.trim(),
-      quantity: Math.max(Math.trunc(Number(input.quantity)), 0),
+      quantity: normalizedQuantity,
       categoryId: input.categoryId || null,
       image: input.image || NO_PHOTO_IMAGE,
     };
@@ -378,7 +394,13 @@ function ProductsPageContent() {
 
   async function handleSaveProduct() {
     const quantity = Number(form.quantity);
-    if (!form.name.trim() || !form.description.trim() || !Number.isFinite(quantity)) {
+
+    if (!form.name.trim() || !form.description.trim()) {
+      toast.error('Preencha nome e descricao.');
+      return;
+    }
+
+    if (!productEditing && (!Number.isFinite(quantity) || quantity < 0)) {
       toast.error('Preencha nome, descricao e quantidade valida.');
       return;
     }
@@ -425,8 +447,40 @@ function ProductsPageContent() {
     updateProductMutation.mutate({ id: productEditing.id, payload });
   }
 
+  function getStockAdjustmentValue(productId: string, type: 'in' | 'out') {
+    return stockAdjustments[productId]?.[type] ?? '1';
+  }
+
+  function updateStockAdjustment(productId: string, type: 'in' | 'out', value: string) {
+    setStockAdjustments((current) => {
+      const previousValue = current[productId] ?? { in: '1', out: '1' };
+      return {
+        ...current,
+        [productId]: {
+          ...previousValue,
+          [type]: value,
+        },
+      };
+    });
+  }
+
+  function parseStockAdjustment(value: string) {
+    const parsed = Number.parseInt(value, 10);
+    if (!Number.isFinite(parsed) || parsed <= 0) return null;
+    return parsed;
+  }
+
+  function normalizeStockAdjustment(value: string) {
+    if (value === '') return '';
+    const parsed = Number.parseInt(value, 10);
+    if (!Number.isFinite(parsed) || parsed <= 0) return '1';
+    return String(parsed);
+  }
+
   function handleQuickStock(product: Product, type: 'in' | 'out') {
-    quickStockMutation.mutate({ product, type });
+    const quantity = parseStockAdjustment(getStockAdjustmentValue(product.id, type));
+    if (!quantity) return;
+    quickStockMutation.mutate({ product, quantity, type });
   }
 
   function openProductPage(productId: string) {
@@ -566,6 +620,11 @@ function ProductsPageContent() {
             product.estimatedDaysLeft ?? null,
             product.alertDaysBefore ?? session?.user.alertDaysBefore ?? 7,
           );
+          const entryValue = getStockAdjustmentValue(product.id, 'in');
+          const exitValue = getStockAdjustmentValue(product.id, 'out');
+          const entryQuantity = parseStockAdjustment(entryValue);
+          const exitQuantity = parseStockAdjustment(exitValue);
+          const isStockPending = quickStockMutation.isPending;
 
           return (
             <article
@@ -627,24 +686,64 @@ function ProductsPageContent() {
                   </div>
                 </div>
 
-                <div className="mt-6 flex items-center justify-between border-t border-slate-100 pt-4">
-                  <div className="flex items-center gap-2">
-                    <button
-                      type="button"
-                      onClick={(e) => { e.stopPropagation(); handleQuickStock(product, 'in'); }}
-                      disabled={quickStockMutation.isPending}
-                      className="flex h-10 items-center gap-2 rounded-xl bg-emerald-50 px-5 text-sm font-bold text-emerald-600 transition-all hover:bg-emerald-500 hover:text-white disabled:opacity-50">
-                      <Plus size={16} strokeWidth={3} />
-                      Entrada
-                    </button>
-                    <button
-                      type="button"
-                      onClick={(e) => { e.stopPropagation(); handleQuickStock(product, 'out'); }}
-                      disabled={quickStockMutation.isPending}
-                      className="flex h-10 items-center gap-2 rounded-xl bg-rose-50 px-5 text-sm font-bold text-rose-600 transition-all hover:bg-rose-500 hover:text-white disabled:opacity-50">
-                      <TrendingDown size={16} strokeWidth={3} />
-                      Saída
-                    </button>
+                <div className="mt-6 flex flex-wrap items-center justify-between gap-3 border-t border-slate-100 pt-4">
+                  <div className="flex flex-wrap items-center gap-3">
+                    <div className="flex items-center gap-2">
+                      <input
+                        type="number"
+                        min={1}
+                        step={1}
+                        inputMode="numeric"
+                        value={entryValue}
+                        onClick={(event) => event.stopPropagation()}
+                        onChange={(event) => {
+                          updateStockAdjustment(product.id, 'in', normalizeStockAdjustment(event.target.value));
+                        }}
+                        onBlur={() => {
+                          if (!parseStockAdjustment(entryValue)) {
+                            updateStockAdjustment(product.id, 'in', '1');
+                          }
+                        }}
+                        disabled={isStockPending}
+                        className="h-10 w-20 rounded-xl border border-emerald-100 bg-emerald-50 px-3 text-sm font-bold text-emerald-700 outline-none transition-all focus:border-emerald-300 focus:bg-white"
+                      />
+                      <button
+                        type="button"
+                        onClick={(e) => { e.stopPropagation(); handleQuickStock(product, 'in'); }}
+                        disabled={isStockPending || !entryQuantity}
+                        className="flex h-10 items-center gap-2 rounded-xl bg-emerald-50 px-5 text-sm font-bold text-emerald-600 transition-all hover:bg-emerald-500 hover:text-white disabled:opacity-50">
+                        <Plus size={16} strokeWidth={3} />
+                        Entrada
+                      </button>
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <input
+                        type="number"
+                        min={1}
+                        step={1}
+                        inputMode="numeric"
+                        value={exitValue}
+                        onClick={(event) => event.stopPropagation()}
+                        onChange={(event) => {
+                          updateStockAdjustment(product.id, 'out', normalizeStockAdjustment(event.target.value));
+                        }}
+                        onBlur={() => {
+                          if (!parseStockAdjustment(exitValue)) {
+                            updateStockAdjustment(product.id, 'out', '1');
+                          }
+                        }}
+                        disabled={isStockPending}
+                        className="h-10 w-20 rounded-xl border border-rose-100 bg-rose-50 px-3 text-sm font-bold text-rose-700 outline-none transition-all focus:border-rose-300 focus:bg-white"
+                      />
+                      <button
+                        type="button"
+                        onClick={(e) => { e.stopPropagation(); handleQuickStock(product, 'out'); }}
+                        disabled={isStockPending || !exitQuantity}
+                        className="flex h-10 items-center gap-2 rounded-xl bg-rose-50 px-5 text-sm font-bold text-rose-600 transition-all hover:bg-rose-500 hover:text-white disabled:opacity-50">
+                        <TrendingDown size={16} strokeWidth={3} />
+                        Saída
+                      </button>
+                    </div>
                   </div>
                   <div className="flex items-center gap-2 opacity-0 transition-opacity group-hover:opacity-100">
                     <span className="text-xs font-bold text-slate-400">Abrir produto</span>
@@ -658,8 +757,8 @@ function ProductsPageContent() {
       </div>
 
 
-      {showProductModal ? (
-        <Modal title={productEditing ? 'Editar produto' : 'Novo produto'} onClose={handleCloseProductModal}>
+      {showCreateProductModal ? (
+        <Modal title="Novo produto" onClose={handleCloseProductModal}>
           <div className="space-y-4">
             <div className="space-y-3">
               <div className="flex items-center gap-3">
@@ -692,9 +791,21 @@ function ProductsPageContent() {
                     }}
                     className="rounded-xl border border-slate-200 px-3 py-2 text-xs font-bold text-slate-500 transition-colors hover:bg-slate-50"
                   >
-                    Remover
+                    Remover imagem
                   </button>
-                ) : null}
+                ) : (
+                  <label className="inline-flex cursor-pointer items-center rounded-xl border border-dashed border-slate-200 bg-slate-50 px-3 py-2 text-xs font-bold text-slate-500 transition-colors hover:bg-white">
+                    Clique para selecionar
+                    <input
+                      ref={imageInputRef}
+                      type="file"
+                      accept="image/png,image/jpeg,image/jpg,image/webp"
+                      onChange={handleImageFileChange}
+                      disabled={isImageUploading}
+                      className="sr-only"
+                    />
+                  </label>
+                )}
               </div>
               {isImageUploading ? (
                 <p className="text-xs font-semibold text-blue-600">Enviando imagem...</p>
@@ -717,45 +828,107 @@ function ProductsPageContent() {
                 placeholder="0"
                 onChange={(value) => setForm((current) => ({ ...current, quantity: value }))}
               />
-              <div className="flex flex-col gap-2">
-                <label className="text-xs font-bold text-[#0f172a] uppercase tracking-wider">Upload da imagem</label>
-                <label
-                  className={`flex h-full cursor-pointer items-center justify-between gap-3 rounded-xl border border-dashed px-4 py-3.5 text-sm font-semibold transition-all ${imageFile
-                    ? 'border-blue-400 bg-blue-50/70 text-blue-700 shadow-sm'
-                    : 'border-slate-200 bg-slate-50 text-[#0f172a] hover:bg-white hover:shadow-sm'}
-                  `}
-                >
-                  <span className="inline-flex items-center gap-2">
-                    <Upload size={16} className={imageFile ? 'text-blue-600' : 'text-slate-400'} />
-                    {imageFile ? 'Arquivo selecionado' : 'Clique para selecionar'}
-                  </span>
-                  <input
-                    ref={imageInputRef}
-                    type="file"
-                    accept="image/png,image/jpeg,image/jpg,image/webp"
-                    onChange={handleImageFileChange}
-                    disabled={isImageUploading}
-                    className="sr-only"
-                  />
-                  {imageFile ? (
-                    <span className="ml-auto inline-flex items-center gap-2 text-xs font-medium text-blue-700">
-                      <Check size={14} className="text-emerald-600" />
-                      <span className="max-w-[140px] truncate sm:max-w-[180px]">{imageFile.name}</span>
-                    </span>
-                  ) : null}
-                </label>
+              <div>
+                <label className="mb-1.5 block text-xs font-bold text-ink">Categoria</label>
+                <select
+                  value={form.categoryId}
+                  onChange={(event) => setForm((current) => ({ ...current, categoryId: event.target.value }))}
+                  className="w-full rounded-xl border border-[#e2e8f0] bg-[#f8fafc] px-4 py-3 text-sm font-medium text-[#0f172a] font-sans outline-none transition-all focus:border-blue-400 focus:bg-white focus:ring-4 focus:ring-blue-100/50">
+                  <option value="" className="font-medium text-[#0f172a] font-sans">Nenhuma</option>
+                  {categories.map((category) => (
+                    <option key={category.id} value={category.id} className="font-medium text-[#0f172a] font-sans">
+                      {category.name}
+                    </option>
+                  ))}
+                </select>
               </div>
             </div>
+
+            <div className="pt-4 space-y-3">
+              <button
+                type="button"
+                onClick={handleSaveProduct}
+                disabled={isImageUploading || createProductMutation.isPending || updateProductMutation.isPending}
+                className="w-full rounded-2xl bg-[image:var(--brand-gradient)] py-4 text-sm font-bold text-white shadow-[0_18px_35px_-20px_rgba(15,23,42,0.75)] ring-1 ring-white/15 transition-all hover:-translate-y-0.5 hover:brightness-110 disabled:opacity-60">
+                {isImageUploading ? 'Enviando imagem...' : 'Criar produto'}
+              </button>
+            </div>
+          </div>
+        </Modal>
+      ) : null}
+
+      {showEditProductModal ? (
+        <Modal title="Editar produto" onClose={handleCloseProductModal}>
+          <div className="space-y-4">
+            <div className="space-y-3">
+              <div className="flex items-center gap-3">
+                <div className="relative h-16 w-16 shrink-0 overflow-hidden rounded-xl bg-soft">
+                  {imagePreviewUrl ? (
+                    <Image
+                      src={imagePreviewUrl}
+                      alt="Imagem do produto"
+                      width={64}
+                      height={64}
+                      unoptimized
+                      className="h-full w-full object-cover"
+                    />
+                  ) : (
+                    <div className="grid h-full w-full place-items-center text-muted/40">
+                      <ImageIcon size={20} />
+                    </div>
+                  )}
+                </div>
+                <div className="flex-1">
+                  <p className="text-xs font-bold text-ink">Imagem do produto</p>
+                  <p className="text-[10px] text-muted">PNG, JPG ou WEBP ate 2MB</p>
+                </div>
+                {imagePreviewUrl ? (
+                  <button
+                    type="button"
+                    onClick={() => {
+                      resetImageState();
+                      setForm((current) => ({ ...current, image: NO_PHOTO_IMAGE }));
+                    }}
+                    className="rounded-xl border border-slate-200 px-3 py-2 text-xs font-bold text-slate-500 transition-colors hover:bg-slate-50"
+                  >
+                    Remover imagem
+                  </button>
+                ) : (
+                  <label className="inline-flex cursor-pointer items-center rounded-xl border border-dashed border-slate-200 bg-slate-50 px-3 py-2 text-xs font-bold text-slate-500 transition-colors hover:bg-white">
+                    Clique para selecionar
+                    <input
+                      ref={imageInputRef}
+                      type="file"
+                      accept="image/png,image/jpeg,image/jpg,image/webp"
+                      onChange={handleImageFileChange}
+                      disabled={isImageUploading}
+                      className="sr-only"
+                    />
+                  </label>
+                )}
+              </div>
+              {isImageUploading ? (
+                <p className="text-xs font-semibold text-blue-600">Enviando imagem...</p>
+              ) : null}
+            </div>
+
+            <Input label="Nome" value={form.name} placeholder="Ex: Boneco Sasuke" onChange={(value) => setForm((current) => ({ ...current, name: value }))} />
+            <Input
+              label="Descricao"
+              value={form.description}
+              placeholder="Ex: Boneco de acao 20cm"
+              onChange={(value) => setForm((current) => ({ ...current, description: value }))}
+            />
 
             <div>
               <label className="mb-1.5 block text-xs font-bold text-ink">Categoria</label>
               <select
                 value={form.categoryId}
                 onChange={(event) => setForm((current) => ({ ...current, categoryId: event.target.value }))}
-                className="w-full rounded-xl border border-[#e2e8f0] bg-[#f8fafc] px-4 py-3 text-sm font-medium text-[#0f172a] outline-none transition-all focus:border-blue-400 focus:bg-white focus:ring-4 focus:ring-blue-100/50">
-                <option value="">Nenhuma</option>
+                className="w-full rounded-xl border border-[#e2e8f0] bg-[#f8fafc] px-4 py-3 text-sm font-medium text-[#0f172a] font-sans outline-none transition-all focus:border-blue-400 focus:bg-white focus:ring-4 focus:ring-blue-100/50">
+                <option value="" className="font-medium text-[#0f172a] font-sans">Nenhuma</option>
                 {categories.map((category) => (
-                  <option key={category.id} value={category.id}>
+                  <option key={category.id} value={category.id} className="font-medium text-[#0f172a] font-sans">
                     {category.name}
                   </option>
                 ))}
@@ -768,11 +941,7 @@ function ProductsPageContent() {
                 onClick={handleSaveProduct}
                 disabled={isImageUploading || createProductMutation.isPending || updateProductMutation.isPending}
                 className="w-full rounded-2xl bg-[image:var(--brand-gradient)] py-4 text-sm font-bold text-white shadow-[0_18px_35px_-20px_rgba(15,23,42,0.75)] ring-1 ring-white/15 transition-all hover:-translate-y-0.5 hover:brightness-110 disabled:opacity-60">
-                {isImageUploading
-                  ? 'Enviando imagem...'
-                  : productEditing
-                    ? 'Salvar alterações'
-                    : 'Criar produto'}
+                {isImageUploading ? 'Enviando imagem...' : 'Salvar alterações'}
               </button>
 
               {productEditing && (
