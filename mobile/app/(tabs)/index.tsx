@@ -97,7 +97,6 @@ import type {
   Product,
   ProductDetailsResponse,
   StockMovement,
-  UpdateProductPayload,
   UserRole,
 } from '@/src/shared/types/domain';
 
@@ -2497,16 +2496,6 @@ function ProfileSection({
   );
 }
 
-function SegmentButton({ active, label, onPress }: { active: boolean; label: string; onPress: () => void }) {
-  return (
-    <Pressable
-      accessibilityRole="button"
-      onPress={onPress}
-      style={({ pressed }) => [styles.segmentButton, active && styles.segmentButtonActive, pressed && styles.pressed]}>
-      <Text style={[styles.segmentText, active && styles.segmentTextActive]}>{label}</Text>
-    </Pressable>
-  );
-}
 
 function Chip({
   active,
@@ -2680,14 +2669,6 @@ function MetricCard({
   );
 }
 
-function InfoRow({ label, value }: { label: string; value: string }) {
-  return (
-    <View style={styles.infoRow}>
-      <Text style={styles.infoLabel}>{label}</Text>
-      <Text style={styles.infoValue}>{value}</Text>
-    </View>
-  );
-}
 
 type WeeklySalesInsight = {
   comparisonLabel: string;
@@ -2935,14 +2916,6 @@ function formatNumber(value: number) {
   return value.toLocaleString('pt-BR');
 }
 
-function formatDate(value: string) {
-  return new Intl.DateTimeFormat('pt-BR', {
-    day: '2-digit',
-    hour: '2-digit',
-    minute: '2-digit',
-    month: '2-digit',
-  }).format(new Date(value));
-}
 
 function SettingsSection({
   alertDaysBefore,
