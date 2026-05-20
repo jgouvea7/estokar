@@ -16,12 +16,12 @@ interface VersionEntry {
 
 const changelog: VersionEntry[] = [
   {
-    version: 'v1.9.9',
+    version: 'v1.10.0',
     date: '11 de Maio, 2026',
     changes: [
       {
         type: 'improvement',
-        text: 'Agora é possível adicionar e remover múltiplos itens do estoque de uma vez e a criação/edição de produtos ficou mais simples e organizada.'
+        text: 'Padronização da interface mobile em relação à versão web.',
       },
     ],
   },

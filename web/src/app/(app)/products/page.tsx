@@ -523,7 +523,7 @@ function ProductsPageContent() {
           </div>
 
           <div className="flex flex-wrap items-center gap-2">
-            <CategoryChip active={categoryFilter === 'Todos'} label="Todos os itens" onClick={() => setCategoryFilter('Todos')} />
+            <CategoryChip active={categoryFilter === 'Todos'} label="Todos" onClick={() => setCategoryFilter('Todos')} />
             {categories.map((category) => {
               const isActive = categoryFilter === category.name;
 

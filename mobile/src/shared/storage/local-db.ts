@@ -2,12 +2,17 @@ import * as SQLite from 'expo-sqlite';
 
 import type {
   AuthSession,
-  CreateProductInput,
+  CreateProductPayload,
   Product,
-  RemoteProduct,
   StockMovement,
-  UpdateProductInput,
+  UpdateProductPayload,
 } from '@/src/shared/types/domain';
+
+type LocalProductInput = CreateProductPayload & {
+  categoryName?: string;
+  alertDaysBefore?: number;
+  estimatedDaysLeft?: number | null;
+};
 
 type ProductRow = {
   local_id: string;
@@ -17,7 +22,8 @@ type ProductRow = {
   category_id: string | null;
   category: string;
   quantity: number;
-  low_stock_limit: number;
+  alert_days_before: number | null;
+  estimated_days_left: number | null;
   image: string;
   sync_status: Product['syncStatus'];
   updated_at: string;
@@ -28,7 +34,7 @@ export type OutboxItem = {
   operation: 'create_product' | 'update_product' | 'delete_product';
   localId: string;
   remoteId: string | null;
-  payload: CreateProductInput | UpdateProductInput | null;
+  payload: LocalProductInput | UpdateProductPayload | null;
   createdAt: string;
 };
 
@@ -51,9 +57,10 @@ export async function initializeLocalDb() {
       name TEXT NOT NULL,
       description TEXT NOT NULL,
       category_id TEXT,
-      category TEXT NOT NULL DEFAULT 'Geral',
+      category TEXT NOT NULL DEFAULT 'Sem categoria',
       quantity INTEGER NOT NULL,
-      low_stock_limit INTEGER NOT NULL DEFAULT 5,
+      alert_days_before INTEGER,
+      estimated_days_left INTEGER,
       image TEXT NOT NULL,
       sync_status TEXT NOT NULL,
       updated_at TEXT NOT NULL
@@ -77,9 +84,10 @@ export async function initializeLocalDb() {
     );
   `);
 
-  await ensureColumn('products', 'category', "TEXT NOT NULL DEFAULT 'Geral'");
+  await ensureColumn('products', 'category', "TEXT NOT NULL DEFAULT 'Sem categoria'");
   await ensureColumn('products', 'category_id', 'TEXT');
-  await ensureColumn('products', 'low_stock_limit', 'INTEGER NOT NULL DEFAULT 5');
+  await ensureColumn('products', 'alert_days_before', 'INTEGER');
+  await ensureColumn('products', 'estimated_days_left', 'INTEGER');
 }
 
 export async function getSession(): Promise<AuthSession | null> {
@@ -140,7 +148,7 @@ export async function replaceLocalStockMovements(movements: StockMovement[]) {
 
 export async function getLocalProducts(): Promise<Product[]> {
   const rows = await db.getAllAsync<ProductRow>(
-    `SELECT local_id, remote_id, name, description, category_id, category, quantity, low_stock_limit, image, sync_status, updated_at
+    `SELECT local_id, remote_id, name, description, category_id, category, quantity, alert_days_before, estimated_days_left, image, sync_status, updated_at
      FROM products
      ORDER BY updated_at DESC`,
   );
@@ -148,23 +156,25 @@ export async function getLocalProducts(): Promise<Product[]> {
   return rows.map(mapProductRow);
 }
 
-export async function createLocalProduct(input: CreateProductInput): Promise<Product> {
+export async function createLocalProduct(input: LocalProductInput): Promise<Product> {
   const now = new Date().toISOString();
   const localId = `local-${Date.now()}`;
+  const categoryName = input.categoryName?.trim() || 'Sem categoria';
 
   await db.runAsync(
     `INSERT INTO products
-      (local_id, remote_id, name, description, category_id, category, quantity, low_stock_limit, image, sync_status, updated_at)
-     VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+      (local_id, remote_id, name, description, category_id, category, quantity, alert_days_before, estimated_days_left, image, sync_status, updated_at)
+     VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
     [
       localId,
       null,
       input.name,
       input.description,
       input.categoryId ?? null,
-      input.category,
+      categoryName,
       input.quantity,
-      input.lowStockLimit,
+      input.alertDaysBefore ?? null,
+      null,
       input.image,
       'pending',
       now,
@@ -178,13 +188,14 @@ export async function createLocalProduct(input: CreateProductInput): Promise<Pro
   await db.runAsync(
     `INSERT INTO outbox (operation, local_id, payload_json, created_at)
      VALUES (?, ?, ?, ?)`,
-    ['create_product', localId, JSON.stringify(input), now],
+    ['create_product', localId, JSON.stringify({ ...input, categoryName }), now],
   );
 
   return {
     id: localId,
     remoteId: null,
     ...input,
+    categoryName,
     syncStatus: 'pending',
     updatedAt: now,
   };
@@ -192,21 +203,23 @@ export async function createLocalProduct(input: CreateProductInput): Promise<Pro
 
 export async function updateLocalProduct(
   product: Product,
-  input: UpdateProductInput,
+  input: LocalProductInput,
 ): Promise<Product> {
   const now = new Date().toISOString();
+  const categoryName = input.categoryName?.trim() || product.categoryName || 'Sem categoria';
 
   await db.runAsync(
     `UPDATE products
-     SET name = ?, description = ?, category_id = ?, category = ?, quantity = ?, low_stock_limit = ?, image = ?, sync_status = ?, updated_at = ?
+     SET name = ?, description = ?, category_id = ?, category = ?, quantity = ?, alert_days_before = ?, estimated_days_left = ?, image = ?, sync_status = ?, updated_at = ?
      WHERE local_id = ?`,
     [
       input.name,
       input.description,
       input.categoryId ?? null,
-      input.category,
+      categoryName,
       input.quantity,
-      input.lowStockLimit,
+      input.alertDaysBefore ?? product.alertDaysBefore ?? null,
+      input.estimatedDaysLeft ?? product.estimatedDaysLeft ?? null,
       input.image,
       'pending',
       now,
@@ -218,20 +231,21 @@ export async function updateLocalProduct(
     await db.runAsync(
       `INSERT INTO outbox (operation, local_id, payload_json, created_at)
        VALUES (?, ?, ?, ?)`,
-      ['update_product', product.id, JSON.stringify({ remoteId: product.remoteId, ...input }), now],
+      ['update_product', product.id, JSON.stringify({ remoteId: product.remoteId, ...input, categoryName }), now],
     );
   } else {
     await db.runAsync(
       `UPDATE outbox
        SET payload_json = ?, created_at = ?
        WHERE local_id = ? AND operation = ?`,
-      [JSON.stringify(input), now, product.id, 'create_product'],
+      [JSON.stringify({ ...input, categoryName }), now, product.id, 'create_product'],
     );
   }
 
   return {
     ...product,
     ...input,
+    categoryName,
     syncStatus: 'pending',
     updatedAt: now,
   };
@@ -257,7 +271,7 @@ export async function deleteLocalProduct(product: Product): Promise<void> {
   }
 }
 
-export async function replaceLocalProducts(remoteProducts: RemoteProduct[]) {
+export async function replaceLocalProducts(remoteProducts: Product[]) {
   const now = new Date().toISOString();
 
   // Clear non-pending products to avoid duplicates or stale data
@@ -269,15 +283,16 @@ export async function replaceLocalProducts(remoteProducts: RemoteProduct[]) {
   for (const product of remoteProducts) {
     await db.runAsync(
       `INSERT INTO products
-        (local_id, remote_id, name, description, category_id, category, quantity, low_stock_limit, image, sync_status, updated_at)
-       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+        (local_id, remote_id, name, description, category_id, category, quantity, alert_days_before, estimated_days_left, image, sync_status, updated_at)
+       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
        ON CONFLICT(remote_id) DO UPDATE SET
         name = excluded.name,
         description = excluded.description,
         category_id = excluded.category_id,
         category = excluded.category,
         quantity = excluded.quantity,
-        low_stock_limit = excluded.low_stock_limit,
+        alert_days_before = excluded.alert_days_before,
+        estimated_days_left = excluded.estimated_days_left,
         image = excluded.image,
         sync_status = excluded.sync_status,
         updated_at = excluded.updated_at`,
@@ -287,9 +302,10 @@ export async function replaceLocalProducts(remoteProducts: RemoteProduct[]) {
         product.name,
         product.description,
         product.categoryId ?? null,
-        getRemoteCategoryName(product),
+        getRemoteCategoryName(product) || 'Sem categoria',
         product.quantity,
-        product.lowStockLimit ?? 5,
+        product.alertDaysBefore ?? null,
+        product.estimatedDaysLeft ?? null,
         product.image,
         'synced',
         product.updatedAt ?? now,
@@ -298,18 +314,20 @@ export async function replaceLocalProducts(remoteProducts: RemoteProduct[]) {
   }
 }
 
-export async function markProductSynced(localId: string, remoteProduct: RemoteProduct) {
+export async function markProductSynced(localId: string, remoteProduct: Product) {
   await db.runAsync(
     `UPDATE products
-     SET remote_id = ?, name = ?, description = ?, category_id = ?, category = ?, quantity = ?, image = ?, sync_status = ?, updated_at = ?
+     SET remote_id = ?, name = ?, description = ?, category_id = ?, category = ?, quantity = ?, alert_days_before = ?, estimated_days_left = ?, image = ?, sync_status = ?, updated_at = ?
      WHERE local_id = ?`,
     [
       remoteProduct.id,
       remoteProduct.name,
       remoteProduct.description,
       remoteProduct.categoryId ?? null,
-      getRemoteCategoryName(remoteProduct),
+      getRemoteCategoryName(remoteProduct) || 'Sem categoria',
       remoteProduct.quantity,
+      remoteProduct.alertDaysBefore ?? null,
+      remoteProduct.estimatedDaysLeft ?? null,
       remoteProduct.image,
       'synced',
       remoteProduct.updatedAt ?? new Date().toISOString(),
@@ -367,9 +385,10 @@ export async function moveLocalStock(
     name: product.name,
     description: product.description,
     categoryId: product.categoryId,
-    category: product.category,
+    categoryName: product.category?.name ?? product.categoryName,
     quantity: nextQuantity,
-    lowStockLimit: product.lowStockLimit,
+    alertDaysBefore: product.alertDaysBefore,
+    estimatedDaysLeft: product.estimatedDaysLeft,
     image: product.image,
   });
 
@@ -441,9 +460,10 @@ function mapProductRow(row: ProductRow): Product {
     name: row.name,
     description: row.description,
     categoryId: row.category_id,
-    category: row.category,
+    categoryName: row.category,
     quantity: row.quantity,
-    lowStockLimit: row.low_stock_limit,
+    alertDaysBefore: row.alert_days_before ?? undefined,
+    estimatedDaysLeft: row.estimated_days_left ?? null,
     image: row.image,
     syncStatus: row.sync_status,
     updatedAt: row.updated_at,
@@ -459,31 +479,26 @@ function getRemoteIdFromPayload(payloadJson: string): string | null {
   }
 }
 
-function getProductPayload(payloadJson: string): CreateProductInput | UpdateProductInput | null {
+function getProductPayload(payloadJson: string): LocalProductInput | UpdateProductPayload | null {
   const payload = JSON.parse(payloadJson) as {
     remoteId?: string;
     name: string;
     description: string;
-    category?: string;
+    categoryName?: string;
     categoryId?: string | null;
     quantity: number;
-    lowStockLimit?: number;
+    alertDaysBefore?: number;
+    estimatedDaysLeft?: number | null;
     image: string;
   };
   const { remoteId: _remoteId, ...productPayload } = payload;
   return {
     ...productPayload,
-    category: productPayload.category ?? '',
     categoryId: productPayload.categoryId ?? null,
-    lowStockLimit: productPayload.lowStockLimit ?? 5,
   };
 }
 
-function getRemoteCategoryName(product: RemoteProduct): string {
-  if (typeof product.category === 'string') {
-    return product.category;
-  }
-
+function getRemoteCategoryName(product: Product): string {
   return product.category?.name ?? product.categoryName ?? '';
 }
 

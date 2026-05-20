@@ -15,12 +15,18 @@ import {
   replaceLocalStockMovements,
 } from '@/src/shared/storage/local-db';
 import type { AuthSession, Product } from '@/src/shared/types/domain';
+import { isLocalImageUri, uploadProductImageFromUri } from '@/src/shared/utils/images';
 
 export type SyncResult = {
   products: Product[];
   online: boolean;
   pendingCount: number;
 };
+
+function sanitizeProductPayload<T extends Record<string, unknown>>(payload: T) {
+  const { categoryName: _categoryName, alertDaysBefore: _alertDaysBefore, estimatedDaysLeft: _estimatedDaysLeft, ...rest } = payload;
+  return rest;
+}
 
 export async function syncProducts(session: AuthSession | null): Promise<SyncResult> {
   if (!session) {
@@ -36,13 +42,34 @@ export async function syncProducts(session: AuthSession | null): Promise<SyncRes
     for (const item of outboxItems) {
       try {
         if (item.operation === 'create_product') {
-          const remoteProduct = await createProduct(session.accessToken, item.payload!);
+          let payload = item.payload!;
+
+          if (payload.image && isLocalImageUri(payload.image)) {
+            payload = {
+              ...payload,
+              image: await uploadProductImageFromUri(payload.image, session.user.id),
+            };
+          }
+
+          const remoteProduct = await createProduct(
+            session.accessToken,
+            sanitizeProductPayload(payload),
+          );
           await markProductSynced(item.localId, remoteProduct);
         } else if (item.operation === 'update_product' && item.remoteId) {
+          let payload = item.payload!;
+
+          if (payload.image && isLocalImageUri(payload.image)) {
+            payload = {
+              ...payload,
+              image: await uploadProductImageFromUri(payload.image, session.user.id),
+            };
+          }
+
           const remoteProduct = await updateProduct(
             session.accessToken,
             item.remoteId,
-            item.payload!,
+            sanitizeProductPayload(payload),
           );
           await markProductSynced(item.localId, remoteProduct);
         } else if (item.operation === 'delete_product' && item.remoteId) {

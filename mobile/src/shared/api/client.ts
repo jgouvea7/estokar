@@ -1,7 +1,9 @@
 import Constants from 'expo-constants';
+import { clearSession, getSession, saveSession } from '@/src/shared/storage/local-db';
 
 type RequestOptions = RequestInit & {
   accessToken?: string;
+  skipRefresh?: boolean;
 };
 
 export const API_URL =
@@ -54,7 +56,20 @@ export async function apiRequest<T>(path: string, options: RequestOptions = {}):
   const response = await fetch(buildApiUrl(path), {
     ...options,
     headers,
+    cache: 'no-store',
   });
+
+  if (response.status === 401 && options.accessToken && !options.skipRefresh) {
+    const refreshedToken = await tryRefreshTokens();
+
+    if (refreshedToken) {
+      return apiRequest<T>(path, {
+        ...options,
+        accessToken: refreshedToken,
+        skipRefresh: true,
+      });
+    }
+  }
 
   if (!response.ok) {
     let message = 'Nao foi possivel completar a requisicao.';
@@ -74,5 +89,50 @@ export async function apiRequest<T>(path: string, options: RequestOptions = {}):
     return undefined as T;
   }
 
-  return response.json() as Promise<T>;
+  const text = await response.text();
+
+  if (!text) {
+    return undefined as T;
+  }
+
+  try {
+    return JSON.parse(text) as T;
+  } catch {
+    return text as T;
+  }
+}
+
+async function tryRefreshTokens(): Promise<string | null> {
+  const session = await getSession();
+
+  if (!session?.refreshToken) {
+    return null;
+  }
+
+  const response = await fetch(buildApiUrl('/auth/refresh'), {
+    method: 'POST',
+    headers: {
+      Authorization: `Bearer ${session.refreshToken}`,
+    },
+  });
+
+  if (!response.ok) {
+    await clearSession();
+    return null;
+  }
+
+  const payload = (await response.json()) as { accessToken?: string; refreshToken?: string };
+
+  if (!payload?.accessToken || !payload?.refreshToken) {
+    await clearSession();
+    return null;
+  }
+
+  await saveSession({
+    ...session,
+    accessToken: payload.accessToken,
+    refreshToken: payload.refreshToken,
+  });
+
+  return payload.accessToken;
 }

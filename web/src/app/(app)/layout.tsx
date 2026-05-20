@@ -482,7 +482,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
                       <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
                         <div>
                           <p className="text-sm font-bold text-[#0f172a]">Avisar quando faltar</p>
-                          <p className="text-xs font-medium text-slate-500">Defina quantos dias antes do estoque acabar.</p>
+                          <p className="text-xs font-medium text-slate-500">Defina com quantos dias de antecedência o sistema deve alertar que o estoque de um produto está próximo do fim.</p>
                         </div>
                         <div className="flex items-center gap-3">
                           <input
@@ -545,7 +545,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
                           </div>
                         </div>
                         <div className="flex items-center gap-2">
-                          <span className="text-sm font-bold text-blue-600">v1.9.0 (Build 20260513)</span>
+                          <span className="text-sm font-bold text-blue-600">v1.10.0 (Build 20260519)</span>
                           <ChevronRight size={16} className="text-slate-300 transition-transform group-hover/version:translate-x-1" />
                         </div>
                       </button>

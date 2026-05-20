@@ -1,12 +1,21 @@
 import { apiRequest } from './client';
 import type {
-  CreateProductInput,
-  RemoteProduct,
-  UpdateProductInput,
+  CreateProductPayload,
+  Product,
+  ProductDashboardResponse,
+  ProductDetailsResponse,
+  UpdateProductPayload,
 } from '@/src/shared/types/domain';
 
-export async function getProducts(accessToken: string): Promise<RemoteProduct[]> {
-  return apiRequest<RemoteProduct[]>('/products', {
+export async function getProduct(id: string, accessToken: string): Promise<Product> {
+  return apiRequest<Product>(`/products/${id}`, {
+    accessToken,
+    method: 'GET',
+  });
+}
+
+export async function getProducts(accessToken: string): Promise<Product[]> {
+  return apiRequest<Product[]>('/products', {
     accessToken,
     method: 'GET',
   });
@@ -14,18 +23,11 @@ export async function getProducts(accessToken: string): Promise<RemoteProduct[]>
 
 export async function createProduct(
   accessToken: string,
-  payload: CreateProductInput,
-): Promise<RemoteProduct> {
-  const { category: _category, lowStockLimit: _lowStockLimit, categoryId, ...rest } = payload;
-  
-  const backendPayload = {
-    ...rest,
-    ...(categoryId ? { categoryId } : {}),
-  };
-
-  return apiRequest<RemoteProduct>('/products', {
+  payload: CreateProductPayload,
+): Promise<Product> {
+  return apiRequest<Product>('/products', {
     accessToken,
-    body: JSON.stringify(backendPayload),
+    body: JSON.stringify(payload),
     method: 'POST',
   });
 }
@@ -33,18 +35,11 @@ export async function createProduct(
 export async function updateProduct(
   accessToken: string,
   productId: string,
-  payload: UpdateProductInput,
-): Promise<RemoteProduct> {
-  const { category: _category, lowStockLimit: _lowStockLimit, categoryId, ...rest } = payload;
-  
-  const backendPayload = {
-    ...rest,
-    ...(categoryId ? { categoryId } : {}),
-  };
-
-  return apiRequest<RemoteProduct>(`/products/${productId}`, {
+  payload: UpdateProductPayload,
+): Promise<Product> {
+  return apiRequest<Product>(`/products/${productId}`, {
     accessToken,
-    body: JSON.stringify(backendPayload),
+    body: JSON.stringify(payload),
     method: 'PATCH',
   });
 }
@@ -53,5 +48,25 @@ export async function deleteProduct(accessToken: string, productId: string): Pro
   await apiRequest(`/products/${productId}`, {
     accessToken,
     method: 'DELETE',
+  });
+}
+
+export async function getProductDashboard(
+  id: string,
+  accessToken: string,
+): Promise<ProductDashboardResponse> {
+  return apiRequest<ProductDashboardResponse>(`/products/${id}/dashboard`, {
+    accessToken,
+    method: 'GET',
+  });
+}
+
+export async function getProductDetails(
+  id: string,
+  accessToken: string,
+): Promise<ProductDetailsResponse> {
+  return apiRequest<ProductDetailsResponse>(`/products/${id}/details`, {
+    accessToken,
+    method: 'GET',
   });
 }

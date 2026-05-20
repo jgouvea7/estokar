@@ -1,0 +1,60 @@
+import { apiRequest } from './client';
+import type { AdminStats, AdminStatsPeriod, AdminUser, PaginatedResponse } from '@/src/shared/types/domain';
+
+export async function getAdminUsers(params: {
+  page?: number;
+  perPage?: number;
+  search?: string;
+  accessToken: string;
+  signal?: AbortSignal;
+}): Promise<PaginatedResponse<AdminUser>> {
+  const query = new URLSearchParams({
+    page: String(params.page ?? 1),
+    perPage: String(params.perPage ?? 10),
+  });
+
+  if (params.search) {
+    query.set('search', params.search);
+  }
+
+  return apiRequest<PaginatedResponse<AdminUser>>(`/admin/users?${query.toString()}`, {
+    accessToken: params.accessToken,
+    method: 'GET',
+    signal: params.signal,
+  });
+}
+
+export async function promoteUser(userId: string, accessToken: string): Promise<AdminUser> {
+  return apiRequest<AdminUser>(`/admin/users/${userId}/promote`, {
+    accessToken,
+    method: 'POST',
+  });
+}
+
+export async function deleteUser(userId: string, accessToken: string): Promise<void> {
+  await apiRequest<void>(`/admin/users/${userId}`, {
+    accessToken,
+    method: 'DELETE',
+  });
+}
+
+export async function getAdminStats(params: {
+  accessToken: string;
+  period?: AdminStatsPeriod;
+  signal?: AbortSignal;
+}): Promise<AdminStats> {
+  const query = new URLSearchParams();
+
+  if (params.period) {
+    query.set('period', params.period);
+  }
+
+  const suffix = query.toString();
+  const path = suffix ? `/admin/stats?${suffix}` : '/admin/stats';
+
+  return apiRequest<AdminStats>(path, {
+    accessToken: params.accessToken,
+    method: 'GET',
+    signal: params.signal,
+  });
+}

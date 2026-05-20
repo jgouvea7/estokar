@@ -22,20 +22,10 @@ export async function login(payload: LoginPayload): Promise<AuthSession> {
     method: 'POST',
   });
 
-  const raw = (response as any).data ?? response;
-
-  const accessToken = raw?.accessToken || raw?.access_token;
-  const refreshToken = raw?.refreshToken || raw?.refresh_token;
-  const user = raw?.user;
-
-  if (!accessToken) {
-    throw new Error('Login não retornou accessToken');
-  }
-
   return {
-    accessToken,
-    refreshToken,
-    user,
+    accessToken: response.accessToken,
+    refreshToken: response.refreshToken,
+    user: response.user,
   };
 }
 
@@ -50,6 +40,19 @@ export async function getProfile(accessToken: string): Promise<UserProfile> {
   return apiRequest<UserProfile>('/auth/me', {
     accessToken,
     method: 'GET',
+  });
+}
+
+type RefreshResponse = {
+  accessToken: string;
+  refreshToken: string;
+};
+
+export async function refreshTokens(refreshToken: string): Promise<RefreshResponse> {
+  return apiRequest<RefreshResponse>('/auth/refresh', {
+    accessToken: refreshToken,
+    method: 'POST',
+    skipRefresh: true,
   });
 }
 
