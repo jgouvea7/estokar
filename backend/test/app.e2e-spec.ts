@@ -4,6 +4,10 @@ import * as request from 'supertest';
 import { AppModule } from '../src/app.module';
 import { App } from 'supertest/types';
 
+declare const describe: any;
+declare const it: any;
+declare const beforeEach: any;
+
 describe('AppController (e2e)', () => {
   let app: INestApplication<App>;
 
