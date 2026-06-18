@@ -12,20 +12,25 @@ describe('JwtRefreshGuard', () => {
     it('should return user when no error and user exists', () => {
       const user = { id: 'user-1', refreshToken: 'token' };
 
-      const result = guard.handleRequest(null, user);
+      const result = guard.handleRequest<{ id: string; refreshToken: string }>(
+        null,
+        user,
+      );
 
       expect(result).toEqual(user);
     });
 
     it('should throw the original error when error is present', () => {
       const err = new Error('err');
-      expect(() => guard.handleRequest(err, null)).toThrow(err);
+      expect(() => {
+        guard.handleRequest(err, null);
+      }).toThrow(err);
     });
 
     it('should throw UnauthorizedException when user is falsy and no error', () => {
-      expect(() => guard.handleRequest(null, null)).toThrow(
-        UnauthorizedException,
-      );
+      expect(() => {
+        guard.handleRequest(null, null);
+      }).toThrow(UnauthorizedException);
     });
   });
 });

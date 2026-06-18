@@ -12,6 +12,7 @@ import { CategoriesModule } from './categories/categories.module';
 import { DashboardModule } from './dashboard/dashboard.module';
 import { StockMovementsModule } from './stock-movements/stock-movements.module';
 import { AdminModule } from './admin/admin.module';
+import { ExportModule } from './export/export.module';
 
 @Module({
   imports: [
@@ -68,6 +69,7 @@ import { AdminModule } from './admin/admin.module';
     DashboardModule,
     StockMovementsModule,
     AdminModule,
+    ExportModule,
   ],
   controllers: [AppController],
   providers: [

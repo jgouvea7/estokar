@@ -1672,12 +1672,12 @@ function ProductDetailsModal({
   const alertDays = dashboard?.alertDaysBefore ?? product?.alertDaysBefore ?? 0;
   const averageDailySales = dashboard?.averageDailySales ?? 0;
   const estimatedDaysLeft = dashboard?.estimatedDaysLeft ?? null;
-  const recentMovements = dashboard?.recentMovements ?? [];
+  const recentMovements = useMemo(() => dashboard?.recentMovements ?? [], [dashboard]);
   const status = getProductStatusBadge(currentStock, estimatedDaysLeft, alertDays);
   const [chartWidth, setChartWidth] = useState(300);
 
   const groupedMovements = useMemo(() => {
-    if (!recentMovements.length) return [] as Array<[string, typeof recentMovements]>;
+    if (!recentMovements.length) return [] as [string, typeof recentMovements][];
     const trimmed = recentMovements.slice(0, 3);
     const grouped = trimmed.reduce<Record<string, typeof recentMovements>>((acc, movement) => {
       const label = new Date(movement.createdAt).toLocaleDateString('pt-BR');
@@ -1689,7 +1689,7 @@ function ProductDetailsModal({
   }, [recentMovements]);
 
   const stockSeries = useMemo(() => {
-    if (!dashboard) return [] as Array<{ date: string; stock: number }>;
+    if (!dashboard) return [] as { date: string; stock: number }[];
 
     const movements = [...dashboard.recentMovements].sort(
       (a, b) => new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime(),
@@ -3405,12 +3405,12 @@ type VersionEntry = {
 
 const versionChangelog: VersionEntry[] = [
   {
-    version: 'v1.10.0',
-    date: '19 de Maio, 2026',
+    version: 'v1.11.0',
+    date: '18 de Junho, 2026',
     changes: [
       {
         type: 'improvement',
-        text: 'Padronização da interface mobile em relação à versão web.',
+        text: 'Implementada exportação de dados em formato CSV.',
       },
     ],
   },

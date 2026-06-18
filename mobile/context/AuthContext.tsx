@@ -5,7 +5,7 @@ import React, {
   useMemo,
   useState,
 } from 'react';
-import { loginUser, logoutUser, registerUser, fetchProfile } from '@/services/auth.service';
+import { loginUser, logoutUser, registerUser } from '@/services/auth.service';
 import { parseApiError } from '@/src/shared/api/client';
 import type { User } from '@/types';
 

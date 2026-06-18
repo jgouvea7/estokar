@@ -16,12 +16,12 @@ interface VersionEntry {
 
 const changelog: VersionEntry[] = [
   {
-    version: 'v1.10.0',
-    date: '11 de Maio, 2026',
+    version: 'v1.11.0',
+    date: '18 de Junho, 2026',
     changes: [
       {
         type: 'improvement',
-        text: 'Padronização da interface mobile em relação à versão web.',
+        text: 'Implementada exportação de produtos, movimentações de estoque e relatórios em formato CSV.',
       },
     ],
   },
