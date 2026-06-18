@@ -1,9 +1,10 @@
 "use client";
 
-import { ArrowDownLeft, ArrowUpRight, History } from 'lucide-react';
+import { ArrowDownLeft, ArrowUpRight, Download, History } from 'lucide-react';
 import { useHistoryStore } from '@/store/history-store';
 import { useEffect } from 'react';
 import { getStockMovements } from '@/lib/api/stock-movements';
+import { exportStockMovementsCsv } from '@/lib/api/export';
 import { useAuthStore } from '@/store/auth-store';
 
 export default function HistoryPage() {
@@ -51,9 +52,18 @@ export default function HistoryPage() {
 
   return (
     <div className="space-y-8 overflow-x-hidden reveal-up">
-      <section>
-        <h3 className="text-3xl font-bold tracking-tight text-[#0f172a]">Histórico de Operações</h3>
-        <p className="mt-2 text-sm font-medium text-slate-500">Acompanhe cada entrada e saída do seu estoque em tempo real.</p>
+      <section className="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
+        <div>
+          <h3 className="text-3xl font-bold tracking-tight text-[#0f172a]">Histórico de Operações</h3>
+          <p className="mt-2 text-sm font-medium text-slate-500">Acompanhe cada entrada e saída do seu estoque em tempo real.</p>
+        </div>
+        <button
+          type="button"
+          onClick={() => exportStockMovementsCsv(session!.accessToken)}
+          className="flex h-[3rem] items-center justify-center gap-2 rounded-xl border border-slate-200 bg-white px-[1.5rem] text-sm font-bold text-slate-600 shadow-sm transition-all hover:-translate-y-0.5 hover:border-slate-300 hover:bg-slate-50 hover:shadow-md">
+          <Download size={18} strokeWidth={2.5} />
+          Exportar CSV
+        </button>
       </section>
 
       <section className="surface-card p-0 overflow-hidden border-none bg-transparent shadow-none">

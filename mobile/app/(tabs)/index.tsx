@@ -43,6 +43,7 @@ import {
   XCircle,
   Zap,
   ChartBar,
+  Download,
   TrendingDown,
   TrendingUp
 } from 'lucide-react-native';
@@ -74,6 +75,7 @@ import {
   updateProduct as updateRemoteProduct,
 } from '@/src/shared/api/products';
 import { getGoogleOAuthUrl, getProfile, login, register } from '@/src/shared/api/auth';
+import { exportProductsCsv, exportStockMovementsCsv, exportDashboardCsv } from '@/src/shared/api/export';
 import { deleteMyAccount, updateUser } from '@/src/shared/api/users';
 import {
   clearSession,
@@ -140,6 +142,7 @@ const APP_ICON_MAP = {
   'create-outline': Pencil,
   'cube': Boxes,
   'cube-outline': Box,
+  'download': Download,
   'circle-user-round': CircleUserRound,
   'eye-off-outline': EyeOff,
   'eye-outline': Eye,
@@ -710,6 +713,7 @@ function DashboardScreen({
         <ScrollView contentContainerStyle={styles.content} showsVerticalScrollIndicator={false}>
           {section === 'home' ? (
             <HomeSection
+              accessToken={session.accessToken}
               insights={insights}
               movements={movements}
               onNavigate={navigate}
@@ -733,7 +737,7 @@ function DashboardScreen({
             />
           ) : null}
           {section === 'history' ? (
-            <HistorySection movements={movements} />
+            <HistorySection accessToken={session.accessToken} movements={movements} />
           ) : null}
           {section === 'profile' ? (
             <ProfileSection
@@ -798,10 +802,12 @@ function DashboardScreen({
 }
 
 function HomeSection({
+  accessToken,
   insights,
   movements,
   onNavigate,
 }: {
+  accessToken: string;
   insights: InventoryInsights;
   movements: StockMovement[];
   onNavigate: (section: AppSection) => void;
@@ -833,15 +839,26 @@ function HomeSection({
         <Text style={styles.heroSubtitle}>
           Vendas, previsoes de estoque e movimentacoes recentes em uma visao unica para o time.
         </Text>
-        <Pressable
-          accessibilityRole="button"
-          onPress={() => onNavigate('products')}
-          style={({ pressed }) => [styles.heroButton, pressed && styles.buttonPressed]}>
-          <View style={styles.heroButtonInner}>
-            <AppIcon name="cube" size={18} color="#ffffff" />
-            <Text style={styles.heroButtonText}>Ver produtos</Text>
-          </View>
-        </Pressable>
+        <View style={{ flexDirection: 'row', gap: 8, flexWrap: 'wrap' }}>
+          <Pressable
+            accessibilityRole="button"
+            onPress={() => onNavigate('products')}
+            style={({ pressed }) => [styles.heroButton, pressed && styles.buttonPressed]}>
+            <View style={styles.heroButtonInner}>
+              <AppIcon name="cube" size={18} color="#ffffff" />
+              <Text style={styles.heroButtonText}>Ver produtos</Text>
+            </View>
+          </Pressable>
+          <Pressable
+            accessibilityRole="button"
+            onPress={() => exportDashboardCsv(accessToken)}
+            style={({ pressed }) => [styles.heroButton, pressed && styles.buttonPressed]}>
+            <View style={styles.heroButtonInner}>
+              <AppIcon name="download" size={18} color="#ffffff" />
+              <Text style={styles.heroButtonText}>Exportar Relatorio</Text>
+            </View>
+          </Pressable>
+        </View>
       </LinearGradient>
 
       <View style={styles.metricsGridTwo}>
@@ -1265,19 +1282,30 @@ function ProductsSection({
             Visualize, edite e acompanhe o volume total do seu estoque.
           </Text>
         </View>
-        <Pressable
-          accessibilityRole="button"
-          onPress={openCreateModal}
-          style={({ pressed }) => [styles.addProductButton, pressed && styles.buttonPressed]}>
-          <LinearGradient
-            colors={theme.brandGradient}
-            end={{ x: 1, y: 1 }}
-            start={{ x: 0, y: 0 }}
-            style={styles.addProductButtonGradient}>
-            <AppIcon name="add" size={20} color="#FFF" />
-            <Text style={styles.addProductButtonText}>Novo Produto</Text>
-          </LinearGradient>
-        </Pressable>
+        <View style={{ flexDirection: 'row', gap: 8 }}>
+          <Pressable
+            accessibilityRole="button"
+            onPress={openCreateModal}
+            style={({ pressed }) => [styles.addProductButton, pressed && styles.buttonPressed]}>
+            <LinearGradient
+              colors={theme.brandGradient}
+              end={{ x: 1, y: 1 }}
+              start={{ x: 0, y: 0 }}
+              style={styles.addProductButtonGradient}>
+              <AppIcon name="add" size={20} color="#FFF" />
+              <Text style={styles.addProductButtonText}>Novo Produto</Text>
+            </LinearGradient>
+          </Pressable>
+          <Pressable
+            accessibilityRole="button"
+            onPress={() => exportProductsCsv(accessToken)}
+            style={({ pressed }) => [styles.ghostButton, { minHeight: 44, paddingHorizontal: 16 }, pressed && styles.buttonPressed]}>
+            <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8 }}>
+              <AppIcon name="download" size={18} color={theme.ink} />
+              <Text style={styles.ghostButtonText}>Exportar CSV</Text>
+            </View>
+          </Pressable>
+        </View>
       </View>
 
       <View style={styles.productsFiltersPanel}>
@@ -2134,14 +2162,27 @@ function ProductCard({
   );
 }
 
-function HistorySection({ movements }: { movements: StockMovement[] }) {
+function HistorySection({ accessToken, movements }: { accessToken: string; movements: StockMovement[] }) {
   return (
     <View style={styles.section}>
       <View style={styles.sectionHeaderBlock}>
-        <Text style={styles.sectionTitle}>Historico de Operacoes</Text>
-        <Text style={styles.sectionSubtitle}>
-          Acompanhe cada entrada e saida do seu estoque em tempo real.
-        </Text>
+        <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'flex-start', gap: 12 }}>
+          <View style={{ flex: 1, gap: 6 }}>
+            <Text style={styles.sectionTitle}>Historico de Operacoes</Text>
+            <Text style={styles.sectionSubtitle}>
+              Acompanhe cada entrada e saida do seu estoque em tempo real.
+            </Text>
+          </View>
+          <Pressable
+            accessibilityRole="button"
+            onPress={() => exportStockMovementsCsv(accessToken)}
+            style={({ pressed }) => [styles.ghostButton, { minHeight: 44, paddingHorizontal: 16 }, pressed && styles.buttonPressed]}>
+            <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8 }}>
+              <AppIcon name="download" size={18} color={theme.ink} />
+              <Text style={styles.ghostButtonText}>Exportar CSV</Text>
+            </View>
+          </Pressable>
+        </View>
       </View>
 
       <MovementPanel movements={movements} />

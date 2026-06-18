@@ -39,7 +39,7 @@ export default function DashboardPage() {
   }
 
   return (
-    <DashboardOverview data={dashboardQuery.data} />
+    <DashboardOverview data={dashboardQuery.data} accessToken={session.accessToken} />
   );
 }
 

@@ -9,6 +9,7 @@ import {
   BarChart3,
   Boxes,
   Clock3,
+  Download,
   Flame,
   TrendingDown,
   TrendingUp,
@@ -19,12 +20,14 @@ import type {
   DashboardRecentMovement,
   DashboardTopSellingProduct,
 } from '@/lib/types';
+import { exportDashboardCsv } from '@/lib/api/export';
 
 type DashboardOverviewProps = {
   data: DashboardOverviewData;
+  accessToken: string;
 };
 
-export function DashboardOverview({ data }: DashboardOverviewProps) {
+export function DashboardOverview({ data, accessToken }: DashboardOverviewProps) {
   return (
     <div className="space-y-8 reveal-up">
       <section
@@ -47,13 +50,23 @@ export function DashboardOverview({ data }: DashboardOverviewProps) {
             </p>
           </div>
 
-          <Link
-            href="/products"
-            className="inline-flex h-12 items-center justify-center gap-2 rounded-xl border border-white/10 bg-white/10 px-5 text-sm font-bold text-white backdrop-blur-sm transition-all hover:bg-white/15"
-          >
-            <Boxes size={18} strokeWidth={2.3} />
-            Ver produtos
-          </Link>
+          <div className="flex flex-wrap items-center gap-3">
+            <Link
+              href="/products"
+              className="inline-flex h-12 items-center justify-center gap-2 rounded-xl border border-white/10 bg-white/10 px-5 text-sm font-bold text-white backdrop-blur-sm transition-all hover:bg-white/15"
+            >
+              <Boxes size={18} strokeWidth={2.3} />
+              Ver produtos
+            </Link>
+            <button
+              type="button"
+              onClick={() => exportDashboardCsv(accessToken)}
+              className="inline-flex h-12 items-center justify-center gap-2 rounded-xl border border-white/10 bg-white/10 px-5 text-sm font-bold text-white backdrop-blur-sm transition-all hover:bg-white/15"
+            >
+              <Download size={18} strokeWidth={2.3} />
+              Exportar Relatório
+            </button>
+          </div>
         </div>
       </section>
 

@@ -5,7 +5,7 @@ import { createPortal } from 'react-dom';
 import Image from 'next/image';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
-import { ArrowUpRight, Edit2, Image as ImageIcon, MoreVertical, PackageSearch, Plus, Search, Trash2, TrendingDown } from 'lucide-react';
+import { ArrowUpRight, Download, Edit2, Image as ImageIcon, MoreVertical, PackageSearch, Plus, Search, Trash2, TrendingDown } from 'lucide-react';
 import toast from 'react-hot-toast';
 import {
   createCategory,
@@ -13,6 +13,7 @@ import {
   getCategories,
   updateCategory,
 } from '@/lib/api/categories';
+import { exportProductsCsv } from '@/lib/api/export';
 import {
   createProduct,
   deleteProduct,
@@ -501,13 +502,22 @@ function ProductsPageContent() {
           <h3 className="text-3xl font-bold tracking-tight text-[#0f172a]">Gerenciamento de Produtos</h3>
           <p className="mt-2 text-sm font-medium text-slate-500">Visualize, edite e acompanhe o volume total do seu estoque.</p>
         </div>
-        <button
-          type="button"
-          onClick={openCreateProduct}
-          className="group flex h-[3rem] items-center justify-center gap-2 rounded-xl bg-[image:var(--brand-gradient)] px-[1.5rem] text-sm font-bold text-white shadow-[0_18px_40px_-20px_rgba(15,23,42,0.7)] ring-1 ring-white/15 transition-all hover:-translate-y-0.5 hover:shadow-[0_22px_45px_-20px_rgba(15,23,42,0.85)]">
-          <Plus size={18} strokeWidth={2.5} />
-          Novo Produto
-        </button>
+        <div className="flex items-center gap-3">
+          <button
+            type="button"
+            onClick={openCreateProduct}
+            className="group flex h-[3rem] items-center justify-center gap-2 rounded-xl bg-[image:var(--brand-gradient)] px-[1.5rem] text-sm font-bold text-white shadow-[0_18px_40px_-20px_rgba(15,23,42,0.7)] ring-1 ring-white/15 transition-all hover:-translate-y-0.5 hover:shadow-[0_22px_45px_-20px_rgba(15,23,42,0.85)]">
+            <Plus size={18} strokeWidth={2.5} />
+            Novo Produto
+          </button>
+          <button
+            type="button"
+            onClick={() => exportProductsCsv(session!.accessToken)}
+            className="flex h-[3rem] items-center justify-center gap-2 rounded-xl border border-slate-200 bg-white px-[1.5rem] text-sm font-bold text-slate-600 shadow-sm transition-all hover:-translate-y-0.5 hover:border-slate-300 hover:bg-slate-50 hover:shadow-md">
+            <Download size={18} strokeWidth={2.5} />
+            Exportar CSV
+          </button>
+        </div>
       </section>
 
       <section className="surface-card p-6">
