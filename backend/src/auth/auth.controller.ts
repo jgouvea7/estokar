@@ -4,7 +4,6 @@ import {
   Get,
   HttpCode,
   HttpStatus,
-  Query,
   Res,
   Post,
   Req,
@@ -65,7 +64,7 @@ export class AuthController {
 
   @Get('google')
   @UseGuards(GoogleOAuthGuard)
-  googleAuth(@Query('redirect_uri') _redirectUri?: string) {}
+  googleAuth() {}
 
   @Get('google/callback')
   @UseGuards(GoogleOAuthGuard)
@@ -88,7 +87,7 @@ export class AuthController {
       url.searchParams.set('createdAt', String(tokens.user.createdAt ?? ''));
       url.searchParams.set(
         'alertDaysBefore',
-        String((tokens.user as any).alertDaysBefore ?? ''),
+        String(tokens.user.alertDaysBefore ?? ''),
       );
       res.redirect(url.toString());
       return;

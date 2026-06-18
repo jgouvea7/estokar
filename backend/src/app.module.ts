@@ -39,11 +39,13 @@ import { AdminModule } from './admin/admin.module';
         ? {
             url: process.env.DATABASE_URL,
             ssl: {
-              rejectUnauthorized: false,
+              rejectUnauthorized:
+                process.env.DB_SSL_REJECT_UNAUTHORIZED === 'true',
             },
             extra: {
               ssl: {
-                rejectUnauthorized: false,
+                rejectUnauthorized:
+                  process.env.DB_SSL_REJECT_UNAUTHORIZED === 'true',
               },
             },
           }

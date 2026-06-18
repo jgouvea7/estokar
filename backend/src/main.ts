@@ -10,27 +10,45 @@ import { SentryExceptionFilter } from './common/filters/sentry-exception.filter'
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
 
-  app.use(new HttpLoggerMiddleware().use);
+  const httpLogger = new HttpLoggerMiddleware();
+  app.use(httpLogger.use.bind(httpLogger));
 
-  app.use(helmet());
+  app.use(
+    helmet({
+      contentSecurityPolicy: {
+        directives: {
+          defaultSrc: ["'self'"],
+          scriptSrc: ["'self'"],
+          styleSrc: ["'self'", "'unsafe-inline'"],
+          imgSrc: ["'self'", 'data:', 'https:'],
+        },
+      },
+      strictTransportSecurity: {
+        maxAge: 31536000,
+        includeSubDomains: true,
+      },
+    }),
+  );
+
+  const allowedOrigins =
+    process.env.ALLOWED_ORIGINS?.split(',').map((o) => o.trim()) ?? [];
 
   app.enableCors({
-    origin: (origin, callback) => {
-      const allowedOrigins = [
-        'http://localhost:3001',
-        'http://localhost:3000',
-        'http://backend:3000',
-        'http://localhost:8081',
-        'https://estokar.vercel.app',
-      ];
-
-      if (!origin) return callback(null, true);
-
-      if (allowedOrigins.includes(origin)) {
-        return callback(null, true);
+    origin: (
+      origin: string | undefined,
+      callback: (err: Error | null, allow?: boolean) => void,
+    ) => {
+      if (!origin || allowedOrigins.length === 0) {
+        callback(null, true);
+        return;
       }
 
-      return callback(new Error(`CORS bloqueado para origem: ${origin}`));
+      if (allowedOrigins.includes(origin)) {
+        callback(null, true);
+        return;
+      }
+
+      callback(new Error(`CORS bloqueado para origem: ${origin}`));
     },
     methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
     allowedHeaders: ['Content-Type', 'Authorization'],
@@ -57,4 +75,4 @@ async function bootstrap() {
   await app.listen(port, '0.0.0.0');
 }
 
-bootstrap();
+void bootstrap();

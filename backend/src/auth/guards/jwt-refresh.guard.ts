@@ -12,6 +12,6 @@ export class JwtRefreshGuard extends AuthGuard('jwt-refresh') {
         )
       );
     }
-    return user;
+    return user as Record<string, unknown>;
   }
 }

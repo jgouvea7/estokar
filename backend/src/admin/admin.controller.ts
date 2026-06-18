@@ -25,7 +25,9 @@ export class AdminController {
 
   @Get('users')
   listUsers(@Query('page') page = 1, @Query('perPage') perPage = 10) {
-    return this.adminService.listUsers(Number(page), Number(perPage));
+    const safePage = Math.max(Number(page), 1);
+    const safePerPage = Math.min(Math.max(Number(perPage), 1), 100);
+    return this.adminService.listUsers(safePage, safePerPage);
   }
 
   @Patch('users/:id/promote')

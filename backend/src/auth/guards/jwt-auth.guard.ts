@@ -12,6 +12,6 @@ export class JwtAuthGuard extends AuthGuard('jwt') {
         )
       );
     }
-    return user;
+    return user as Record<string, unknown>;
   }
 }

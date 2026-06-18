@@ -77,6 +77,7 @@
       "ts"
     ],
     "rootDir": "src",
+    "setupFiles": ["../jest.setup.ts"],
     "testRegex": ".*\\.spec\\.ts$",
     "transform": {
       "^.+\\.(t|j)s$": "ts-jest"

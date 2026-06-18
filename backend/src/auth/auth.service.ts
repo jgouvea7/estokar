@@ -57,7 +57,9 @@ export class AuthService {
     });
 
     const saved = await this.usersRepository.save(user);
-    const { password: _p, refreshToken: _r, ...safeUser } = saved as any;
+    const { password, refreshToken, ...safeUser } = saved;
+    void password;
+    void refreshToken;
     return safeUser;
   }
 
@@ -188,10 +190,7 @@ export class AuthService {
   }
 
   async getProfile(userId: string): Promise<User> {
-    const user = await this.usersRepository.findOne({
-      where: { id: userId },
-      relations: ['products'],
-    });
+    const user = await this.usersRepository.findOneBy({ id: userId });
     if (!user) {
       throw new NotFoundException('Usuário não encontrado.');
     }
@@ -208,24 +207,15 @@ export class AuthService {
 
     const [accessToken, refreshToken] = await Promise.all([
       this.jwtService.signAsync(payload, {
-        secret: this.configService.get<string>(
-          'JWT_SECRET',
-          'fallback-secret-change-in-production',
-        ),
-        expiresIn: this.configService.get<string>(
-          'JWT_EXPIRES_IN',
-          '7d',
-        ) as any,
+        secret: this.configService.getOrThrow<string>('JWT_SECRET'),
+        expiresIn: this.configService.get<string>('JWT_EXPIRES_IN', '15m'),
       }),
       this.jwtService.signAsync(payload, {
-        secret: this.configService.get<string>(
-          'JWT_REFRESH_SECRET',
-          'fallback-refresh-secret-change-in-production',
-        ),
+        secret: this.configService.getOrThrow<string>('JWT_REFRESH_SECRET'),
         expiresIn: this.configService.get<string>(
           'JWT_REFRESH_EXPIRES_IN',
           '7d',
-        ) as any,
+        ),
       }),
     ]);
 

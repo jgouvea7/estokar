@@ -10,12 +10,26 @@ export class StockMovementsService {
     private readonly stockMovementsRepository: Repository<StockMovement>,
   ) {}
 
-  async findAll(userId: string): Promise<StockMovement[]> {
-    return this.stockMovementsRepository.find({
+  async findAll(
+    userId: string,
+    page = 1,
+    limit = 100,
+  ): Promise<{
+    data: StockMovement[];
+    total: number;
+    page: number;
+    limit: number;
+  }> {
+    const skip = (page - 1) * limit;
+
+    const [data, total] = await this.stockMovementsRepository.findAndCount({
       where: { userId },
       order: { createdAt: 'DESC' },
-      take: 100,
+      skip,
+      take: limit,
     });
+
+    return { data, total, page, limit };
   }
 
   async create(data: Partial<StockMovement>): Promise<StockMovement> {

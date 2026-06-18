@@ -7,6 +7,7 @@ import {
   StockMovementType,
 } from '../stock-movements/entities/stock-movement.entity';
 import { Repository } from 'typeorm';
+import { calculateForecast, toNumber } from '../common/utils/forecast.util';
 
 @Injectable()
 export class DashboardService {
@@ -22,7 +23,28 @@ export class DashboardService {
   ) {}
 
   async getDashboard(userId: string) {
-    const [user, products, movements] = await Promise.all([
+    const sevenDaysAgo = new Date();
+    sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 7);
+
+    const startOfToday = new Date();
+    startOfToday.setHours(0, 0, 0, 0);
+
+    const now = new Date();
+    const currentWeekStart = new Date(now);
+    currentWeekStart.setDate(currentWeekStart.getDate() - 7);
+
+    const previousWeekStart = new Date(now);
+    previousWeekStart.setDate(previousWeekStart.getDate() - 14);
+
+    const [
+      user,
+      products,
+      recentMovements,
+      salesData,
+      weeklySalesData,
+      dailyBalanceData,
+      topCategoriesData,
+    ] = await Promise.all([
       this.usersRepository.findOne({
         where: { id: userId },
         select: ['id', 'alertDaysBefore'],
@@ -32,54 +54,97 @@ export class DashboardService {
         order: { name: 'ASC' },
         relations: ['category'],
       }),
-
       this.stockMovementsRepository.find({
         where: { userId },
         order: { createdAt: 'DESC' },
+        take: 9,
       }),
+      this.stockMovementsRepository
+        .createQueryBuilder('m')
+        .select('m.productId', 'productId')
+        .addSelect('COALESCE(SUM(m.quantity), 0)', 'soldQuantity')
+        .addSelect(
+          `COALESCE(SUM(CASE WHEN m.createdAt >= :sevenDaysAgo THEN m.quantity ELSE 0 END), 0)`,
+          'recentSoldQuantity',
+        )
+        .where('m.userId = :userId', { userId })
+        .andWhere('m.type = :outType', { outType: StockMovementType.OUT })
+        .setParameter('sevenDaysAgo', sevenDaysAgo)
+        .groupBy('m.productId')
+        .getRawMany<{
+          productId: string;
+          soldQuantity: string;
+          recentSoldQuantity: string;
+        }>(),
+      this.stockMovementsRepository
+        .createQueryBuilder('m')
+        .select(
+          `COALESCE(COUNT(CASE WHEN m.createdAt >= :currentWeekStart AND m.createdAt < :now THEN 1 END), 0)`,
+          'currentWeekSales',
+        )
+        .addSelect(
+          `COALESCE(COUNT(CASE WHEN m.createdAt >= :previousWeekStart AND m.createdAt < :currentWeekStart THEN 1 END), 0)`,
+          'previousWeekSales',
+        )
+        .where('m.userId = :userId', { userId })
+        .andWhere('m.type = :outType', { outType: StockMovementType.OUT })
+        .setParameters({
+          currentWeekStart,
+          previousWeekStart,
+          now,
+        })
+        .getRawOne<{
+          currentWeekSales: string;
+          previousWeekSales: string;
+        }>(),
+      this.stockMovementsRepository
+        .createQueryBuilder('m')
+        .select(
+          `COALESCE(SUM(CASE WHEN m.type = :inType THEN m.quantity ELSE -m.quantity END), 0)`,
+          'balance',
+        )
+        .where('m.userId = :userId', { userId })
+        .andWhere('m.createdAt >= :startOfToday', { startOfToday })
+        .setParameter('inType', StockMovementType.IN)
+        .getRawOne<{ balance: string }>(),
+      this.stockMovementsRepository
+        .createQueryBuilder('m')
+        .select('c.name', 'categoryName')
+        .addSelect('COALESCE(SUM(m.quantity), 0)', 'soldQuantity')
+        .innerJoin('product', 'p', 'p.id = m.productId')
+        .leftJoin('category', 'c', 'c.id = p.categoryId')
+        .where('m.userId = :userId', { userId })
+        .andWhere('m.type = :outType', { outType: StockMovementType.OUT })
+        .andWhere('c.name IS NOT NULL')
+        .groupBy('c.name')
+        .orderBy('"soldQuantity"', 'DESC')
+        .limit(3)
+        .getRawMany<{
+          categoryName: string;
+          soldQuantity: string;
+        }>(),
     ]);
 
-    const recentMovements = movements.slice(0, 9);
-
-    const outMovements = movements.filter(
-      (movement) => movement.type === StockMovementType.OUT,
+    const salesMap = new Map(
+      salesData.map((row) => [
+        row.productId,
+        {
+          soldQuantity: toNumber(row.soldQuantity),
+          recentSoldQuantity: toNumber(row.recentSoldQuantity),
+        },
+      ]),
     );
 
-    const salesMap = new Map<
-      string,
-      {
-        soldQuantity: number;
-        recentSoldQuantity: number;
-      }
-    >();
-
-    const sevenDaysAgo = new Date();
-    sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 7);
-
-    for (const movement of outMovements) {
-      const current = salesMap.get(movement.productId) || {
-        soldQuantity: 0,
-        recentSoldQuantity: 0,
-      };
-
-      current.soldQuantity += movement.quantity;
-
-      if (movement.createdAt >= sevenDaysAgo) {
-        current.recentSoldQuantity += movement.quantity;
-      }
-
-      salesMap.set(movement.productId, current);
-    }
+    const alertDaysBefore = user?.alertDaysBefore ?? 7;
 
     const topSellingProducts = products
       .map((product) => {
         const sales = salesMap.get(product.id);
-
         return {
           productId: product.id,
           productName: product.name,
           currentQuantity: product.quantity,
-          soldQuantity: sales?.soldQuantity || 0,
+          soldQuantity: sales?.soldQuantity ?? 0,
         };
       })
       .sort((a, b) => b.soldQuantity - a.soldQuantity)
@@ -88,26 +153,24 @@ export class DashboardService {
     const forecastedProducts = products
       .map((product) => {
         const sales = salesMap.get(product.id);
-
         if (!sales || sales.recentSoldQuantity <= 0) {
           return null;
         }
-
-        const averageDailySales = sales.recentSoldQuantity / 7;
-
-        if (averageDailySales <= 0) {
+        const forecast = calculateForecast(
+          product.quantity,
+          sales.recentSoldQuantity,
+          7,
+        );
+        if (forecast.averageDailySales <= 0) {
           return null;
         }
-
-        const estimatedDaysLeft = product.quantity / averageDailySales;
-
         return {
           productId: product.id,
           productName: product.name,
           currentQuantity: product.quantity,
           recentSoldQuantity: sales.recentSoldQuantity,
-          averageDailySales,
-          estimatedDaysLeft,
+          averageDailySales: forecast.averageDailySales,
+          estimatedDaysLeft: forecast.estimatedDaysLeft!,
         };
       })
       .filter(Boolean)
@@ -115,10 +178,7 @@ export class DashboardService {
       .slice(0, 5);
 
     const lowStockProducts = forecastedProducts
-      .filter(
-        (product) =>
-          product && product.estimatedDaysLeft <= (user?.alertDaysBefore ?? 7),
-      )
+      .filter((product) => product!.estimatedDaysLeft <= alertDaysBefore)
       .map((product) => ({
         productId: product!.productId,
         productName: product!.productName,
@@ -128,8 +188,6 @@ export class DashboardService {
         averageDailySales: product!.averageDailySales,
       }))
       .sort((a, b) => a.estimatedDaysLeft - b.estimatedDaysLeft);
-
-    const alertDaysBefore = user?.alertDaysBefore ?? 7;
 
     const alerts = forecastedProducts.filter(
       (product) => product!.estimatedDaysLeft <= alertDaysBefore,
@@ -142,16 +200,11 @@ export class DashboardService {
           100
         : 0;
 
-    const startOfToday = new Date();
-    startOfToday.setHours(0, 0, 0, 0);
+    const dailyBalance = toNumber(dailyBalanceData?.balance);
 
-    const dailyBalance = movements
-      .filter((m) => m.createdAt >= startOfToday)
-      .reduce((acc, m) => {
-        return (
-          acc + (m.type === StockMovementType.IN ? m.quantity : -m.quantity)
-        );
-      }, 0);
+    const weeklySales = this.formatWeeklySales(weeklySalesData);
+
+    const topCategories = this.formatTopCategories(topCategoriesData);
 
     return {
       topSellingProducts,
@@ -159,8 +212,8 @@ export class DashboardService {
       recentMovements,
       forecastedProducts,
       alerts,
-      topCategories: this.calculateTopCategories(products, movements),
-      weeklySales: this.calculateWeeklySales(movements),
+      topCategories,
+      weeklySales,
       totalStock,
       catalogAvailability,
       dailyBalance,
@@ -169,85 +222,14 @@ export class DashboardService {
 
   async getAlerts(userId: string) {
     const dashboard = await this.getDashboard(userId);
-
     return dashboard.alerts;
   }
 
-  private calculateTopCategories(
-    products: Product[],
-    movements: StockMovement[],
+  private formatWeeklySales(
+    data: { currentWeekSales: string; previousWeekSales: string } | null,
   ) {
-    const productById = new Map(
-      products.map((product) => [product.id, product]),
-    );
-    const salesByCategory = new Map<string, number>();
-
-    for (const movement of movements) {
-      if (movement.type !== StockMovementType.OUT) {
-        continue;
-      }
-
-      const product = productById.get(movement.productId);
-      const categoryName = product?.category?.name?.trim();
-      if (!categoryName) {
-        continue;
-      }
-
-      const current = salesByCategory.get(categoryName) ?? 0;
-      salesByCategory.set(categoryName, current + movement.quantity);
-    }
-
-    const totalSold = Array.from(salesByCategory.values()).reduce(
-      (total, quantity) => total + quantity,
-      0,
-    );
-
-    return Array.from(salesByCategory.entries())
-      .map(([categoryName, soldQuantity], index) => ({
-        categoryName,
-        percentage: totalSold > 0 ? (soldQuantity / totalSold) * 100 : 0,
-        rank: index + 1,
-        soldQuantity,
-      }))
-      .sort(
-        (a, b) =>
-          b.soldQuantity - a.soldQuantity ||
-          a.categoryName.localeCompare(b.categoryName),
-      )
-      .slice(0, 3)
-      .map((item, index) => ({
-        ...item,
-        rank: index + 1,
-      }));
-  }
-
-  private calculateWeeklySales(movements: StockMovement[]) {
-    const now = new Date();
-
-    const startOfToday = new Date(now);
-    startOfToday.setHours(0, 0, 0, 0);
-
-    const currentWeekStart = new Date(now);
-    currentWeekStart.setDate(currentWeekStart.getDate() - 7);
-
-    const previousWeekStart = new Date(now);
-    previousWeekStart.setDate(previousWeekStart.getDate() - 14);
-
-    const outMovements = movements.filter(
-      (movement) => movement.type === StockMovementType.OUT,
-    );
-
-    const currentWeekSales = this.countMovementsInRange(
-      outMovements,
-      currentWeekStart,
-      now,
-    );
-    const previousWeekSales = this.countMovementsInRange(
-      outMovements,
-      previousWeekStart,
-      currentWeekStart,
-    );
-
+    const currentWeekSales = toNumber(data?.currentWeekSales);
+    const previousWeekSales = toNumber(data?.previousWeekSales);
     const variationPercentage = this.calculateVariationPercentage(
       currentWeekSales,
       previousWeekSales,
@@ -258,25 +240,31 @@ export class DashboardService {
       currentWeekSales,
       direction:
         variationPercentage > 0
-          ? 'up'
+          ? ('up' as const)
           : variationPercentage < 0
-            ? 'down'
-            : 'flat',
+            ? ('down' as const)
+            : ('flat' as const),
       previousWeekSales,
       valueLabel: currentWeekSales.toString(),
       variationPercentage,
     };
   }
 
-  private countMovementsInRange(
-    movements: StockMovement[],
-    startDate: Date,
-    endDate: Date,
+  private formatTopCategories(
+    data: { categoryName: string; soldQuantity: string }[],
   ) {
-    return movements.filter((movement) => {
-      const movementDate = new Date(movement.createdAt);
-      return movementDate >= startDate && movementDate < endDate;
-    }).length;
+    const totalSold = data.reduce(
+      (sum, row) => sum + toNumber(row.soldQuantity),
+      0,
+    );
+
+    return data.map((row, index) => ({
+      categoryName: row.categoryName,
+      percentage:
+        totalSold > 0 ? (toNumber(row.soldQuantity) / totalSold) * 100 : 0,
+      rank: index + 1,
+      soldQuantity: toNumber(row.soldQuantity),
+    }));
   }
 
   private calculateVariationPercentage(
@@ -287,24 +275,19 @@ export class DashboardService {
       if (currentValue <= 0) {
         return 0;
       }
-
       return 100;
     }
-
     return ((currentValue - previousValue) / previousValue) * 100;
   }
 
   private formatSignedPercentage(value: number) {
     const rounded = Math.round(value);
-
     if (rounded > 0) {
       return `+${rounded}%`;
     }
-
     if (rounded < 0) {
       return `${rounded}%`;
     }
-
     return '0%';
   }
 }

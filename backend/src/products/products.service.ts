@@ -1,9 +1,4 @@
-import {
-  BadRequestException,
-  ForbiddenException,
-  Injectable,
-  NotFoundException,
-} from '@nestjs/common';
+import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Category } from '../categories/entities/category.entity';
 import { CreateProductDto } from './dto/create-product.dto';
@@ -18,19 +13,7 @@ import {
   ProductDashboardResponseDto,
   ProductDashboardMovementDto,
 } from './dto/product-dashboard-response.dto';
-
-type ProductMovementSummaryRaw = {
-  totalEntries: string | number;
-  totalOutputs: string | number;
-  recentSoldQuantity: string | number;
-};
-
-type ProductDashboardMovementRaw = {
-  createdAt: Date | string;
-  id: string;
-  quantity: string | number;
-  type: StockMovementType;
-};
+import { calculateForecast, toNumber } from '../common/utils/forecast.util';
 
 @Injectable()
 export class ProductsService {
@@ -88,13 +71,13 @@ export class ProductsService {
     const soldByProduct = new Map(
       movementSummaries.map((row) => [
         row.productId,
-        this.toNumber(row.recentSoldQuantity),
+        toNumber(row.recentSoldQuantity),
       ]),
     );
 
     return products.map((product) => {
       const recentSoldQuantity = soldByProduct.get(product.id) ?? 0;
-      const forecast = this.calculateForecast(
+      const forecast = calculateForecast(
         product.quantity,
         recentSoldQuantity,
         windowDays,
@@ -183,12 +166,10 @@ export class ProductsService {
       throw new NotFoundException(`Produto com ID "${id}" não encontrado`);
     }
 
-    const totalEntries = this.toNumber(movementSummary?.totalEntries);
-    const totalOutputs = this.toNumber(movementSummary?.totalOutputs);
-    const recentSoldQuantity = this.toNumber(
-      movementSummary?.recentSoldQuantity,
-    );
-    const forecast = this.calculateForecast(
+    const totalEntries = toNumber(movementSummary?.totalEntries);
+    const totalOutputs = toNumber(movementSummary?.totalOutputs);
+    const recentSoldQuantity = toNumber(movementSummary?.recentSoldQuantity);
+    const forecast = calculateForecast(
       product.quantity,
       recentSoldQuantity,
       windowDays,
@@ -210,7 +191,7 @@ export class ProductsService {
         currentStock: product.quantity,
         averageDailySales: forecast.averageDailySales,
         estimatedDaysLeft: forecast.estimatedDaysLeft,
-        recentMovements: recentMovements.map(this.mapMovementToDto),
+        recentMovements: recentMovements.map((m) => this.mapMovementToDto(m)),
         summary: {
           totalEntries,
           totalOutputs,
@@ -245,12 +226,10 @@ export class ProductsService {
       throw new NotFoundException(`Produto com ID "${id}" não encontrado`);
     }
 
-    const totalEntries = this.toNumber(movementSummary?.totalEntries);
-    const totalOutputs = this.toNumber(movementSummary?.totalOutputs);
-    const recentSoldQuantity = this.toNumber(
-      movementSummary?.recentSoldQuantity,
-    );
-    const forecast = this.calculateForecast(
+    const totalEntries = toNumber(movementSummary?.totalEntries);
+    const totalOutputs = toNumber(movementSummary?.totalOutputs);
+    const recentSoldQuantity = toNumber(movementSummary?.recentSoldQuantity);
+    const forecast = calculateForecast(
       product.quantity,
       recentSoldQuantity,
       windowDays,
@@ -268,7 +247,7 @@ export class ProductsService {
         image: product.image,
         name: product.name,
       },
-      recentMovements: recentMovements.map(this.mapMovementToDto),
+      recentMovements: recentMovements.map((m) => this.mapMovementToDto(m)),
       summary: {
         totalEntries,
         totalOutputs,
@@ -397,35 +376,6 @@ export class ProductsService {
       .getMany();
   }
 
-  private calculateForecast(
-    currentStock: number,
-    recentSoldQuantity: number,
-    windowDays: number,
-  ) {
-    if (
-      !Number.isFinite(currentStock) ||
-      !Number.isFinite(recentSoldQuantity) ||
-      !Number.isFinite(windowDays)
-    ) {
-      return { averageDailySales: 0, estimatedDaysLeft: null as number | null };
-    }
-
-    if (recentSoldQuantity <= 0 || windowDays <= 0) {
-      return { averageDailySales: 0, estimatedDaysLeft: null as number | null };
-    }
-
-    const averageDailySales = recentSoldQuantity / windowDays;
-
-    if (averageDailySales <= 0) {
-      return { averageDailySales: 0, estimatedDaysLeft: null as number | null };
-    }
-
-    return {
-      averageDailySales,
-      estimatedDaysLeft: currentStock / averageDailySales,
-    };
-  }
-
   private mapMovementToDto(
     movement: StockMovement,
   ): ProductDashboardMovementDto {
@@ -435,13 +385,5 @@ export class ProductsService {
       quantity: movement.quantity,
       type: movement.type,
     };
-  }
-
-  private toNumber(value: string | number | undefined | null): number {
-    if (value === undefined || value === null) {
-      return 0;
-    }
-
-    return typeof value === 'number' ? value : Number(value);
   }
 }
