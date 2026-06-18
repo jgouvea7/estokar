@@ -359,7 +359,11 @@ export class ProductsService {
         outType: StockMovementType.OUT,
         windowStart,
       })
-      .getRawOne<ProductMovementSummaryRaw>();
+      .getRawOne<{
+        totalEntries: string;
+        totalOutputs: string;
+        recentSoldQuantity: string;
+      }>();
   }
 
   private async getRecentMovements(

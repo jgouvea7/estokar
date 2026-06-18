@@ -202,7 +202,7 @@ export class DashboardService {
 
     const dailyBalance = toNumber(dailyBalanceData?.balance);
 
-    const weeklySales = this.formatWeeklySales(weeklySalesData);
+    const weeklySales = this.formatWeeklySales(weeklySalesData ?? null);
 
     const topCategories = this.formatTopCategories(topCategoriesData);
 
