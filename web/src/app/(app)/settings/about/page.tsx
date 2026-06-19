@@ -1,5 +1,6 @@
 "use client";
 
+import { CURRENT_VERSION } from '@/lib/version';
 import { Boxes, Users, Zap, Globe } from 'lucide-react';
 
 export default function AboutPage() {
@@ -17,7 +18,7 @@ export default function AboutPage() {
           </div>
           <div>
             <h2 className="text-2xl font-black text-(--ink)">Estokar Inventory OS</h2>
-            <p className="text-(--accent) font-bold">Versão 1.11.0</p>
+            <p className="text-(--accent) font-bold">Versão {CURRENT_VERSION}</p>
           </div>
           <p className="max-w-md mx-auto">
             Uma plataforma moderna e intuitiva desenhada para simplificar o controle de estoque de pequenas e medias empresas com foco em agilidade e precisao.

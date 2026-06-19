@@ -3,6 +3,7 @@
 import { useState } from 'react';
 import Link from 'next/link';
 import { VersionModal } from '@/components/settings/version-modal';
+import { BUILD_STRING } from '@/lib/version';
 import { ChevronRight, FileText, Info, LucideIcon, Shield, Smartphone } from 'lucide-react';
 
 export default function SettingsPage() {
@@ -27,7 +28,7 @@ export default function SettingsPage() {
               <SettingsItem
                 icon={Smartphone}
                 label="Versão do sistema"
-                value="v1.11.0 (Build 20260618)"
+                value={BUILD_STRING}
                 onClick={() => setIsVersionModalOpen(true)}
               />
             </div>

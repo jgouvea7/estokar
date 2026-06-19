@@ -9,6 +9,7 @@ import toast from 'react-hot-toast';
 import { useAuthStore } from '@/store/auth-store';
 import { useUIStore } from '@/store/ui-store';
 import { updateUser } from '@/lib/api/users';
+import { BUILD_STRING } from '@/lib/version';
 import { VersionModal } from '@/components/settings/version-modal';
 import Sidebar from '@/components/sidebar';
 
@@ -333,7 +334,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
                           </div>
                         </div>
                         <div className="flex items-center gap-2">
-                          <span className="text-xs font-bold text-(--accent)">v1.11.0 (Build 20260618)</span>
+                          <span className="text-xs font-bold text-(--accent)">{BUILD_STRING}</span>
                           <ChevronRight size={14} className="text-(--muted)" />
                         </div>
                       </button>

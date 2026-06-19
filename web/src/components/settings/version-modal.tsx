@@ -2,30 +2,7 @@
 
 import { X, Rocket, Bug, Zap } from 'lucide-react';
 import { useEffect } from 'react';
-
-interface VersionChange {
-  type: 'feature' | 'fix' | 'improvement';
-  text: string;
-}
-
-interface VersionEntry {
-  version: string;
-  date: string;
-  changes: VersionChange[];
-}
-
-const changelog: VersionEntry[] = [
-  {
-    version: 'v1.11.0',
-    date: '18 de Junho, 2026',
-    changes: [
-      {
-        type: 'improvement',
-        text: 'Implementada exportação de produtos, movimentações de estoque e relatórios em formato CSV.',
-      },
-    ],
-  },
-];
+import { changelog } from '@/lib/version';
 
 interface VersionModalProps {
   isOpen: boolean;
