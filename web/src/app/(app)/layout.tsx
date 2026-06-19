@@ -212,8 +212,8 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
             onClick={() => setIsSettingsOpen(false)}
             aria-hidden="true"
           />
-          <div className="relative w-full max-w-5xl overflow-hidden rounded-xl border-2 border-(--stroke) bg-(--card) reveal-up">
-            <div className="flex items-center justify-between border-b-2 border-(--stroke) px-6 py-5">
+          <div className="relative w-full max-w-5xl max-h-[85vh] flex flex-col overflow-hidden rounded-xl border-2 border-(--stroke) bg-(--card) reveal-up">
+            <div className="flex items-center justify-between border-b-2 border-(--stroke) px-6 py-5 shrink-0">
               <div>
                 <p className="text-[10px] font-bold uppercase tracking-[0.2em] text-(--muted)">Configuracoes</p>
                 <h3 className="text-xl font-bold text-(--ink)">Preferencias da conta</h3>
@@ -228,7 +228,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
               </button>
             </div>
 
-            <div className="grid gap-0 lg:grid-cols-[240px_1fr]">
+            <div className="grid gap-0 lg:grid-cols-[240px_1fr] min-h-0 flex-1 overflow-y-auto">
               <aside className="border-b-2 border-(--stroke) bg-(--surface-2) p-5 lg:border-b-0 lg:border-r-2">
                 <p className="text-[10px] font-bold uppercase tracking-[0.2em] text-(--muted)">Seções</p>
                 <div className="mt-4 space-y-1">

@@ -175,7 +175,7 @@ export default function Sidebar({
               transitionDelay: sidebarOpen ? '60ms' : '0ms',
             }}
           >
-            <Link href="/" className="flex items-center gap-3">
+            <Link href="/dashboard" className="flex items-center gap-3">
               <div className="grid h-11 w-11 shrink-0 place-items-center rounded-xl bg-(--accent-soft) text-(--accent)">
                 <BrandIcon size={22} strokeWidth={2.5} />
               </div>
