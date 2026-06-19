@@ -28,50 +28,50 @@ export function ConfirmationModal({
   if (!isOpen) return null;
 
   const variantStyles = {
-    danger: 'bg-rose-600 hover:bg-rose-700 shadow-rose-200',
-    warning: 'bg-amber-500 hover:bg-amber-600 shadow-amber-200',
-    info: 'bg-blue-600 hover:bg-blue-700 shadow-blue-200',
+    danger: 'bg-(--critical) hover:brightness-125',
+    warning: 'bg-(--accent) hover:brightness-125',
+    info: 'bg-(--ink) hover:brightness-125',
   };
 
   const iconStyles = {
-    danger: 'bg-rose-50 text-rose-600',
-    warning: 'bg-amber-50 text-amber-600',
-    info: 'bg-blue-50 text-blue-600',
+    danger: 'bg-(--critical-soft) text-(--critical)',
+    warning: 'bg-(--accent-soft) text-(--accent)',
+    info: 'bg-(--soft) text-(--ink)',
   };
 
   return (
     <div className="fixed inset-0 z-[70] flex items-center justify-center p-4">
-      <div 
-        className="absolute inset-0 bg-slate-900/40 backdrop-blur-sm" 
+      <div
+        className="absolute inset-0 bg-[rgba(26,26,46,0.45)]"
         onClick={onClose}
       />
-      <div className="relative w-full max-w-md overflow-hidden rounded-3xl bg-white shadow-2xl reveal-up">
+      <div className="relative w-full max-w-md overflow-hidden rounded-xl border-2 border-(--stroke) bg-(--card) reveal-up">
         <div className="p-6">
           <div className="flex items-start justify-between">
-            <div className={`flex h-12 w-12 items-center justify-center rounded-2xl ${iconStyles[variant]}`}>
-              <AlertTriangle size={24} />
+            <div className={`flex h-11 w-11 items-center justify-center rounded-xl ${iconStyles[variant]}`}>
+              <AlertTriangle size={22} />
             </div>
-            <button 
+            <button
               onClick={onClose}
-              className="rounded-xl border border-slate-100 p-2 text-slate-400 transition-colors hover:bg-slate-50 hover:text-slate-600"
+              className="rounded-lg border-2 border-(--stroke) p-1.5 text-(--muted) transition-colors hover:bg-(--soft)"
             >
-              <X size={18} />
+              <X size={16} />
             </button>
           </div>
-          
+
           <div className="mt-5">
-            <h3 className="text-xl font-bold text-slate-900">{title}</h3>
-            <p className="mt-2 text-sm font-medium text-slate-500 leading-relaxed">
+            <h3 className="text-lg font-bold text-(--ink)">{title}</h3>
+            <p className="mt-2 text-sm font-medium text-(--muted) leading-relaxed">
               {description}
             </p>
           </div>
 
-          <div className="mt-8 flex items-center gap-3">
+          <div className="mt-7 flex items-center gap-3">
             <button
               type="button"
               onClick={onClose}
               disabled={isLoading}
-              className="flex-1 rounded-2xl border border-slate-200 px-4 py-3 text-sm font-bold text-slate-600 transition-all hover:bg-slate-50 active:scale-[0.98] disabled:opacity-50"
+              className="flex-1 rounded-lg border-2 border-(--stroke) px-4 py-2.5 text-xs font-bold text-(--muted) transition-all hover:bg-(--soft) disabled:opacity-50"
             >
               {cancelText}
             </button>
@@ -79,7 +79,7 @@ export function ConfirmationModal({
               type="button"
               onClick={onConfirm}
               disabled={isLoading}
-              className={`flex-1 rounded-2xl px-4 py-3 text-sm font-bold text-white transition-all active:scale-[0.98] disabled:opacity-50 shadow-lg ${variantStyles[variant]}`}
+              className={`flex-1 rounded-lg px-4 py-2.5 text-xs font-bold text-white transition-all disabled:opacity-50 ${variantStyles[variant]}`}
             >
               {isLoading ? (
                 <div className="flex items-center justify-center gap-2">

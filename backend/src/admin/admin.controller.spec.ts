@@ -40,20 +40,33 @@ describe('AdminController', () => {
 
       const result = await controller.listUsers(1, 10);
 
-      expect(adminService.listUsers).toHaveBeenCalledWith(1, 10);
+      expect(adminService.listUsers).toHaveBeenCalledWith(1, 10, undefined);
+      expect(result).toEqual(paginatedResult);
+    });
+
+    it('should pass search term to service', async () => {
+      const paginatedResult = {
+        data: [mockUser],
+        meta: { total: 1, page: 1, perPage: 10 },
+      };
+      adminService.listUsers.mockResolvedValue(paginatedResult);
+
+      const result = await controller.listUsers(1, 10, 'john');
+
+      expect(adminService.listUsers).toHaveBeenCalledWith(1, 10, 'john');
       expect(result).toEqual(paginatedResult);
     });
 
     it('should clamp perPage to max 100', async () => {
       await controller.listUsers(1, 500);
 
-      expect(adminService.listUsers).toHaveBeenCalledWith(1, 100);
+      expect(adminService.listUsers).toHaveBeenCalledWith(1, 100, undefined);
     });
 
     it('should ensure page is at least 1', async () => {
       await controller.listUsers(0, 10);
 
-      expect(adminService.listUsers).toHaveBeenCalledWith(1, 10);
+      expect(adminService.listUsers).toHaveBeenCalledWith(1, 10, undefined);
     });
   });
 

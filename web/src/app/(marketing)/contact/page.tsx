@@ -1,85 +1,143 @@
 "use client";
 
+import { useRouter } from 'next/navigation';
 import Link from 'next/link';
+import { BrandIcon } from '@/components/ui/brand-icon';
 import { ChevronLeft, Mail } from 'lucide-react';
 
 export default function PublicContactPage() {
-    return (
-        <div className="min-h-screen flex flex-col bg-gradient-to-br from-slate-50 to-blue-50/30">
-            <header className="border-b border-slate-200 bg-white/80 backdrop-blur-sm">
-                <nav className="mx-auto flex max-w-[1120px] items-center justify-between px-6 py-4 sm:px-8">
-                    <Link href="/" className="flex items-center gap-2 text-slate-900 hover:text-slate-600 transition-colors font-semibold">
-                        <ChevronLeft size={20} />
-                        Voltar
-                    </Link>
-                </nav>
-            </header>
+  const router = useRouter();
 
-            <main className="flex-1 mx-auto max-w-3xl w-full px-6 py-12 sm:px-8">
-                <article className="space-y-8">
-                    <div className="space-y-3 text-center mb-12">
-                        <div className="flex justify-center mb-4">
-                            <div className="grid h-14 w-14 place-items-center rounded-2xl bg-blue-100 text-blue-600">
-                                <Mail size={28} />
-                            </div>
-                        </div>
-                        <h1 className="text-4xl font-black text-slate-900">Contato</h1>
-                        <p className="text-base text-slate-600">
-                            Feedback, sugestões e suporte
-                        </p>
-                    </div>
-
-                    <section className="rounded-3xl border border-slate-200 bg-white p-8 space-y-8 text-slate-700 shadow-sm hover:shadow-md transition-shadow">
-
-                        <div className="space-y-4 pb-8 border-b border-slate-200">
-                            <h2 className="text-2xl font-black text-slate-900">Feedback & Suporte</h2>
-
-                            <p className="leading-relaxed">
-                                Encontrou algum problema ou tem uma ideia de funcionalidade?
-                            </p>
-
-                            <p className="leading-relaxed">
-                                Você pode enviar sugestões de melhorias, reportar bugs ou tirar dúvidas sobre o uso do Estokar.
-                                Seu feedback é essencial para evoluirmos o produto continuamente.
-                            </p>
-
-                            <p className="font-semibold text-slate-900">
-                                jonnathasg@gmail.com
-                            </p>
-
-                            <p className="text-sm text-slate-500">
-                                Para um atendimento mais rápido, inclua o máximo de detalhes possível (ex: o que aconteceu, prints, dispositivo utilizado).
-                            </p>
-                        </div>
-
-                        <div className="space-y-4">
-                            <h2 className="text-2xl font-black text-slate-900">Tempo de resposta</h2>
-                            <p className="leading-relaxed">
-                                Respondemos normalmente em até 24 horas úteis.
-                            </p>
-                        </div>
-
-                    </section>
-
-                    <div className="mt-12 text-center space-y-4 py-8 border-t border-slate-200">
-                        <p className="text-slate-600">Documentos úteis:</p>
-                        <div className="flex flex-wrap gap-4 justify-center">
-                            <Link
-                                href="/privacy"
-                                className="inline-flex items-center gap-2 rounded-lg bg-slate-100 px-4 py-2 text-sm font-semibold text-slate-900 hover:bg-slate-200"
-                            >
-                                Política de Privacidade
-                            </Link>
-                        </div>
-                    </div>
-                </article>
-            </main>
-
-            <footer className="border-t border-slate-200 bg-slate-50/50 py-6">
-                <div className="mx-auto max-w-[1120px] flex flex-col items-center justify-center gap-2 px-6 text-center text-xs text-slate-600 sm:px-8">
-                    <p>© 2026 Estokar - Inventory OS. Todos os direitos reservados.</p>
-                </div>
-            </footer>
+  return (
+    <div className="mx-auto flex min-h-screen w-full max-w-6xl flex-col px-6 py-6 sm:px-8 lg:py-8">
+      <header className="mb-20 flex items-center justify-between rounded-xl border-2 border-(--stroke) bg-(--card) px-5 py-3.5">
+        <div className="flex items-center gap-3">
+          <Link href="/" className="flex items-center gap-2.5">
+            <div className="grid h-10 w-10 place-items-center rounded-lg bg-(--ink) text-amber-400">
+              <BrandIcon size={20} />
+            </div>
+            <div className="hidden sm:block">
+            <h1 className="text-base font-bold text-(--ink) leading-tight">Estokar</h1>
+            <p className="text-[10px] font-bold uppercase tracking-[0.16em] text-(--muted)">Inventory OS</p>
+            </div>
+          </Link>
         </div>
-    );
+        <button
+          onClick={() => router.back()}
+          className="flex items-center gap-1.5 rounded-lg border-2 border-(--stroke) bg-(--card) px-3.5 py-2 text-xs font-bold text-(--ink) transition-colors hover:bg-(--soft)"
+        >
+          <ChevronLeft size={14} />
+          Voltar
+        </button>
+      </header>
+
+      <main className="flex-1 mx-auto w-full max-w-3xl">
+        <div className="space-y-3 text-center mb-10">
+          <div className="flex justify-center mb-4">
+            <div className="grid h-12 w-12 place-items-center rounded-xl bg-(--accent-soft) text-(--accent)">
+              <Mail size={22} />
+            </div>
+          </div>
+          <h1 className="text-3xl font-bold tracking-tight text-(--ink) sm:text-4xl">Contato</h1>
+          <p className="text-sm text-(--muted)">
+            Feedback, sugestões e suporte
+          </p>
+        </div>
+
+        <section className="rounded-xl border-2 border-(--stroke) bg-(--card) p-6 sm:p-8 space-y-8 text-sm leading-relaxed text-(--muted)">
+          <div className="space-y-4 pb-8 border-b-2 border-(--stroke)">
+            <h2 className="text-xl font-bold text-(--ink)">Feedback & Suporte</h2>
+
+            <p>
+              Encontrou algum problema ou tem uma ideia de funcionalidade?
+            </p>
+
+            <p>
+              Você pode enviar sugestões de melhorias, reportar bugs ou tirar dúvidas sobre o uso do Estokar.
+              Seu feedback é essencial para evoluirmos o produto continuamente.
+            </p>
+
+            <p className="font-bold text-(--ink)">
+              jonnathasg@gmail.com
+            </p>
+
+            <p className="text-xs text-(--muted)">
+              Para um atendimento mais rápido, inclua o máximo de detalhes possível (ex: o que aconteceu, prints, dispositivo utilizado).
+            </p>
+          </div>
+
+          <div className="space-y-4">
+            <h2 className="text-xl font-bold text-(--ink)">Tempo de resposta</h2>
+            <p>
+              Respondemos normalmente em até 24 horas úteis.
+            </p>
+          </div>
+        </section>
+
+        <div className="mt-10 text-center space-y-4 py-8 border-t-2 border-(--stroke)">
+          <p className="text-sm text-(--muted)">Documentos úteis:</p>
+          <div className="flex flex-wrap gap-4 justify-center">
+            <Link
+              href="/privacy"
+              className="inline-flex items-center gap-2 rounded-lg border-2 border-(--stroke) bg-(--card) px-4 py-2.5 text-xs font-bold text-(--ink) transition-colors hover:bg-(--soft)"
+            >
+              Política de Privacidade
+            </Link>
+          </div>
+        </div>
+      </main>
+
+      <footer className="mt-16 border-t-2 border-(--stroke) pt-8 pb-6">
+        <div className="grid grid-cols-2 gap-8 sm:grid-cols-4">
+          <div className="col-span-2 sm:col-span-1">
+            <div className="flex items-center gap-2.5">
+              <div className="grid h-8 w-8 place-items-center rounded-md bg-(--ink) text-amber-400">
+                <BrandIcon size={14} />
+              </div>
+              <div>
+                <p className="text-xs font-bold text-(--ink)">Estokar</p>
+                <p className="text-[9px] font-medium text-(--muted)">Inventory OS</p>
+              </div>
+            </div>
+            <p className="mt-3 text-xs text-(--muted) leading-relaxed">
+              Plataforma de gestão de inventário para pequenas e médias empresas.
+            </p>
+          </div>
+          <div>
+            <h4 className="text-[10px] font-bold uppercase tracking-wider text-(--muted) mb-3">Empresa</h4>
+            <ul className="space-y-2">
+              <li>
+                <Link href="/about" className="text-xs font-medium text-(--muted) transition-colors hover:text-(--ink)">
+                  Sobre
+                </Link>
+              </li>
+              <li>
+                <Link href="/contact" className="text-xs font-medium text-(--muted) transition-colors hover:text-(--ink)">
+                  Contato
+                </Link>
+              </li>
+            </ul>
+          </div>
+          <div>
+            <h4 className="text-[10px] font-bold uppercase tracking-wider text-(--muted) mb-3">Legal</h4>
+            <ul className="space-y-2">
+              <li>
+                <Link href="/privacy" className="text-xs font-medium text-(--muted) transition-colors hover:text-(--ink)">
+                  Privacidade
+                </Link>
+              </li>
+              <li>
+                <Link href="/terms" className="text-xs font-medium text-(--muted) transition-colors hover:text-(--ink)">
+                  Termos
+                </Link>
+              </li>
+            </ul>
+          </div>
+        </div>
+        <div className="mt-8 text-center text-[10px] font-medium text-(--muted)">
+          &copy; {new Date().getFullYear()} Estokar Inventory OS. Todos os direitos reservados.
+        </div>
+      </footer>
+    </div>
+  );
 }

@@ -16,7 +16,8 @@ export default function DashboardPage() {
       dashboard: await getDashboard(session!.accessToken),
     }),
     enabled: Boolean(session?.accessToken),
-    staleTime: 0,
+    staleTime: 30_000,
+    placeholderData: (previousData) => previousData,
     refetchOnWindowFocus: !isDev,
     retry: false,
   });

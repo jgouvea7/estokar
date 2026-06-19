@@ -1,8 +1,9 @@
 "use client";
 
 import { useState } from 'react';
+import Link from 'next/link';
 import { VersionModal } from '@/components/settings/version-modal';
-import { ChevronRight, FileText, Info, Link, LucideIcon, Shield, Smartphone } from 'lucide-react';
+import { ChevronRight, FileText, Info, LucideIcon, Shield, Smartphone } from 'lucide-react';
 
 export default function SettingsPage() {
   const [isVersionModalOpen, setIsVersionModalOpen] = useState(false);
@@ -10,42 +11,40 @@ export default function SettingsPage() {
   return (
     <div className="space-y-8 reveal-up">
       <section>
-        <h3 className="text-3xl font-bold tracking-tight text-[#0f172a]">Configurações</h3>
-        <p className="mt-2 text-sm font-medium text-slate-500">Gerencie as preferências da plataforma e informações legais.</p>
+        <h3 className="text-3xl font-bold tracking-tight text-(--ink)">Configurações</h3>
+        <p className="mt-2 text-sm font-medium text-(--muted)">Gerencie as preferências da plataforma e informações legais.</p>
       </section>
 
       <div className="grid gap-8 lg:grid-cols-2">
         <section className="space-y-6">
-          <article className="surface-card p-8">
-            <header className="mb-8">
-              <h4 className="text-lg font-bold text-[#0f172a]">Sistema</h4>
-              <p className="text-sm font-medium text-slate-500">Informações técnicas sobre o aplicativo.</p>
+          <article className="surface-card p-6">
+            <header className="mb-6">
+              <h4 className="text-lg font-bold text-(--ink)">Sistema</h4>
+              <p className="text-sm font-medium text-(--muted)">Informações técnicas sobre o aplicativo.</p>
             </header>
 
-            <div className="space-y-4">
+            <div className="space-y-3">
               <SettingsItem
                 icon={Smartphone}
                 label="Versão do sistema"
                 value="v1.11.0 (Build 20260618)"
-                color="blue"
                 onClick={() => setIsVersionModalOpen(true)}
               />
             </div>
           </article>
 
-          <article className="surface-card p-8">
-            <header className="mb-8">
-              <h4 className="text-lg font-bold text-[#0f172a]">Jurídico e Suporte</h4>
-              <p className="text-sm font-medium text-slate-500">Documentação legal e diretrizes de uso.</p>
+          <article className="surface-card p-6">
+            <header className="mb-6">
+              <h4 className="text-lg font-bold text-(--ink)">Jurídico e Suporte</h4>
+              <p className="text-sm font-medium text-(--muted)">Documentação legal e diretrizes de uso.</p>
             </header>
 
-            <div className="space-y-2">
+            <div className="space-y-3">
               <SettingsLink
                 href="/settings/terms"
                 icon={FileText}
                 label="Termos de uso"
                 description="Direitos e deveres na utilização do Estokar."
-                color="slate"
               />
 
               <SettingsLink
@@ -53,7 +52,6 @@ export default function SettingsPage() {
                 icon={Shield}
                 label="Privacidade e Dados"
                 description="Como protegemos sua segurança e informações."
-                color="emerald"
               />
 
               <SettingsLink
@@ -61,24 +59,23 @@ export default function SettingsPage() {
                 icon={Info}
                 label="Sobre o Estokar"
                 description="Conheça a história e os criadores por trás da ferramenta."
-                color="indigo"
               />
             </div>
           </article>
         </section>
 
         <section className="space-y-6">
-          <article className="surface-card p-8 bg-slate-50 border-none shadow-none">
-            <h4 className="text-sm font-bold uppercase tracking-widest text-[#0f172a] mb-4">Informações Legais</h4>
-            <div className="space-y-4 text-sm text-slate-600 leading-relaxed">
+          <article className="surface-card p-6">
+            <h4 className="text-sm font-bold uppercase tracking-widest text-(--ink) mb-4">Informações Legais</h4>
+            <div className="space-y-4 text-sm text-(--muted) leading-relaxed">
               <p>
-                O <span className="font-bold text-[#0f172a]">Estokar Inventory OS</span> é uma plataforma de gerenciamento de inventário projetada para otimização de fluxos operacionais.
+                O <span className="font-bold text-(--ink)">Estokar Inventory OS</span> é uma plataforma de gerenciamento de inventário projetada para otimização de fluxos operacionais.
               </p>
               <p>
                 Ao utilizar este software, você declara estar ciente de que a integridade dos dados inseridos é de responsabilidade da organização proprietária da conta.
               </p>
-              <div className="pt-4 border-t border-slate-200">
-                <p className="text-[10px] font-bold uppercase tracking-tighter text-slate-400">
+              <div className="pt-4 border-t-2 border-(--stroke)">
+                <p className="text-[10px] font-bold uppercase tracking-tighter text-(--muted)">
                   © 2026 Estokar Inventory OS. Todos os direitos reservados.
                 </p>
               </div>
@@ -95,59 +92,44 @@ export default function SettingsPage() {
   );
 }
 
-function SettingsItem({ icon: Icon, label, value, color, onClick }: { icon: LucideIcon, label: string, value: string, color: string, onClick?: () => void }) {
-  const colorMap: Record<string, string> = {
-    blue: 'bg-blue-50 text-blue-600',
-    slate: 'bg-slate-100 text-slate-600',
-    emerald: 'bg-emerald-50 text-emerald-600',
-    indigo: 'bg-indigo-50 text-indigo-600',
-  };
-
+function SettingsItem({ icon: Icon, label, value, onClick }: { icon: LucideIcon, label: string, value: string, onClick?: () => void }) {
   const Component = onClick ? 'button' : 'div';
 
   return (
     <Component
       onClick={onClick}
-      className={`flex w-full items-center justify-between p-4 rounded-2xl bg-white border border-slate-100 shadow-sm transition-all ${onClick ? 'hover:bg-slate-50 hover:border-slate-200 active:scale-[0.98]' : ''}`}
+      className={`flex w-full items-center justify-between rounded-lg border-2 border-(--stroke) bg-(--card) p-4 text-left transition-all ${onClick ? 'hover:bg-(--soft) cursor-pointer' : ''}`}
     >
-      <div className="flex items-center gap-4 text-left">
-        <div className={`flex h-12 w-12 items-center justify-center rounded-xl ${colorMap[color] || 'bg-slate-100 text-slate-600'}`}>
-          <Icon size={24} />
+      <div className="flex items-center gap-3">
+        <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-(--soft) text-(--ink)">
+          <Icon size={18} />
         </div>
         <div>
-          <p className="text-sm font-bold text-[#0f172a]">{label}</p>
-          <p className="text-xs font-medium text-slate-500">Sistema Estokar</p>
+          <p className="text-sm font-bold text-(--ink)">{label}</p>
         </div>
       </div>
       <div className="flex items-center gap-2">
-        <span className="text-sm font-bold text-blue-600">{value}</span>
-        {onClick && <ChevronRight size={16} className="text-slate-300" />}
+        <span className="text-xs font-bold text-(--accent)">{value}</span>
+        {onClick && <ChevronRight size={14} className="text-(--muted)" />}
       </div>
     </Component>
   );
 }
 
 
-function SettingsLink({ icon: Icon, label, description, href, color }: { icon: LucideIcon, label: string, description: string, href: string, color: string }) {
-  const colorMap: Record<string, string> = {
-    blue: 'bg-blue-50 text-blue-600',
-    slate: 'bg-slate-100 text-slate-600',
-    emerald: 'bg-emerald-50 text-emerald-600',
-    indigo: 'bg-indigo-50 text-indigo-600',
-  };
-
+function SettingsLink({ icon: Icon, label, description, href }: { icon: LucideIcon, label: string, description: string, href: string }) {
   return (
-    <Link href={href} className="group flex items-center justify-between p-4 rounded-2xl transition-all hover:bg-slate-50">
-      <div className="flex items-center gap-4">
-        <div className={`flex h-12 w-12 items-center justify-center rounded-xl transition-transform group-hover:scale-110 ${colorMap[color] || 'bg-slate-100 text-slate-600'}`}>
-          <Icon size={24} />
+    <Link href={href} className="flex items-center justify-between rounded-lg border-2 border-(--stroke) bg-(--card) p-4 transition-all hover:bg-(--soft)">
+      <div className="flex items-center gap-3">
+        <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-(--soft) text-(--ink)">
+          <Icon size={18} />
         </div>
         <div>
-          <p className="text-sm font-bold text-[#0f172a]">{label}</p>
-          <p className="text-xs font-medium text-slate-500">{description}</p>
+          <p className="text-sm font-bold text-(--ink)">{label}</p>
+          <p className="text-xs font-medium text-(--muted)">{description}</p>
         </div>
       </div>
-      <ChevronRight size={18} className="text-slate-300 transition-transform group-hover:translate-x-1" />
+      <ChevronRight size={14} className="text-(--muted)" />
     </Link>
   );
 }

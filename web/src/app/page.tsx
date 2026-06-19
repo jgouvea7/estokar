@@ -1,212 +1,218 @@
 'use client'
 
-import { useEffect, useState } from 'react';
 import Link from 'next/link';
-import { Boxes, ChartNoAxesColumnIncreasing, CheckCheck, History, Layers3, ShieldCheck, Sparkles } from 'lucide-react';
-import { useAuthStore } from '@/store/auth-store';
-import DashboardLayout from './(app)/layout';
-import DashboardPage from './(app)/page';
+import { BrandIcon } from '@/components/ui/brand-icon';
+import {
+  ArrowRight,
+  BarChart3,
+  Bell,
+  History,
+  Layers3,
+  Package2,
+  TrendingUp,
+} from 'lucide-react';
 
 export default function Home() {
-  const session = useAuthStore((state) => state.session);
-  const [isChecking, setIsChecking] = useState(true);
-
-  useEffect(() => {
-    const timer = setTimeout(() => {
-      setIsChecking(false);
-    }, 10);
-    return () => clearTimeout(timer);
-  }, []);
-
-  if (isChecking) {
-    return (
-      <div className="flex min-h-screen items-center justify-center bg-[var(--bg)]">
-        <div className="h-8 w-8 animate-spin rounded-full border-4 border-[var(--accent)] border-t-transparent" />
-      </div>
-    );
-  }
-
-  if (session) {
-    return (
-      <DashboardLayout>
-        <DashboardPage />
-      </DashboardLayout>
-    );
-  }
-
   return <LandingPage />;
 }
 
 function LandingPage() {
   return (
-    <main className="mx-auto flex min-h-screen w-full max-w-[1120px] flex-col px-6 py-10 sm:px-8 lg:py-12">
-      <header className="surface-card mb-12 flex items-center justify-between rounded-3xl border border-[var(--stroke)] px-5 py-4">
+    <main className="mx-auto flex min-h-screen w-full max-w-6xl flex-col px-6 py-6 sm:px-8 lg:py-8">
+      <header className="mb-20 flex items-center justify-between rounded-xl border-2 border-(--stroke) bg-(--card) px-5 py-3.5">
         <div className="flex items-center gap-3">
-          <div className="grid h-11 w-11 place-items-center rounded-2xl bg-[image:var(--brand-gradient)] text-white shadow-[0_16px_32px_-20px_rgba(15,23,42,0.7)] ring-1 ring-white/20">
-            <Boxes size={20} />
+          <div className="grid h-10 w-10 place-items-center rounded-lg bg-(--ink) text-amber-400">
+            <BrandIcon size={20} />
           </div>
-          <div>
-            <p className="text-xs font-semibold uppercase tracking-[0.16em] text-[var(--muted)]">Estokar</p>
-            <h1 className="text-xl font-black text-[var(--ink)]">Inventory OS</h1>
+          <div className="hidden sm:block">
+            <h1 className="text-base font-bold text-(--ink) leading-tight">Estokar</h1>
+            <p className="text-[10px] font-bold uppercase tracking-[0.16em] text-(--muted)">Inventory OS</p>
           </div>
         </div>
         <div className="flex items-center gap-2">
-          <Link href="/login" className="rounded-xl border border-[var(--stroke)] bg-white px-4 py-2 text-sm font-bold text-[var(--ink)] transition-colors hover:bg-[var(--surface-2)]">
+          <Link href="/login" className="rounded-lg border-2 border-(--stroke) bg-(--card) px-4 py-2 text-xs font-bold text-(--ink) transition-colors hover:bg-(--soft)">
             Entrar
           </Link>
-          <Link href="/register" className="rounded-xl bg-[image:var(--brand-gradient)] px-4 py-2 text-sm font-bold text-white shadow-[0_16px_32px_-22px_rgba(15,23,42,0.8)] ring-1 ring-white/15 transition-all hover:-translate-y-0.5">
-            Comecar
+          <Link href="/register" className="rounded-lg bg-(--ink) px-4 py-2 text-xs font-bold text-white transition-all hover:brightness-125">
+            Criar conta
           </Link>
         </div>
       </header>
 
-      <section className="grid gap-5 lg:grid-cols-[1.2fr_0.8fr]">
-        <article className="relative overflow-hidden reveal-up rounded-3xl bg-[image:var(--brand-gradient)] p-8 text-white shadow-[0_40px_80px_-30px_rgba(15,23,42,0.75)] lg:p-12">
-          <div className="absolute -top-24 -left-24 h-64 w-64 rounded-full bg-[#6aa1ff] opacity-25 blur-3xl" />
-          <div className="absolute -bottom-24 -right-24 h-64 w-64 rounded-full bg-[#1b3a8a] opacity-40 blur-3xl" />
-
-          <div className="relative z-10">
-            <p className="text-xs font-bold uppercase tracking-[0.2em] text-blue-200/80">Controle inteligente de estoque</p>
-            <h2 className="mt-5 max-w-xl text-5xl font-black leading-[1.1] tracking-tight lg:text-6xl">
-              Controle total do seu estoque, <span className="text-transparent bg-clip-text bg-gradient-to-r from-blue-200 to-white">sem complicação.</span>
-            </h2>
-            <p className="mt-6 max-w-lg text-base leading-relaxed text-blue-100/80">
-              Gerencie produtos, categorias e movimentações em segundos com uma experiência fluida e previsão operacional em tempo real.
-            </p>
-            <div className="mt-8 flex flex-wrap gap-4">
-              <Link href="/register" className="rounded-xl bg-[image:var(--brand-gradient)] px-6 py-3.5 text-sm font-bold text-white shadow-[0_18px_35px_-20px_rgba(15,23,42,0.6)] ring-1 ring-white/15 transition-all hover:-translate-y-0.5">
-                Criar conta gratuitamente
-              </Link>
-              <Link href="/login" className="rounded-xl border border-white/30 bg-white/10 backdrop-blur-sm px-6 py-3.5 text-sm font-bold text-white transition-colors hover:bg-white/20">
-                Entrar agora
-              </Link>
-            </div>
+      <section className="grid gap-6 lg:grid-cols-[1.3fr_1fr] lg:items-center">
+        <div className="reveal-up">
+          <p className="inline-flex items-center gap-1.5 rounded-full border-2 border-(--accent-soft) bg-(--accent-soft) px-3 py-1 text-[10px] font-bold uppercase tracking-wider text-(--accent)">
+            <Bell size={12} />
+            Nova versão disponível
+          </p>
+          <h2 className="mt-6 text-4xl font-bold leading-[1.1] tracking-tight text-(--ink) sm:text-5xl lg:text-6xl">
+            Gerencie seu estoque com{' '}
+            <span className="text-(--accent)">precisão operacional</span>
+          </h2>
+          <p className="mt-5 max-w-lg text-base leading-relaxed text-(--muted)">
+            Controle de inventário em tempo real, alertas inteligentes de reposição e dashboard completo para tomar decisões mais rápidas — tudo em uma plataforma única.
+          </p>
+          <div className="mt-8 flex flex-wrap gap-3">
+            <Link
+              href="/register"
+              className="inline-flex items-center gap-2 rounded-lg bg-(--ink) px-6 py-3 text-sm font-bold text-white transition-all hover:brightness-125"
+            >
+              Criar conta gratuitamente
+              <ArrowRight size={16} />
+            </Link>
+            <Link
+              href="/about"
+              className="inline-flex items-center gap-2 rounded-lg border-2 border-(--stroke) bg-(--card) px-6 py-3 text-sm font-bold text-(--ink) transition-all hover:bg-(--soft)"
+            >
+              Sobre o produto
+            </Link>
           </div>
-        </article>
+        </div>
 
-        <article className="surface-card reveal-up rounded-3xl border border-[var(--stroke)] p-6" style={{ animationDelay: '80ms' }}>
-          <h3 className="text-2xl font-black">Por que usar?</h3>
-          <div className="mt-5 space-y-3">
-            <Benefit icon={ChartNoAxesColumnIncreasing} title="Controle simples" text="Produtos e categorias com fluxo direto e sem friccao." />
-            <Benefit icon={History} title="Historico de entradas/saidas" text="Acompanhe movimentacoes e mantenha rastreabilidade operacional." />
-            <Benefit icon={ShieldCheck} title="Conectado ao backend" text="Dados sempre vindos do servidor com atualizacao imediata." />
+        <div className="reveal-up rounded-xl border-2 border-(--stroke) bg-(--card) p-5" style={{ animationDelay: '100ms' }}>
+          <div className="mb-4 flex items-center justify-between">
+            <span className="text-[10px] font-bold uppercase tracking-wider text-(--muted)">Painel em tempo real</span>
+            <span className="flex items-center gap-1.5 rounded-full bg-(--ok-soft) px-2.5 py-0.5 text-[9px] font-bold text-(--ok)">
+              <span className="h-1.5 w-1.5 rounded-full bg-(--ok)" />
+              Ativo
+            </span>
           </div>
-        </article>
+          <div className="space-y-2">
+            <DemoRow label="Arroz 5kg" quantity={42} trend="up" />
+            <DemoRow label="Óleo de soja" quantity={18} trend="up" />
+            <DemoRow label="Café em pó" quantity={6} trend="down" />
+            <DemoRow label="Leite integral" quantity={3} trend="down" />
+          </div>
+          <div className="mt-4 flex items-center gap-2 rounded-lg bg-(--soft) px-3 py-2">
+            <TrendingUp size={14} className="text-(--ok)" />
+            <span className="text-[10px] font-bold text-(--muted)">Média de reposição: <span className="text-(--ok)">12 dias</span></span>
+          </div>
+        </div>
       </section>
 
-      <section className="mt-8 grid gap-5 lg:grid-cols-2">
-        <article className="surface-card surface-card-hover rounded-3xl border border-[var(--stroke)] p-6 lg:p-7">
-          <p className="text-xs font-semibold uppercase tracking-[0.16em] text-[var(--muted)]">Demo do produto</p>
-          <h3 className="mt-3 text-3xl font-black leading-tight">Visualizacao operacional premium</h3>
-          <p className="mt-2 text-sm leading-7 text-[var(--muted)]">Acompanhe ranking de produtos, alertas de baixo estoque e movimentacoes em uma unica tela com leitura imediata.</p>
-          <div className="mt-5 rounded-2xl border border-[var(--stroke)] bg-white p-4 shadow-[0_20px_40px_-35px_rgba(8,11,18,0.45)]">
-            <div className="mb-3 flex items-center justify-between">
-              <span className="text-xs font-semibold uppercase tracking-[0.14em] text-[var(--muted)]">Painel ativo</span>
-            </div>
-            <div className="space-y-2">
-              <MockupRow label="Refrigerante lata" quantity={82} status="high" />
-              <MockupRow label="Cafe em po" quantity={18} status="high" />
-              <MockupRow label="Leite integral" quantity={4} status="low" />
-            </div>
-          </div>
-        </article>
+      <section className="mt-24">
+        <div className="text-center">
+          <p className="text-[10px] font-bold uppercase tracking-wider text-(--accent)">Funcionalidades</p>
+          <h3 className="mt-3 text-3xl font-bold tracking-tight text-(--ink) sm:text-4xl">
+            Tudo que você precisa para operar
+          </h3>
+          <p className="mx-auto mt-3 max-w-xl text-sm text-(--muted)">
+            Do cadastro ao relatório, cada funcionalidade foi pensada para reduzir o atrito na gestão do dia a dia.
+          </p>
+        </div>
 
-        <article className="space-y-5">
-          <div className="surface-card rounded-3xl border border-[var(--stroke)] p-6">
-            <h3 className="text-2xl font-black">Como funciona</h3>
-            <div className="mt-4 grid gap-3">
-              <HowItWorks icon={Layers3} title="Cadastre em segundos" text="Organize produtos e categorias com formularios objetivos." />
-              <HowItWorks icon={Sparkles} title="Movimente com um clique" text="Entradas e saidas instantaneas com historico em timeline." />
-              <HowItWorks icon={CheckCheck} title="Atualize em tempo real" text="Cada acao envia direto ao backend e revalida os dados." />
-            </div>
-          </div>
-          <div className="surface-card rounded-3xl border border-[var(--stroke)] p-6">
-            <h3 className="text-2xl font-black">Para quem e</h3>
-            <div className="mt-4 flex flex-wrap gap-2 text-sm font-semibold">
-              <span className="rounded-full bg-[var(--soft)] px-3 py-2">Mercados locais</span>
-              <span className="rounded-full bg-[var(--soft)] px-3 py-2">Farmacias</span>
-              <span className="rounded-full bg-[var(--soft)] px-3 py-2">Lojas de conveniencia</span>
-              <span className="rounded-full bg-[var(--soft)] px-3 py-2">Operacoes multi-turno</span>
-            </div>
-          </div>
-        </article>
+        <div className="mt-10 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+          <FeatureCard
+            icon={Package2}
+            title="Produtos"
+            text="Cadastro completo com imagem, categoria e controle de quantidade."
+          />
+          <FeatureCard
+            icon={Layers3}
+            title="Categorias"
+            text="Organize seu inventário por grupos com filtragem rápida."
+          />
+          <FeatureCard
+            icon={History}
+            title="Movimentações"
+            text="Registro detalhado de entradas e saídas com timeline completa."
+          />
+          <FeatureCard
+            icon={BarChart3}
+            title="Dashboard"
+            text="Métricas, alertas e previsão de estoque em uma tela única."
+          />
+        </div>
       </section>
-      <section className="surface-card mt-8 rounded-3xl border border-slate-100 bg-blue-50/40 px-6 py-10 text-center">
-        <p className="text-xs font-bold uppercase tracking-[0.16em] text-slate-500">Pronto para evoluir sua operacao</p>
-        <h3 className="mt-2 text-3xl font-bold tracking-tight text-[#0f172a]">Leve sua gestao para o nivel profissional</h3>
-        <p className="mx-auto mt-2 max-w-xl text-sm font-medium text-slate-500">Use web e mobile com experiencia consistente, sincronizacao real e leitura operacional clara para tomar decisoes rapidas.</p>
-        <Link href="/register" className="mt-6 inline-flex rounded-xl bg-[image:var(--brand-gradient)] px-6 py-3 text-sm font-bold text-white shadow-[0_16px_32px_-22px_rgba(15,23,42,0.75)] ring-1 ring-white/15 transition-all hover:-translate-y-0.5">
+
+      <section className="mt-24">
+        <div className="text-center">
+          <p className="text-[10px] font-bold uppercase tracking-wider text-(--accent)">Como funciona</p>
+          <h3 className="mt-3 text-3xl font-bold tracking-tight text-(--ink) sm:text-4xl">
+            Três passos para começar
+          </h3>
+        </div>
+
+        <div className="mt-10 grid gap-6 sm:grid-cols-3">
+          <StepCard number="01" title="Cadastre seus produtos" text="Adicione nome, descrição, quantidade e imagem em segundos." />
+          <StepCard number="02" title="Movimente o estoque" text="Registre entradas e saídas com um clique, com histórico automático." />
+          <StepCard number="03" title="Acompanhe em tempo real" text="Dashboard atualizado com alertas, métricas e previsão de reposição." />
+        </div>
+      </section>
+
+      <section className="mt-24 rounded-xl border-2 border-(--stroke) bg-(--card) px-6 py-10 text-center sm:px-10">
+        <p className="text-[10px] font-bold uppercase tracking-wider text-(--accent)">Pronto para evoluir</p>
+        <h3 className="mt-3 text-3xl font-bold tracking-tight text-(--ink) sm:text-4xl">
+          Leve sua gestão para o próximo nível
+        </h3>
+        <p className="mx-auto mt-3 max-w-lg text-sm text-(--muted)">
+          Experimente grátis. Cadastre seus primeiros produtos em menos de 2 minutos e descubra o que um controle de estoque profissional pode fazer pela sua operação.
+        </p>
+        <Link
+          href="/register"
+          className="mt-6 inline-flex items-center gap-2 rounded-lg bg-(--ink) px-6 py-3 text-sm font-bold text-white transition-all hover:brightness-125"
+        >
           Criar conta gratuitamente
+          <ArrowRight size={16} />
         </Link>
       </section>
-      <footer className="border-t border-slate-200 mt-16 pt-10 pb-6">
-        <div className="max-w-6xl mx-auto px-6 grid grid-cols-2 md:grid-cols-4 gap-8">
 
+      <footer className="mt-20 border-t-2 border-(--stroke) pt-8 pb-6">
+        <div className="grid grid-cols-2 gap-8 sm:grid-cols-4">
+          <div className="col-span-2 sm:col-span-1">
+            <div className="flex items-center gap-2.5">
+              <div className="grid h-8 w-8 place-items-center rounded-md bg-(--ink) text-amber-400">
+                <BrandIcon size={14} />
+              </div>
+              <div>
+                <p className="text-xs font-bold text-(--ink)">Estokar</p>
+                <p className="text-[9px] font-medium text-(--muted)">Inventory OS</p>
+              </div>
+            </div>
+            <p className="mt-3 text-xs text-(--muted) leading-relaxed">
+              Plataforma de gestão de inventário para pequenas e médias empresas.
+            </p>
+          </div>
           <div>
-            <h4 className="text-sm font-semibold text-slate-700 mb-3">Empresa</h4>
+            <h4 className="text-[10px] font-bold uppercase tracking-wider text-(--muted) mb-3">Empresa</h4>
             <ul className="space-y-2">
               <li>
-                <a href="/about" className="text-sm text-slate-500 hover:text-blue-600 transition">
+                <a href="/about" className="text-xs font-medium text-(--muted) transition-colors hover:text-(--ink)">
                   Sobre
                 </a>
               </li>
               <li>
-                <a href="/contact" className="text-sm text-slate-500 hover:text-blue-600 transition">
+                <a href="/contact" className="text-xs font-medium text-(--muted) transition-colors hover:text-(--ink)">
                   Contato
                 </a>
               </li>
             </ul>
           </div>
-
           <div>
-            <h4 className="text-sm font-semibold text-slate-700 mb-3">Legal</h4>
+            <h4 className="text-[10px] font-bold uppercase tracking-wider text-(--muted) mb-3">Legal</h4>
             <ul className="space-y-2">
               <li>
-                <a href="/privacy" className="text-sm text-slate-500 hover:text-blue-600 transition">
+                <a href="/privacy" className="text-xs font-medium text-(--muted) transition-colors hover:text-(--ink)">
                   Privacidade
                 </a>
               </li>
               <li>
-                <a href="/terms" className="text-sm text-slate-500 hover:text-blue-600 transition">
+                <a href="/terms" className="text-xs font-medium text-(--muted) transition-colors hover:text-(--ink)">
                   Termos
                 </a>
               </li>
             </ul>
           </div>
-
         </div>
-
-        <div className="mt-10 text-center text-xs text-slate-400">
-          © {new Date().getFullYear()} Estokar - Inventory OS. Todos os direitos reservados.
+        <div className="mt-8 text-center text-[10px] font-medium text-(--muted)">
+          &copy; {new Date().getFullYear()} Estokar Inventory OS. Todos os direitos reservados.
         </div>
       </footer>
     </main>
   );
 }
 
-function Benefit({
-  icon: Icon,
-  text,
-  title,
-}: {
-  icon: React.ComponentType<{ size?: number }>;
-  text: string;
-  title: string;
-}) {
-  return (
-    <article className="flex items-start gap-3 rounded-2xl bg-[var(--soft)] px-4 py-4">
-      <div className="grid h-9 w-9 place-items-center rounded-xl bg-[var(--accent-soft)] text-[var(--accent)]">
-        <Icon size={18} />
-      </div>
-      <div>
-        <h4 className="text-sm font-black text-[var(--ink)]">{title}</h4>
-        <p className="mt-1 text-xs leading-6 text-[var(--muted)]">{text}</p>
-      </div>
-    </article>
-  );
-}
-
-function HowItWorks({
+function FeatureCard({
   icon: Icon,
   title,
   text,
@@ -216,34 +222,53 @@ function HowItWorks({
   text: string;
 }) {
   return (
-    <article className="flex gap-3 rounded-2xl bg-[var(--soft)] p-4">
-      <div className="grid h-9 w-9 place-items-center rounded-xl bg-white text-[var(--ink)]">
+    <article className="rounded-xl border-2 border-(--stroke) bg-(--card) p-5 transition-colors hover:bg-(--surface-2)">
+      <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-(--accent-soft) text-(--accent)">
         <Icon size={18} />
       </div>
-      <div>
-        <h4 className="text-sm font-black">{title}</h4>
-        <p className="mt-1 text-xs leading-6 text-[var(--muted)]">{text}</p>
-      </div>
+      <h4 className="mt-4 text-sm font-bold text-(--ink)">{title}</h4>
+      <p className="mt-1.5 text-xs leading-relaxed text-(--muted)">{text}</p>
     </article>
   );
 }
 
-function MockupRow({
+function StepCard({
+  number,
+  title,
+  text,
+}: {
+  number: string;
+  title: string;
+  text: string;
+}) {
+  return (
+    <article className="rounded-xl border-2 border-(--stroke) bg-(--card) p-6">
+      <p className="text-3xl font-bold text-(--accent)">{number}</p>
+      <h4 className="mt-4 text-sm font-bold text-(--ink)">{title}</h4>
+      <p className="mt-1.5 text-xs leading-relaxed text-(--muted)">{text}</p>
+    </article>
+  );
+}
+
+function DemoRow({
   label,
   quantity,
-  status,
+  trend,
 }: {
   label: string;
   quantity: number;
-  status: 'low' | 'high';
+  trend: 'up' | 'down';
 }) {
   return (
-    <div className="grid grid-cols-[1fr_auto] items-center rounded-xl bg-[var(--soft)] px-3 py-2 text-sm">
-      <p className="truncate font-semibold">{label}</p>
-      <span
-        className={`rounded-full px-2 py-1 text-xs font-bold ${status === 'low' ? 'bg-[var(--critical-soft)] text-[var(--critical)]' : 'bg-[var(--ok-soft)] text-[var(--ok)]'
-          }`}>
-        {quantity} un.
+    <div className="flex items-center justify-between rounded-lg border-2 border-(--stroke) bg-(--surface-2) px-3 py-2">
+      <div className="flex items-center gap-2">
+        <div className={`flex h-5 w-5 items-center justify-center rounded ${trend === 'up' ? 'bg-(--ok-soft) text-(--ok)' : 'bg-(--critical-soft) text-(--critical)'}`}>
+          <TrendingUp size={10} />
+        </div>
+        <span className="text-xs font-semibold text-(--ink)">{label}</span>
+      </div>
+      <span className="text-xs font-bold tabular-nums text-(--ink)">
+        {quantity} <span className="text-[9px] font-medium text-(--muted)">un.</span>
       </span>
     </div>
   );

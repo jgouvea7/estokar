@@ -8,12 +8,21 @@ type AuthState = {
   clearSession: () => void;
 };
 
+function clearLocalStorageTokens() {
+  if (typeof window === 'undefined') return;
+  window.localStorage.removeItem('accessToken');
+  window.localStorage.removeItem('refreshToken');
+}
+
 export const useAuthStore = create<AuthState>()(
   persist(
     (set) => ({
       session: null,
       setSession: (session) => set({ session }),
-      clearSession: () => set({ session: null }),
+      clearSession: () => {
+        clearLocalStorageTokens();
+        set({ session: null });
+      },
     }),
     {
       name: 'estokar-web-auth',

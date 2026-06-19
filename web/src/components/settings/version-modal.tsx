@@ -47,38 +47,38 @@ export function VersionModal({ isOpen, onClose }: VersionModalProps) {
   return (
     <div className="fixed inset-0 z-[140] flex items-center justify-center p-2 sm:p-6">
       <div
-        className="absolute inset-0 bg-slate-900/60 backdrop-blur-sm transition-opacity"
+        className="absolute inset-0 bg-[rgba(26,26,46,0.45)]"
         onClick={onClose}
       />
 
-      <div className="relative w-full max-w-2xl overflow-hidden rounded-[2.5rem] border border-white/20 bg-white/90 shadow-[0_40px_100px_-20px_rgba(15,23,42,0.4)] backdrop-blur-xl reveal-up">
-        <div className="flex items-center justify-between border-b border-slate-100 px-8 py-6">
+      <div className="relative w-full max-w-2xl overflow-hidden rounded-xl border-2 border-(--stroke) bg-(--card) reveal-up">
+        <div className="flex items-center justify-between border-b-2 border-(--stroke) px-8 py-6">
           <div>
-            <p className="text-[10px] font-bold uppercase tracking-[0.2em] text-blue-600">Histórico de Sistema</p>
-            <h3 className="text-2xl font-black text-[#0f172a]">Notas de Atualização</h3>
+            <p className="text-[10px] font-bold uppercase tracking-[0.2em] text-(--accent)">Histórico de Sistema</p>
+            <h3 className="text-2xl font-bold text-(--ink)">Notas de Atualização</h3>
           </div>
           <button
             onClick={onClose}
-            className="group flex h-12 w-12 items-center justify-center rounded-2xl border border-slate-100 bg-white text-slate-400 transition-all hover:border-slate-200 hover:text-slate-900 hover:shadow-lg"
+            className="group flex h-12 w-12 items-center justify-center rounded-lg border-2 border-(--stroke) bg-(--card) text-(--muted) transition-all hover:bg-(--soft)"
           >
-            <X size={20} className="transition-transform group-hover:rotate-90" />
+            <X size={20} />
           </button>
         </div>
 
-        <div className="max-h-[60vh] overflow-y-auto p-8 py-6 custom-scrollbar">
+        <div className="max-h-[60vh] overflow-y-auto p-8 py-6">
           <div className="space-y-12">
             {changelog.map((entry, index) => (
               <div key={entry.version} className="relative pl-8">
                 {index !== changelog.length - 1 && (
-                  <div className="absolute left-[11px] top-8 h-full w-0.5 bg-gradient-to-b from-blue-100 to-transparent" />
+                  <div className="absolute left-[11px] top-8 h-full w-0.5 bg-(--stroke)" />
                 )}
 
-                <div className="absolute left-0 top-1.5 h-6 w-6 rounded-full border-4 border-white bg-blue-500 shadow-md shadow-blue-200" />
+                <div className="absolute left-0 top-1.5 h-6 w-6 rounded-full border-4 border-(--card) bg-(--accent)" />
 
                 <header className="mb-6">
                   <div className="flex items-center gap-3">
-                    <h4 className="text-xl font-bold text-[#0f172a]">{entry.version}</h4>
-                    <span className="rounded-full bg-blue-50 px-3 py-1 text-[10px] font-bold text-blue-600 uppercase tracking-wider">
+                    <h4 className="text-xl font-bold text-(--ink)">{entry.version}</h4>
+                    <span className="rounded-lg bg-(--accent-soft) px-3 py-1 text-[10px] font-bold text-(--accent) uppercase tracking-wider">
                       {entry.date}
                     </span>
                   </div>
@@ -87,15 +87,15 @@ export function VersionModal({ isOpen, onClose }: VersionModalProps) {
                 <ul className="space-y-4">
                   {entry.changes.map((change, i) => (
                     <li key={i} className="flex gap-4">
-                      <div className={`mt-1 flex h-6 w-6 shrink-0 items-center justify-center rounded-lg ${change.type === 'feature' ? 'bg-emerald-50 text-emerald-600' :
-                        change.type === 'fix' ? 'bg-rose-50 text-rose-600' :
-                          'bg-blue-50 text-blue-600'
+                      <div className={`mt-1 flex h-6 w-6 shrink-0 items-center justify-center rounded-lg ${change.type === 'feature' ? 'bg-(--ok-soft) text-(--ok)' :
+                        change.type === 'fix' ? 'bg-(--critical-soft) text-(--critical)' :
+                          'bg-(--accent-soft) text-(--accent)'
                         }`}>
                         {change.type === 'feature' ? <Rocket size={14} /> :
                           change.type === 'fix' ? <Bug size={14} /> :
                             <Zap size={14} />}
                       </div>
-                      <p className="text-sm font-medium leading-relaxed text-slate-600">
+                      <p className="text-sm font-medium leading-relaxed text-(--muted)">
                         {change.text}
                       </p>
                     </li>
@@ -106,11 +106,10 @@ export function VersionModal({ isOpen, onClose }: VersionModalProps) {
           </div>
         </div>
 
-        <div className="border-t border-slate-100 bg-slate-50/50 px-8 py-6">
+        <div className="border-t-2 border-(--stroke) bg-(--soft) px-8 py-6">
           <button
             onClick={onClose}
-            style={{ background: 'var(--brand-gradient)' }}
-            className="w-full rounded-2xl py-4 text-sm font-bold text-white transition-all shadow-[0_20px_50px_-20px_rgba(15,23,42,0.5)] ring-1 ring-white/10 hover:-translate-y-0.5 active:scale-95"
+            className="w-full rounded-lg bg-(--ink) py-4 text-sm font-bold text-white transition-all hover:brightness-125"
           >
             Entendi, obrigado!
           </button>

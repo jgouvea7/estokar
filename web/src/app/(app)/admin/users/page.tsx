@@ -92,8 +92,7 @@ export default function AdminUsersPage() {
   return (
     <div className="space-y-6">
       <header>
-        <h1 className="text-2xl font-black tracking-tight text-slate-900">Gestão de Usuários</h1>
-        <p className="mt-1 text-sm font-medium text-slate-500">
+        <p className="text-sm font-medium text-(--muted)">
           Gerencie permissões e visualize todos os usuários da plataforma.
         </p>
       </header>

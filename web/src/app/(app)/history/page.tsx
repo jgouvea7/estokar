@@ -51,73 +51,58 @@ export default function HistoryPage() {
   const groupedEntries = Object.entries(groupedByDate);
 
   return (
-    <div className="space-y-8 overflow-x-hidden reveal-up">
-      <section className="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
-        <div>
-          <h3 className="text-3xl font-bold tracking-tight text-[#0f172a]">Histórico de Operações</h3>
-          <p className="mt-2 text-sm font-medium text-slate-500">Acompanhe cada entrada e saída do seu estoque em tempo real.</p>
-        </div>
+    <div className="space-y-8 reveal-up">
+      <section className="flex items-center justify-between gap-4">
+        <p className="text-sm font-medium text-(--muted)">Acompanhe cada entrada e saída do seu estoque em tempo real.</p>
         <button
           type="button"
           onClick={() => exportStockMovementsCsv(session!.accessToken)}
-          className="flex h-[3rem] items-center justify-center gap-2 rounded-xl border border-slate-200 bg-white px-[1.5rem] text-sm font-bold text-slate-600 shadow-sm transition-all hover:-translate-y-0.5 hover:border-slate-300 hover:bg-slate-50 hover:shadow-md">
-          <Download size={18} strokeWidth={2.5} />
-          Exportar CSV
+          className="inline-flex h-9 shrink-0 items-center gap-1.5 rounded-lg border-2 border-(--stroke) bg-(--card) px-4 text-xs font-bold text-(--ink) transition-all hover:bg-(--soft)">
+          <Download size={14} strokeWidth={2.5} />
+          CSV
         </button>
       </section>
 
-      <section className="surface-card p-0 overflow-hidden border-none bg-transparent shadow-none">
+      <section>
         {groupedEntries.length ? (
-          <div className="space-y-12">
+          <div className="space-y-8">
             {groupedEntries.map(([dateLabel, entries]) => (
-              <article key={dateLabel} className="space-y-6">
-                <header className="flex items-center gap-4 bg-[#f5f7fb] py-3">
-                  <div className="rounded-full bg-white px-4 py-1.5 text-[10px] font-bold uppercase tracking-widest text-slate-500 shadow-sm border border-slate-100">
+              <article key={dateLabel} className="space-y-4">
+                <header className="flex items-center gap-3">
+                  <div className="rounded-full border-2 border-(--stroke) bg-(--card) px-3 py-1 text-[9px] font-bold uppercase tracking-[0.18em] text-(--muted)">
                     {dateLabel}
                   </div>
-                  <span className="h-px flex-1 bg-slate-200" />
+                  <span className="h-px flex-1 bg-(--stroke)" />
                 </header>
 
-                <div className="relative ml-4 space-y-6 pt-3 sm:ml-8">
-                  <div className="absolute left-2 top-0 h-full w-px bg-slate-200 sm:left-3" />
-
+                <div className="relative ml-4 space-y-3 border-l-2 border-(--stroke) pl-4 sm:ml-5 sm:pl-5">
                   {entries.map((item) => (
-                    <div
-                      key={item.id}
-                      className="group relative pl-8 sm:pl-10">
+                    <div key={item.id} className="relative">
+                      <div className={`absolute top-4 h-2.5 w-2.5 -translate-x-1/2 rounded-full border-2 ${item.type === 'in' ? 'border-(--ok) bg-(--ok)' : 'border-(--critical) bg-(--critical)'} -left-[27px] sm:-left-[31px]`}
+                      />
 
-                      <div className={`absolute left-3 top-1/2 z-10 h-3 w-3 -translate-x-1/2 -translate-y-1/2 rounded-full ${item.type === 'in' ? 'bg-emerald-500' : 'bg-rose-500'
-                        }`} />
-
-                      <div className="surface-card flex flex-col items-start justify-between gap-4 p-5 transition-colors hover:bg-slate-50 sm:flex-row sm:items-center sm:gap-6">
-                        <div className="flex min-w-0 flex-1 items-center gap-4 sm:gap-5">
-                          <div
-                            className={`flex h-12 w-12 items-center justify-center rounded-xl ${item.type === 'in'
-                              ? 'bg-emerald-50 text-emerald-600'
-                              : 'bg-rose-50 text-rose-600'
-                              }`}>
-                            {item.type === 'in' ? <ArrowDownLeft size={24} /> : <ArrowUpRight size={24} />}
+                      <div className="flex items-center justify-between gap-2 rounded-lg border-2 border-(--stroke) bg-(--card) px-3 py-2.5 transition-colors hover:bg-(--surface-2) sm:gap-3 sm:px-4 sm:py-3">
+                        <div className="flex min-w-0 flex-1 items-center gap-3">
+                          <div className={`flex h-9 w-9 shrink-0 items-center justify-center rounded-lg ${item.type === 'in' ? 'bg-(--ok-soft) text-(--ok)' : 'bg-(--critical-soft) text-(--critical)'}`}>
+                            {item.type === 'in' ? <ArrowDownLeft size={16} /> : <ArrowUpRight size={16} />}
                           </div>
-                          <div>
-                            <p className="text-base font-bold text-[#0f172a]">{item.productName}</p>
+                          <div className="min-w-0">
+                            <p className="text-sm font-bold text-(--ink) truncate">{item.productName}</p>
                             <div className="mt-0.5 flex items-center gap-2">
-                              <p className="text-xs font-medium text-slate-400">
+                              <p className="text-[11px] font-medium text-(--muted)">
                                 {new Date(item.createdAt).toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' })}
                               </p>
-                              <span className="h-1 w-1 rounded-full bg-slate-200" />
-                              <span className={`text-[10px] font-bold uppercase ${item.type === 'in' ? 'text-emerald-600' : 'text-rose-600'}`}>
-                                {item.type === 'in' ? 'Entrada de material' : 'Saída de material'}
+                              <span className="h-1 w-1 rounded-full bg-(--stroke)" />
+                              <span className={`text-[9px] font-bold uppercase ${item.type === 'in' ? 'text-(--ok)' : 'text-(--critical)'}`}>
+                                {item.type === 'in' ? 'Entrada' : 'Saída'}
                               </span>
                             </div>
                           </div>
                         </div>
 
-                        <div className="flex w-full flex-col items-start gap-1 sm:w-auto sm:items-end">
-                          <p className={`text-2xl font-bold tracking-tight ${item.type === 'in' ? 'text-emerald-600' : 'text-rose-600'}`}>
-                            {item.type === 'in' ? '+' : '-'}{item.quantity}
-                          </p>
-                          <span className="text-[10px] font-bold uppercase tracking-widest text-slate-400">Unidades</span>
-                        </div>
+                        <span className={`shrink-0 text-base font-bold tracking-tight ${item.type === 'in' ? 'text-(--ok)' : 'text-(--critical)'}`}>
+                          {item.type === 'in' ? '+' : '-'}{item.quantity}
+                        </span>
                       </div>
                     </div>
                   ))}
@@ -126,12 +111,12 @@ export default function HistoryPage() {
             ))}
           </div>
         ) : (
-          <div className="flex flex-col items-center justify-center rounded-3xl border border-dashed border-slate-200 bg-white py-20 text-center">
-            <div className="mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-slate-50 text-slate-300">
-              <History size={32} strokeWidth={1.5} />
+          <div className="flex flex-col items-center justify-center rounded-xl border-2 border-dashed border-(--stroke) bg-(--surface-2) py-16 text-center">
+            <div className="mb-4 flex h-14 w-14 items-center justify-center rounded-full bg-(--card) text-(--muted)">
+              <History size={26} strokeWidth={1.5} />
             </div>
-            <p className="text-base font-bold text-[#0f172a]">Sem movimentações</p>
-            <p className="mt-1 text-sm font-medium text-slate-500">As operações realizadas aparecerão nesta timeline.</p>
+            <p className="text-base font-bold text-(--ink)">Sem movimentações</p>
+            <p className="mt-1 text-sm font-medium text-(--muted)">As operações realizadas aparecerão nesta timeline.</p>
           </div>
         )}
       </section>

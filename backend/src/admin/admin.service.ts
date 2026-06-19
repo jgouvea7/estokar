@@ -24,9 +24,17 @@ export class AdminService {
     private readonly productsRepository: Repository<Product>,
   ) {}
 
-  async listUsers(page = 1, perPage = 10) {
+  async listUsers(page = 1, perPage = 10, search?: string) {
+    const where = search
+      ? [
+          { name: { ilike: `%${search}%` } },
+          { email: { ilike: `%${search}%` } },
+        ]
+      : undefined;
+
     const [users, total] = await this.usersRepository.findAndCount({
       select: ['id', 'name', 'email', 'role', 'createdAt'],
+      where,
       order: { createdAt: 'DESC' },
       skip: (page - 1) * perPage,
       take: perPage,

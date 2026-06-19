@@ -1,4 +1,6 @@
 import type {
+  DashboardAlertProduct,
+  DashboardForecastProduct,
   DashboardLowStockProduct,
   DashboardSummary,
   DashboardCategorySale,
@@ -7,6 +9,8 @@ import type {
 } from '@/lib/types';
 
 export type DashboardOverviewData = {
+  alerts: DashboardAlertProduct[];
+  forecastedProducts: DashboardForecastProduct[];
   lowStockProducts: DashboardLowStockProduct[];
   recentMovements: StockHistoryItem[];
   topCategories: DashboardCategorySale[];
@@ -24,12 +28,16 @@ export function buildDashboardOverviewData({
 }): DashboardOverviewData {
   const topSellingProducts = dashboard.topSellingProducts;
   const lowStockProducts = dashboard.lowStockProducts;
-  const recentMovements = dashboard.recentMovements.slice(0, 9); // Limit to 9 items as requested
+  const recentMovements = dashboard.recentMovements.slice(0, 9);
   const topCategories = dashboard.topCategories;
   const weeklySales = dashboard.weeklySales;
   const { totalStock, catalogAvailability, dailyBalance } = dashboard;
+  const alerts = dashboard.alerts;
+  const forecastedProducts = dashboard.forecastedProducts;
 
   return {
+    alerts,
+    forecastedProducts,
     lowStockProducts,
     recentMovements,
     topCategories,

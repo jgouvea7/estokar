@@ -6,14 +6,14 @@ export default function PrivacyPage() {
   return (
     <div className="max-w-3xl mx-auto space-y-8 py-6">
       <header>
-        <h1 className="text-2xl font-black text-ink">Privacidade e Dados</h1>
-        <p className="text-xs font-bold text-muted uppercase tracking-wider">Estokar Inventory OS</p>
+        <h1 className="text-2xl font-black text-(--ink)">Privacidade e Dados</h1>
+        <p className="text-xs font-bold text-(--muted) uppercase tracking-wider">Estokar Inventory OS</p>
       </header>
 
-      <section className="surface-card rounded-2xl border border-stroke p-8 space-y-6 text-sm leading-relaxed text-muted">
+      <section className="surface-card rounded-xl border-2 border-(--stroke) p-8 space-y-6 text-sm leading-relaxed text-(--muted)">
         <div className="space-y-4">
-          <h2 className="text-lg font-black text-ink flex items-center gap-2">
-            <ShieldCheck size={20} className="text-ok" />
+          <h2 className="text-lg font-black text-(--ink) flex items-center gap-2">
+            <ShieldCheck size={20} className="text-(--ok)" />
             1. Coleta de Dados
           </h2>
           <p>
@@ -27,7 +27,7 @@ export default function PrivacyPage() {
         </div>
 
         <div className="space-y-4">
-          <h2 className="text-lg font-black text-ink">2. Uso das Informacoes</h2>
+          <h2 className="text-lg font-black text-(--ink)">2. Uso das Informacoes</h2>
           <p>
             Os dados coletados sao utilizados exclusivamente para:
           </p>
@@ -39,20 +39,20 @@ export default function PrivacyPage() {
         </div>
 
         <div className="space-y-4">
-          <h2 className="text-lg font-black text-ink">3. Protecao e Armazenamento</h2>
+          <h2 className="text-lg font-black text-(--ink)">3. Protecao e Armazenamento</h2>
           <p>
             Todos os dados sao armazenados em servidores seguros e transmitidos via conexao criptografada (SSL/TLS). As senhas dos usuarios sao protegidas por algoritmos de hash de alta seguranca, impedindo o acesso mesmo por administradores do sistema.
           </p>
         </div>
 
         <div className="space-y-4">
-          <h2 className="text-lg font-black text-ink">4. Compartilhamento com Terceiros</h2>
+          <h2 className="text-lg font-black text-(--ink)">4. Compartilhamento com Terceiros</h2>
           <p>
             O Estokar nao vende, aluga ou compartilha dados de inventario com terceiros para fins comerciais. O acesso aos dados e restrito aos usuarios autorizados pela organizacao contratante.
           </p>
         </div>
 
-        <div className="pt-6 border-t border-stroke text-center italic text-xs">
+        <div className="pt-6 border-t-2 border-(--stroke) text-center italic text-xs text-(--muted)">
           Compromisso com a LGPD e Seguranca da Informacao.
         </div>
       </section>

@@ -1,29 +1,26 @@
 @import "tailwindcss";
 
 :root {
-  --bg: #f5f7fb;
+  --bg: #f3f0eb;
   --card: #ffffff;
-  --ink: #0f172a;
-  --muted: #64748b;
-  --accent: #3b82f6;
-  --accent-soft: #eff6ff;
-  --stroke: #e2e8f0;
-  --soft: #f1f5f9;
-  --ok: #10b981;
-  --ok-soft: #d1fae5;
-  --low: #f59e0b;
-  --low-soft: #fef3c7;
-  --critical: #ef4444;
-  --critical-soft: #fee2e2;
-  --surface-2: #f8fafc;
-  --brand-start: #0b1220;
-  --brand-mid: #101d33;
-  --brand-end: #1f3a70;
-  --brand-gradient: linear-gradient(135deg, var(--brand-start) 0%, var(--brand-mid) 48%, var(--brand-end) 100%);
-  --brand-gradient-soft: linear-gradient(135deg, rgba(11, 18, 32, 0.9), rgba(21, 38, 70, 0.9) 55%, rgba(43, 91, 215, 0.9));
-  --elevated-shadow: 0 10px 30px rgba(0, 0, 0, 0.04);
-  --elevated-shadow-strong: 0 20px 40px rgba(0, 0, 0, 0.08);
+  --ink: #1a1a2e;
+  --muted: #8b8c9a;
+  --accent: #d97706;
+  --accent-soft: #fffbeb;
+  --stroke: #e5e3db;
+  --soft: #f5f4f0;
+  --surface-2: #faf9f6;
+  --ok: #059669;
+  --ok-soft: #ecfdf5;
+  --low: #d97706;
+  --low-soft: #fffbeb;
+  --critical: #dc2626;
+  --critical-soft: #fef2f2;
+  --elevated-shadow: 0 4px 12px rgba(0, 0, 0, 0.06);
+  --elevated-shadow-strong: 0 8px 24px rgba(0, 0, 0, 0.08);
+  --font-sora: var(--font-sora);
   --font-inter: var(--font-geist-sans);
+  --font-mono-custom: var(--font-jetbrains-mono);
 }
 
 @theme inline {
@@ -43,7 +40,7 @@
   --color-critical: var(--critical);
   --color-critical-soft: var(--critical-soft);
   --font-sans: var(--font-inter);
-  --font-mono: var(--font-geist-mono);
+  --font-mono: var(--font-mono-custom);
 }
 
 body {
@@ -60,25 +57,19 @@ h3,
 h4,
 h5,
 h6 {
+  font-family: var(--font-sora);
   letter-spacing: -0.025em;
-  font-weight: 600;
-}
-
-* {
-  transition-property: box-shadow, opacity, background-color, border-color, color;
-  transition-duration: 200ms;
-  transition-timing-function: ease;
+  font-weight: 700;
 }
 
 *::selection {
-  background: rgba(59, 130, 246, 0.2);
+  background: rgba(217, 119, 6, 0.2);
 }
 
 .surface-card {
   background: var(--card);
-  box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.01), 0 1px 2px -1px rgba(0, 0, 0, 0.01);
-  border: 1px solid var(--stroke);
-  border-radius: 24px;
+  border: 2px solid var(--stroke);
+  border-radius: 12px;
 }
 
 @keyframes reveal-up {
@@ -234,9 +225,5 @@ h6 {
 
   .rounded-xl {
     border-radius: 0.75rem;
-  }
-
-  .surface-card {
-    border-radius: 18px;
   }
 }

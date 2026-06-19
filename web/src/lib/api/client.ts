@@ -74,9 +74,12 @@ export async function apiRequest<T>(path: string, options: RequestOptions = {}):
 
     try {
       const body = await response.json();
-      message = Array.isArray(body.message) ? body.message.join('\n') : body.message ?? message;
+      const detail = Array.isArray(body.message) ? body.message.join('\n') : body.message;
+      if (detail && typeof detail === 'string') {
+        message = detail;
+      }
     } catch {
-
+      // ignore parse errors, use default message
     }
 
     throw new ApiError(message, response.status);

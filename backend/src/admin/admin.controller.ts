@@ -24,10 +24,14 @@ export class AdminController {
   constructor(private readonly adminService: AdminService) {}
 
   @Get('users')
-  listUsers(@Query('page') page = 1, @Query('perPage') perPage = 10) {
+  listUsers(
+    @Query('page') page = 1,
+    @Query('perPage') perPage = 10,
+    @Query('search') search?: string,
+  ) {
     const safePage = Math.max(Number(page), 1);
     const safePerPage = Math.min(Math.max(Number(perPage), 1), 100);
-    return this.adminService.listUsers(safePage, safePerPage);
+    return this.adminService.listUsers(safePage, safePerPage, search);
   }
 
   @Patch('users/:id/promote')

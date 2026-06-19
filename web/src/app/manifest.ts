@@ -2,7 +2,7 @@ import type { MetadataRoute } from 'next';
 
 export default function manifest(): MetadataRoute.Manifest {
   return {
-    name: 'Estokar Web',
+    name: 'Estokar',
     short_name: 'Estokar',
     description: 'Controle de estoque inteligente com sincronizacao entre web e mobile.',
     start_url: '/',

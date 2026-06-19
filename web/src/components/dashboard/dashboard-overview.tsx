@@ -10,7 +10,6 @@ import {
   Boxes,
   Clock3,
   Download,
-  Flame,
   TrendingDown,
   TrendingUp,
 } from 'lucide-react';
@@ -19,6 +18,8 @@ import type {
   DashboardLowStockProduct,
   DashboardRecentMovement,
   DashboardTopSellingProduct,
+  DashboardForecastProduct,
+  DashboardAlertProduct,
 } from '@/lib/types';
 import { exportDashboardCsv } from '@/lib/api/export';
 
@@ -28,133 +29,125 @@ type DashboardOverviewProps = {
 };
 
 export function DashboardOverview({ data, accessToken }: DashboardOverviewProps) {
+  const metrics = [
+    { icon: Boxes, label: 'Estoque total', value: formatNumber(data.totalStock), tone: 'accent' as const },
+    { icon: data.dailyBalance >= 0 ? TrendingUp : TrendingDown, label: 'Balanço diário', value: (data.dailyBalance > 0 ? '+' : '') + formatNumber(data.dailyBalance), tone: data.dailyBalance > 0 ? 'ok' as const : data.dailyBalance < 0 ? 'critical' as const : 'muted' as const },
+    { icon: data.weeklySales.direction === 'up' ? TrendingUp : TrendingDown, label: 'Vendas semanais', value: data.weeklySales.valueLabel, tone: data.weeklySales.direction === 'up' ? 'ok' as const : data.weeklySales.direction === 'down' ? 'critical' as const : 'muted' as const },
+    { icon: BarChart3, label: 'Catálogo disponível', value: `${data.catalogAvailability.toFixed(0)}%`, tone: 'accent' as const },
+  ];
+
   return (
-    <div className="space-y-8 reveal-up">
-      <section
-        className="relative overflow-hidden rounded-4xl p-8 text-white shadow-[0_28px_80px_-35px_rgba(15,23,42,0.95)] lg:p-10"
-        style={{ backgroundImage: 'var(--brand-gradient)' }}
-      >
-        <div className="absolute -right-20 -top-24 h-72 w-72 rounded-full bg-blue-500/15 blur-3xl" />
-        <div className="absolute -bottom-20 -left-16 h-56 w-56 rounded-full bg-cyan-400/10 blur-3xl" />
-        <div className="relative z-10 flex flex-col gap-8 lg:flex-row lg:items-end lg:justify-between">
-          <div className="max-w-2xl space-y-4">
-            <div className="inline-flex items-center gap-2 rounded-full border border-white/10 bg-white/10 px-3 py-1 text-[10px] font-bold uppercase tracking-[0.2em] text-blue-100">
-              <BarChart3 size={12} />
-              Painel principal
-            </div>
-            <h3 className="text-4xl font-bold tracking-tight lg:text-5xl">
-              Dashboard operacional em tempo real.
-            </h3>
-            <p className="max-w-xl text-sm leading-6 text-slate-300 lg:text-base">
-              Vendas, previsões de estoque e movimentações recentes em uma visão única para o time.
-            </p>
-          </div>
+    <div className="space-y-6 reveal-up">
+      <section className="flex items-center justify-between gap-4">
+        <p className="text-sm font-medium text-(--muted)">Resumo operacional do inventário.</p>
+        <button
+          type="button"
+          onClick={() => exportDashboardCsv(accessToken)}
+          className="inline-flex h-9 items-center gap-1.5 rounded-lg border-2 border-(--stroke) bg-(--card) px-4 text-xs font-bold text-(--ink) transition-all hover:bg-(--soft)"
+        >
+          <Download size={14} strokeWidth={2.5} />
+          CSV
+        </button>
+      </section>
 
-          <div className="flex flex-wrap items-center gap-3">
+      <section className="grid grid-cols-2 gap-3 sm:grid-cols-4">
+        {metrics.map((metric) => (
+          <CompactStat key={metric.label} {...metric} />
+        ))}
+      </section>
+
+      <section className="grid gap-6 lg:grid-cols-[1.6fr_1fr]">
+        <div className="surface-card p-5 sm:p-6">
+          <div className="mb-5 flex items-center justify-between gap-4">
+            <div>
+              <p className="text-[10px] font-bold uppercase tracking-[0.18em] text-(--muted)">Tempo real</p>
+              <h3 className="mt-1 text-lg font-bold text-(--ink)">Movimentações recentes</h3>
+            </div>
             <Link
-              href="/products"
-              className="inline-flex h-12 items-center justify-center gap-2 rounded-xl border border-white/10 bg-white/10 px-5 text-sm font-bold text-white backdrop-blur-sm transition-all hover:bg-white/15"
+              href="/history"
+              className="rounded-lg border-2 border-(--stroke) px-3 py-1.5 text-[10px] font-bold uppercase tracking-wider text-(--muted) transition-all hover:bg-(--soft)"
             >
-              <Boxes size={18} strokeWidth={2.3} />
-              Ver produtos
+              Ver todos
             </Link>
-            <button
-              type="button"
-              onClick={() => exportDashboardCsv(accessToken)}
-              className="inline-flex h-12 items-center justify-center gap-2 rounded-xl border border-white/10 bg-white/10 px-5 text-sm font-bold text-white backdrop-blur-sm transition-all hover:bg-white/15"
-            >
-              <Download size={18} strokeWidth={2.3} />
-              Exportar Relatório
-            </button>
           </div>
-        </div>
-      </section>
-
-      <section className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
-        <MetricCard icon={Boxes} label="Estoque total" value={formatNumber(data.totalStock)} tone="blue" />
-        <MetricCard
-          icon={BarChart3}
-          label="Disponibilidade de catálogo"
-          value={`${data.catalogAvailability.toFixed(0)}%`}
-          tone="orange"
-          helperText="SKUs com saldo positivo"
-        />
-        <MetricCard
-          icon={data.weeklySales.direction === 'up' ? TrendingUp : TrendingDown}
-          label="Vendas semanais"
-          value={data.weeklySales.valueLabel}
-          tone={data.weeklySales.direction === 'up' ? 'green' : data.weeklySales.direction === 'down' ? 'rose' : 'slate'}
-          helperText={data.weeklySales.comparisonLabel}
-        />
-        <MetricCard
-          icon={data.dailyBalance >= 0 ? TrendingUp : TrendingDown}
-          label="Balanço diário"
-          value={(data.dailyBalance > 0 ? '+' : '') + formatNumber(data.dailyBalance)}
-          tone={data.dailyBalance > 0 ? 'green' : data.dailyBalance < 0 ? 'rose' : 'slate'}
-          helperText="Saldo líquido de hoje"
-        />
-      </section>
-
-      <section className="grid gap-6 lg:grid-cols-3">
-        <div className="lg:col-span-2">
-          <section className="surface-card flex h-full flex-col p-6 lg:p-8">
-            <div className="mb-6 flex items-start justify-between gap-4">
-              <div>
-                <h4 className="text-xl font-bold text-[#0f172a]">Movimentações recentes</h4>
-                <p className="text-sm font-medium text-slate-500">Últimos eventos de entrada e saída no inventário.</p>
-              </div>
-              <div className="rounded-full bg-slate-100 px-3 py-1 text-[11px] font-bold uppercase tracking-widest text-slate-500">
-                Log de eventos
-              </div>
-            </div>
-
-            <div className="flex-1">
-              <RecentMovementsTimeline items={data.recentMovements} />
-            </div>
-          </section>
+          <RecentMovementsTimeline items={data.recentMovements} />
         </div>
 
-        <div className="space-y-6 lg:col-span-1">
-          <section className="surface-card p-6 lg:p-8">
-            <div className="mb-6 flex items-start justify-between gap-4">
+        <div className="space-y-5">
+          <section className="surface-card p-5 sm:p-6">
+            <div className="mb-4 flex items-center justify-between gap-4">
               <div>
-                <h4 className="text-xl font-bold text-[#0f172a]">Produtos mais vendidos</h4>
-                <p className="text-sm font-medium text-slate-500">Ranking por volume total.</p>
+                <p className="text-[10px] font-bold uppercase tracking-[0.18em] text-(--muted)">Ranking</p>
+                <h3 className="mt-1 text-lg font-bold text-(--ink)">Mais vendidos</h3>
               </div>
-              <Flame size={18} className="text-blue-500" />
             </div>
-
             <TopSellingChart items={data.topSellingProducts} />
           </section>
 
-          {data.topCategories.length ? (
-            <section className="surface-card p-6 lg:p-8">
-              <div className="mb-6 flex items-start justify-between gap-4">
+          {data.lowStockProducts.length > 0 ? (
+            <section className="surface-card p-5 sm:p-6">
+              <div className="mb-4 flex items-center justify-between gap-4">
                 <div>
-                  <h4 className="text-xl font-bold text-[#0f172a]">Categorias populares</h4>
-                  <p className="text-sm font-medium text-slate-500">Top categorias por saída.</p>
+                  <p className="text-[10px] font-bold uppercase tracking-[0.18em] text-(--muted)">Atenção</p>
+                  <h3 className="mt-1 text-lg font-bold text-(--ink)">Alertas de reposição</h3>
                 </div>
-                <BarChart3 size={18} className="text-blue-500" />
+                <AlertCircle size={16} className="text-(--low)" />
               </div>
-
-              <TopCategoryList items={data.topCategories} />
+              <ProductAlertList items={data.lowStockProducts} />
             </section>
           ) : null}
-
-          <section className="surface-card p-6 lg:p-8">
-            <div className="mb-6 flex items-start justify-between gap-4">
-              <div>
-                <h4 className="text-xl font-bold text-[#0f172a]">Alertas de reposição.</h4>
-                <p className="text-sm font-medium text-slate-500">Conforme prazos definidos.</p>
-              </div>
-              <AlertCircle size={18} className="text-orange-500" />
-            </div>
-
-            <ProductAlertList items={data.lowStockProducts} />
-          </section>
         </div>
       </section>
+
+      {data.topCategories.length > 0 ? (
+        <section className="surface-card p-5 sm:p-6">
+          <div className="mb-5 flex items-center justify-between gap-4">
+            <div>
+              <p className="text-[10px] font-bold uppercase tracking-[0.18em] text-(--muted)">Distribuição</p>
+              <h3 className="mt-1 text-lg font-bold text-(--ink)">Categorias populares</h3>
+            </div>
+          </div>
+          <TopCategoryList items={data.topCategories} />
+        </section>
+      ) : null}
+
+      <ForecastSection
+        forecastedProducts={data.forecastedProducts}
+        alerts={data.alerts}
+        lowStockProducts={data.lowStockProducts}
+      />
     </div>
+  );
+}
+
+function CompactStat({
+  icon: Icon,
+  label,
+  value,
+  tone,
+}: {
+  icon: ComponentType<{ size?: number; strokeWidth?: number }>;
+  label: string;
+  value: string;
+  tone: 'accent' | 'ok' | 'critical' | 'muted';
+}) {
+  const toneColors = {
+    accent: 'text-(--accent) bg-(--accent-soft)',
+    ok: 'text-(--ok) bg-(--ok-soft)',
+    critical: 'text-(--critical) bg-(--critical-soft)',
+    muted: 'text-(--muted) bg-(--soft)',
+  };
+
+  return (
+    <article className="surface-card flex items-center gap-3 p-4">
+      <div className={`flex h-10 w-10 shrink-0 items-center justify-center rounded-lg ${toneColors[tone]}`}>
+        <Icon size={18} strokeWidth={2.3} />
+      </div>
+      <div className="min-w-0">
+        <p className="text-lg font-bold leading-none text-(--ink)">{value}</p>
+        <p className="mt-1 truncate text-[10px] font-bold uppercase tracking-widest text-(--muted)">{label}</p>
+      </div>
+    </article>
   );
 }
 
@@ -166,36 +159,28 @@ function TopSellingChart({ items }: { items: DashboardTopSellingProduct[] }) {
   const maxSold = Math.max(...items.map((item) => item.soldQuantity), 1);
 
   return (
-    <div className="space-y-3">
+    <div className="space-y-2">
       {items.map((item, index) => {
-        const width = `${Math.max((item.soldQuantity / maxSold) * 100, 6)}%`;
+        const width = `${Math.max((item.soldQuantity / maxSold) * 100, 4)}%`;
 
         return (
-          <Link key={item.productId} href={`/products/${item.productId}`} className="block transition-transform hover:scale-[1.01] active:scale-95">
-            <article className="rounded-2xl border border-slate-100 bg-slate-50/70 p-4 transition-all hover:border-blue-200 hover:bg-white">
-              <div className="mb-3 flex items-center justify-between gap-4">
-                <div className="flex items-center gap-3">
-                  <div className="flex h-8 w-8 items-center justify-center rounded-full bg-blue-50 text-xs font-bold text-blue-600">
-                    {index + 1}
-                  </div>
-                  <div>
-                    <p className="text-sm font-bold text-[#0f172a]">{item.productName}</p>
-                    <p className="text-xs font-medium text-slate-500">Estoque atual: {item.currentQuantity} un.</p>
-                  </div>
-                </div>
-                <div className="text-right">
-                  <p className="text-sm font-bold text-[#0f172a]">{formatNumber(item.soldQuantity)}</p>
-                  <p className="text-[10px] font-bold uppercase tracking-widest text-slate-400"></p>
-                </div>
+          <Link
+            key={item.productId}
+            href={`/products/${item.productId}`}
+            className="group flex items-center gap-3 rounded-lg border-2 border-(--stroke) bg-(--surface-2) px-3 py-2.5 transition-all hover:bg-(--card)"
+          >
+            <span className="flex h-6 w-6 shrink-0 items-center justify-center rounded-md bg-(--soft) text-[10px] font-bold text-(--muted)">
+              {index + 1}
+            </span>
+            <div className="min-w-0 flex-1">
+              <div className="flex items-center justify-between gap-2">
+                <p className="truncate text-sm font-bold text-(--ink)">{item.productName}</p>
+                <p className="shrink-0 text-sm font-bold text-(--ink)">{formatNumber(item.soldQuantity)}</p>
               </div>
-
-              <div className="h-2 overflow-hidden rounded-full bg-slate-100">
-                <div
-                  className="h-full rounded-full bg-[linear-gradient(90deg,#1d4ed8_0%,#38bdf8_100%)] shadow-[0_6px_18px_-8px_rgba(59,130,246,0.8)] transition-all duration-700"
-                  style={{ width }}
-                />
+              <div className="mt-1.5 h-1.5 overflow-hidden rounded-full bg-(--stroke)">
+                <div className="h-full rounded-full bg-(--accent) transition-all duration-700" style={{ width }} />
               </div>
-            </article>
+            </div>
           </Link>
         );
       })}
@@ -209,39 +194,29 @@ function ProductAlertList({ items }: { items: DashboardLowStockProduct[] }) {
   }
 
   return (
-    <div className="space-y-3">
+    <div className="space-y-2">
       {items.map((item) => (
-        <Link key={item.productId} href={`/products/${item.productId}`} className="block transition-transform hover:scale-[1.01] active:scale-95">
-          <article
-            className="group flex items-center gap-4 rounded-2xl border border-slate-100 bg-slate-50/70 p-4 transition-all hover:border-orange-200 hover:bg-white"
-          >
-            <div className={`flex h-11 w-11 items-center justify-center rounded-xl ${item.status === 'critical' ? 'bg-rose-100 text-rose-600' : 'bg-orange-100 text-orange-600'}`}>
-              <AlertCircle size={18} />
-            </div>
-            <div className="min-w-0 flex-1">
-              <p className="truncate text-sm font-bold text-[#0f172a]">{item.productName}</p>
-              <p className="text-xs font-medium text-slate-500">
-                Atual: <span className="text-slate-900">{item.currentQuantity}</span>
-              </p>
-            </div>
-            <div className="text-right">
-              <p className={`text-xs font-bold uppercase tracking-widest ${item.status === 'critical' ? 'text-rose-600' : 'text-orange-600'}`}>
-                {item.status === 'critical' ? 'Crítico' : 'Baixo'}
-              </p>
-              <p className="text-[11px] font-medium text-slate-400">{item.threshold}</p>
-            </div>
-          </article>
+        <Link
+          key={item.productId}
+          href={`/products/${item.productId}`}
+          className="group flex items-center gap-3 rounded-lg border-2 border-(--stroke) bg-(--surface-2) px-3 py-2.5 transition-all hover:bg-(--card)"
+        >
+          <div className={`flex h-8 w-8 shrink-0 items-center justify-center rounded-md ${item.status === 'critical' ? 'bg-(--critical-soft) text-(--critical)' : 'bg-(--low-soft) text-(--low)'}`}>
+            <AlertCircle size={14} />
+          </div>
+          <div className="min-w-0 flex-1">
+            <p className="truncate text-sm font-bold text-(--ink)">{item.productName}</p>
+            <p className="text-xs font-medium text-(--muted)">
+              {item.currentQuantity} un. — {item.status === 'critical' ? 'Crítico' : 'Baixo'}
+            </p>
+          </div>
         </Link>
       ))}
     </div>
   );
 }
 
-function TopCategoryList({
-  items,
-}: {
-  items: DashboardOverviewData['topCategories'];
-}) {
+function TopCategoryList({ items }: { items: DashboardOverviewData['topCategories'] }) {
   if (!items.length) {
     return <EmptyState icon={BarChart3} title="Sem categorias vendidas" description="Ainda não há saídas suficientes para montar o ranking por categoria." />;
   }
@@ -251,34 +226,27 @@ function TopCategoryList({
   return (
     <div className="space-y-3">
       {items.map((item) => {
-        const width = `${Math.max((item.soldQuantity / maxSold) * 100, 8)}%`;
+        const width = `${Math.max((item.soldQuantity / maxSold) * 100, 6)}%`;
 
         return (
-          <Link key={item.categoryName} href={`/products?category=${encodeURIComponent(item.categoryName)}`} className="block transition-transform hover:scale-[1.01] active:scale-95">
-            <article className="rounded-2xl border border-slate-100 bg-slate-50/70 p-4 transition-all hover:border-blue-200 hover:bg-white">
-              <div className="mb-3 flex items-center justify-between gap-4">
-                <div className="flex items-center gap-3">
-                  <div className="flex h-8 w-8 items-center justify-center rounded-full bg-blue-50 text-xs font-bold text-blue-600">
-                    {item.rank}
-                  </div>
-                  <div>
-                    <p className="text-sm font-bold text-[#0f172a]">{item.categoryName}</p>
-                    <p className="text-xs font-medium text-slate-500">{item.percentage.toFixed(0)}% do total vendido</p>
-                  </div>
-                </div>
-                <div className="text-right">
-                  <p className="text-sm font-bold text-[#0f172a]">{formatNumber(item.soldQuantity)}</p>
-                  <p className="text-[10px] font-bold uppercase tracking-widest text-slate-400"></p>
-                </div>
+          <Link
+            key={item.categoryName}
+            href={`/products?category=${encodeURIComponent(item.categoryName)}`}
+            className="group flex items-center gap-4 rounded-lg border-2 border-(--stroke) bg-(--surface-2) px-4 py-3 transition-all hover:bg-(--card)"
+          >
+            <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-md bg-(--soft) text-xs font-bold text-(--muted)">
+              {item.rank}
+            </div>
+            <div className="min-w-0 flex-1">
+              <div className="flex items-center justify-between gap-4">
+                <p className="truncate text-sm font-bold text-(--ink)">{item.categoryName}</p>
+                <p className="shrink-0 text-xs font-medium text-(--muted)">{item.percentage.toFixed(0)}%</p>
               </div>
-
-              <div className="h-2 overflow-hidden rounded-full bg-slate-100">
-                <div
-                  className="h-full rounded-full bg-[linear-gradient(90deg,#1d4ed8_0%,#38bdf8_100%)] shadow-[0_6px_18px_-8px_rgba(59,130,246,0.8)] transition-all duration-700"
-                  style={{ width }}
-                />
+              <div className="mt-1.5 h-2 overflow-hidden rounded-full bg-(--stroke)">
+                <div className="h-full rounded-full bg-(--accent) transition-all duration-700" style={{ width }} />
               </div>
-            </article>
+            </div>
+            <p className="shrink-0 text-sm font-bold text-(--ink)">{formatNumber(item.soldQuantity)}</p>
           </Link>
         );
       })}
@@ -292,69 +260,111 @@ function RecentMovementsTimeline({ items }: { items: DashboardRecentMovement[] }
   }
 
   return (
-    <div className="relative space-y-4 pl-4">
-      <div className="absolute left-3.5 top-2 h-[calc(100%-8px)] w-px bg-slate-200" />
+    <div className="space-y-2">
       {items.map((movement) => (
-        <article key={movement.id} className="relative pl-8">
-          <div className={`absolute left-0 top-4 flex h-7 w-7 -translate-x-1/2 items-center justify-center rounded-full ${movement.type === 'in' ? 'bg-emerald-100 text-emerald-600' : 'bg-rose-100 text-rose-600'}`}>
+        <article
+          key={movement.id}
+          className="flex items-center gap-4 rounded-lg border-2 border-(--stroke) bg-(--surface-2) px-4 py-3 transition-all hover:bg-(--card)"
+        >
+          <div className={`flex h-9 w-9 shrink-0 items-center justify-center rounded-md ${movement.type === 'in' ? 'bg-(--ok-soft) text-(--ok)' : 'bg-(--critical-soft) text-(--critical)'}`}>
             {movement.type === 'in' ? <ArrowDownLeft size={16} /> : <ArrowUpRight size={16} />}
           </div>
-
-          <div className="surface-card flex items-center justify-between gap-4 rounded-2xl px-4 py-4 transition-colors hover:bg-slate-50">
-            <div className="min-w-0">
-              <p className="truncate text-sm font-bold text-[#0f172a]">{movement.productName}</p>
-              <p className="mt-1 text-xs font-medium text-slate-500">
-                {formatDateTime(movement.createdAt)} • {movement.type === 'in' ? 'Entrada' : 'Saída'}
-              </p>
-            </div>
-            <div className="flex shrink-0 flex-col items-end gap-1">
-              <p className={`text-lg font-bold ${movement.type === 'in' ? 'text-emerald-600' : 'text-rose-600'}`}>
-                {movement.type === 'in' ? '+' : '-'}{movement.quantity}
-              </p>
-              <span className="text-[10px] font-bold uppercase tracking-widest text-slate-400">Unidades</span>
-            </div>
+          <div className="min-w-0 flex-1">
+            <p className="truncate text-sm font-bold text-(--ink)">{movement.productName}</p>
+            <p className="text-xs font-medium text-(--muted)">
+              {movement.type === 'in' ? 'Entrada' : 'Saída'} · {formatDateTime(movement.createdAt)}
+            </p>
           </div>
+          <p className={`shrink-0 text-lg font-bold ${movement.type === 'in' ? 'text-(--ok)' : 'text-(--critical)'}`}>
+            {movement.type === 'in' ? '+' : '-'}{movement.quantity}
+          </p>
         </article>
       ))}
     </div>
   );
 }
 
-function MetricCard({
-  icon: Icon,
-  label,
-  value,
-  tone,
-  helperText,
+function ForecastSection({
+  forecastedProducts,
+  alerts,
+  lowStockProducts,
 }: {
-  icon: ComponentType<{ size?: number; strokeWidth?: number }>;
-  label: string;
-  value: string;
-  tone: 'blue' | 'orange' | 'rose' | 'slate' | 'green';
-  helperText?: string;
+  forecastedProducts: DashboardForecastProduct[];
+  alerts: DashboardAlertProduct[];
+  lowStockProducts: DashboardLowStockProduct[];
 }) {
-  const toneMap = {
-    blue: 'bg-blue-50 text-blue-600 border-blue-100',
-    orange: 'bg-orange-50 text-orange-600 border-orange-100',
-    rose: 'bg-rose-50 text-rose-600 border-rose-100',
-    green: 'bg-emerald-50 text-emerald-600 border-emerald-100',
-    slate: 'bg-slate-50 text-slate-600 border-slate-100',
-  };
+  const criticalIds = new Set(lowStockProducts.map((p) => p.productId));
+
+  const combined = forecastedProducts.map((fp) => {
+    const alert = alerts.find((a) => a.productId === fp.productId);
+    return {
+      ...fp,
+      alertDaysBefore: alert?.alertDaysBefore ?? null,
+    };
+  });
+
+  const sorted = [...combined].sort((a, b) => {
+    const aCritical = criticalIds.has(a.productId) ? 0 : 1;
+    const bCritical = criticalIds.has(b.productId) ? 0 : 1;
+    if (aCritical !== bCritical) return aCritical - bCritical;
+    return (a.estimatedDaysLeft ?? Infinity) - (b.estimatedDaysLeft ?? Infinity);
+  });
+
+  if (!sorted.length) return null;
 
   return (
-    <article className="surface-card flex items-center gap-4 p-5 transition-all hover:-translate-y-0.5 hover:shadow-[0_20px_45px_-30px_rgba(15,23,42,0.35)]">
-      <div className={`flex h-12 w-12 items-center justify-center rounded-2xl border ${toneMap[tone]}`}>
-        <Icon size={22} strokeWidth={2.3} />
+    <section className="surface-card p-5 sm:p-6">
+      <div className="mb-5">
+        <p className="text-[10px] font-bold uppercase tracking-[0.18em] text-(--muted)">Previsão</p>
+        <h3 className="mt-1 text-lg font-bold text-(--ink)">Estimativa de dias restantes</h3>
       </div>
-      <div>
-        <p className="text-2xl font-bold tracking-tight text-[#0f172a]">{value}</p>
-        <p className="text-[10px] font-bold uppercase tracking-widest text-slate-500">{label}</p>
-        {helperText ? <p className="mt-1 text-[11px] font-medium text-slate-400">{helperText}</p> : null}
+
+      <div className="overflow-x-auto">
+        <table className="w-full text-left">
+          <thead>
+            <tr className="border-b-2 border-(--stroke) text-[10px] font-bold uppercase tracking-widest text-(--muted)">
+              <th className="pb-3 pr-4">Produto</th>
+              <th className="pb-3 pr-4 text-right">Estoque</th>
+              <th className="pb-3 pr-4 text-right">Média/dia</th>
+              <th className="pb-3 pr-4 text-right">Dias restantes</th>
+              <th className="pb-3 text-right">Status</th>
+            </tr>
+          </thead>
+          <tbody className="divide-y-2 divide-(--stroke)">
+            {sorted.slice(0, 8).map((item) => {
+              const isCritical = criticalIds.has(item.productId);
+              const status = isCritical
+                ? { label: 'Crítico', className: 'text-(--critical) bg-(--critical-soft) border-(--critical)' }
+                : item.estimatedDaysLeft !== null && item.estimatedDaysLeft <= (item.alertDaysBefore ?? 7)
+                  ? { label: 'Atenção', className: 'text-(--low) bg-(--low-soft) border-(--low)' }
+                  : { label: 'OK', className: 'text-(--ok) bg-(--ok-soft) border-(--ok)' };
+
+              return (
+                <tr key={item.productId} className="group transition-colors hover:bg-(--surface-2)">
+                  <td className="py-3 pr-4">
+                    <Link href={`/products/${item.productId}`} className="text-sm font-bold text-(--ink) transition-colors hover:text-(--accent)">
+                      {item.productName}
+                    </Link>
+                  </td>
+                  <td className="py-3 pr-4 text-right text-sm font-bold text-(--ink)">{formatNumber(item.currentQuantity)}</td>
+                  <td className="py-3 pr-4 text-right text-sm font-medium text-(--muted)">{formatMetric(item.averageDailySales)}</td>
+                  <td className="py-3 pr-4 text-right text-sm font-bold text-(--ink)">
+                    {item.estimatedDaysLeft === null ? '—' : formatDays(item.estimatedDaysLeft)}
+                  </td>
+                  <td className="py-3 text-right">
+                    <span className={`inline-block rounded-md border-2 px-2 py-0.5 text-[10px] font-bold ${status.className}`}>
+                      {status.label}
+                    </span>
+                  </td>
+                </tr>
+              );
+            })}
+          </tbody>
+        </table>
       </div>
-    </article>
+    </section>
   );
 }
-
 
 function EmptyState({
   icon: Icon,
@@ -366,18 +376,26 @@ function EmptyState({
   description: string;
 }) {
   return (
-    <div className="flex flex-col items-center justify-center rounded-3xl border border-dashed border-slate-200 bg-slate-50/60 px-6 py-10 text-center">
-      <div className="mb-4 flex h-12 w-12 items-center justify-center rounded-full bg-slate-100 text-slate-400">
-        <Icon size={22} strokeWidth={2.2} />
+    <div className="flex flex-col items-center justify-center rounded-xl border-2 border-dashed border-(--stroke) bg-(--surface-2) px-6 py-8 text-center">
+      <div className="mb-3 flex h-10 w-10 items-center justify-center rounded-full bg-(--card) text-(--muted)">
+        <Icon size={18} strokeWidth={2.2} />
       </div>
-      <p className="text-sm font-bold text-[#0f172a]">{title}</p>
-      <p className="mt-1 text-xs font-medium text-slate-500">{description}</p>
+      <p className="text-sm font-bold text-(--ink)">{title}</p>
+      <p className="mt-1 text-xs font-medium text-(--muted)">{description}</p>
     </div>
   );
 }
 
 function formatNumber(value: number) {
   return new Intl.NumberFormat('pt-BR').format(value);
+}
+
+function formatMetric(value: number) {
+  return new Intl.NumberFormat('pt-BR', { maximumFractionDigits: 1 }).format(value);
+}
+
+function formatDays(value: number) {
+  return new Intl.NumberFormat('pt-BR', { maximumFractionDigits: 1 }).format(Math.max(value, 0));
 }
 
 function formatDateTime(value: string | Date) {
