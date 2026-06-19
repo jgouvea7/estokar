@@ -137,7 +137,6 @@ export default function Sidebar({
 
   return (
     <>
-      {/* Mobile backdrop — only when expanded on mobile */}
       <div
         data-open={sidebarOpen && isMobile}
         className="fixed inset-0 z-[60] bg-black/50 transition-opacity duration-300 ease-in-out
