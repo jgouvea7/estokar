@@ -15,6 +15,8 @@ describe('JwtRefreshGuard', () => {
       const result = guard.handleRequest<{ id: string; refreshToken: string }>(
         null,
         user,
+        undefined,
+        undefined,
       );
 
       expect(result).toEqual(user);
@@ -23,13 +25,13 @@ describe('JwtRefreshGuard', () => {
     it('should throw the original error when error is present', () => {
       const err = new Error('err');
       expect(() => {
-        guard.handleRequest(err, null);
+        guard.handleRequest(err, null, undefined, undefined);
       }).toThrow(err);
     });
 
     it('should throw UnauthorizedException when user is falsy and no error', () => {
       expect(() => {
-        guard.handleRequest(null, null);
+        guard.handleRequest(null, null, undefined, undefined);
       }).toThrow(UnauthorizedException);
     });
   });

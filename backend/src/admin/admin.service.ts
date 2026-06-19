@@ -4,7 +4,7 @@ import {
   NotFoundException,
 } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Between, Repository } from 'typeorm';
+import { Between, ILike, Repository } from 'typeorm';
 import { AdminLog, AdminLogAction } from './entities/admin-log.entity';
 import { User } from '../users/entities/user.entity';
 import { UserRole } from '../users/enums/user-role.enum';
@@ -27,8 +27,8 @@ export class AdminService {
   async listUsers(page = 1, perPage = 10, search?: string) {
     const where = search
       ? [
-          { name: { ilike: `%${search}%` } },
-          { email: { ilike: `%${search}%` } },
+          { name: ILike(`%${search}%`) },
+          { email: ILike(`%${search}%`) },
         ]
       : undefined;
 

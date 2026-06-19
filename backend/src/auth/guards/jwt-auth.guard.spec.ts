@@ -15,6 +15,8 @@ describe('JwtAuthGuard', () => {
       const result = guard.handleRequest<{ id: string; email: string }>(
         null,
         user,
+        undefined,
+        undefined,
       );
 
       expect(result).toEqual(user);
@@ -24,13 +26,13 @@ describe('JwtAuthGuard', () => {
       const err = new Error('Token expired');
 
       expect(() => {
-        guard.handleRequest(err, null);
+        guard.handleRequest(err, null, undefined, undefined);
       }).toThrow(err);
     });
 
     it('should throw UnauthorizedException when user is falsy and no error', () => {
       expect(() => {
-        guard.handleRequest(null, null);
+        guard.handleRequest(null, null, undefined, undefined);
       }).toThrow(UnauthorizedException);
     });
   });
