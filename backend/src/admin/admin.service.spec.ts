@@ -16,7 +16,6 @@ describe('AdminService', () => {
   let categoriesRepository: Record<string, jest.Mock>;
   let productsRepository: Record<string, jest.Mock>;
 
-  // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
   const mockUser: User = makeUser({ role: UserRole.FREE });
   const mockAdmin = makeUser({ role: UserRole.ADMIN });
 

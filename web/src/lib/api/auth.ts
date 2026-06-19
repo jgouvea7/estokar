@@ -56,3 +56,9 @@ export function getGoogleOAuthUrl(redirectUri: string): string {
   url.searchParams.set('redirect_uri', redirectUri);
   return url.toString();
 }
+
+export function handleGoogleLogin(setGoogleLoading: (loading: boolean) => void) {
+  setGoogleLoading(true);
+  const redirectUri = `${window.location.origin}/auth/callback`;
+  window.location.href = getGoogleOAuthUrl(redirectUri);
+}

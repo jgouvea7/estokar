@@ -1,11 +1,13 @@
 "use client";
 
+import dynamic from 'next/dynamic';
 import { useEffect, useRef, useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { useAuthStore } from '@/store/auth-store';
 import { getAdminStats } from '@/lib/api/admin';
-import { StatsCards } from '@/components/admin/stats-cards';
 import type { AdminStatsPeriod } from '@/lib/types';
+
+const StatsCards = dynamic(() => import('@/components/admin/stats-cards').then((m) => m.StatsCards));
 import { RefreshCcw } from 'lucide-react';
 
 export default function AdminStatsPage() {

@@ -1,5 +1,3 @@
-"use client";
-
 import { ShieldCheck } from 'lucide-react';
 
 export default function PrivacyPage() {

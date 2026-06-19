@@ -1,8 +1,13 @@
 "use client";
 
+import dynamic from 'next/dynamic';
 import { useQuery } from '@tanstack/react-query';
-import { DashboardOverview } from '@/components/dashboard/dashboard-overview';
 import { getDashboard } from '@/lib/api/dashboard';
+
+const DashboardOverview = dynamic(
+  () => import('@/components/dashboard/dashboard-overview').then((m) => m.DashboardOverview),
+  { loading: DashboardLoadingState },
+);
 import { buildDashboardOverviewData } from '@/lib/dashboard/dashboard-data';
 import { useAuthStore } from '@/store/auth-store';
 

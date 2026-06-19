@@ -3,7 +3,7 @@
 import Link from 'next/link';
 import { usePathname, useRouter } from 'next/navigation';
 import { useQueryClient } from '@tanstack/react-query';
-import { useEffect, useRef, useState } from 'react';
+import { memo, useEffect, useRef, useState } from 'react';
 import { BrandIcon } from '@/components/ui/brand-icon';
 import {
   BarChart3,
@@ -37,7 +37,7 @@ function isNavItemActive(pathname: string, href: string) {
   return pathname.startsWith(href);
 }
 
-function NavItem({
+const NavItem = memo(function NavItem({
   href,
   icon: Icon,
   label,
@@ -84,7 +84,7 @@ function NavItem({
       )}
     </Link>
   );
-}
+});
 
 export default function Sidebar({
   isDesktopCollapsed,

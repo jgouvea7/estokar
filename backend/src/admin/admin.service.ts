@@ -26,10 +26,7 @@ export class AdminService {
 
   async listUsers(page = 1, perPage = 10, search?: string) {
     const where = search
-      ? [
-          { name: ILike(`%${search}%`) },
-          { email: ILike(`%${search}%`) },
-        ]
+      ? [{ name: ILike(`%${search}%`) }, { email: ILike(`%${search}%`) }]
       : undefined;
 
     const [users, total] = await this.usersRepository.findAndCount({

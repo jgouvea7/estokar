@@ -1,7 +1,7 @@
 "use client";
 
 import Link from 'next/link';
-import type { ComponentType } from 'react';
+import { memo, type ComponentType } from 'react';
 import {
   AlertCircle,
   ArrowDownLeft,
@@ -22,6 +22,7 @@ import type {
   DashboardAlertProduct,
 } from '@/lib/types';
 import { exportDashboardCsv } from '@/lib/api/export';
+import { formatNumber, formatMetric, formatDays, formatDateTime } from '@/lib/utils';
 
 type DashboardOverviewProps = {
   data: DashboardOverviewData;
@@ -120,7 +121,7 @@ export function DashboardOverview({ data, accessToken }: DashboardOverviewProps)
   );
 }
 
-function CompactStat({
+const CompactStat = memo(function CompactStat({
   icon: Icon,
   label,
   value,
@@ -149,7 +150,7 @@ function CompactStat({
       </div>
     </article>
   );
-}
+});
 
 function TopSellingChart({ items }: { items: DashboardTopSellingProduct[] }) {
   if (!items.length) {
@@ -386,23 +387,4 @@ function EmptyState({
   );
 }
 
-function formatNumber(value: number) {
-  return new Intl.NumberFormat('pt-BR').format(value);
-}
 
-function formatMetric(value: number) {
-  return new Intl.NumberFormat('pt-BR', { maximumFractionDigits: 1 }).format(value);
-}
-
-function formatDays(value: number) {
-  return new Intl.NumberFormat('pt-BR', { maximumFractionDigits: 1 }).format(Math.max(value, 0));
-}
-
-function formatDateTime(value: string | Date) {
-  return new Intl.DateTimeFormat('pt-BR', {
-    day: '2-digit',
-    hour: '2-digit',
-    minute: '2-digit',
-    month: '2-digit',
-  }).format(new Date(value));
-}

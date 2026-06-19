@@ -110,23 +110,28 @@ function ProductsPageContent() {
     return new Map(categories.map((item) => [item.id, item]));
   }, [categories]);
 
-  const filteredProducts = useMemo(() => {
-    const source = [...products].sort((a, b) => {
-      return new Date(b.updatedAt ?? b.createdAt ?? 0).getTime() - new Date(a.updatedAt ?? a.createdAt ?? 0).getTime();
+  const sortedProducts = useMemo(() => {
+    return [...products].sort((a, b) => {
+      const aTime = new Date(a.updatedAt ?? a.createdAt ?? 0).getTime();
+      const bTime = new Date(b.updatedAt ?? b.createdAt ?? 0).getTime();
+      return bTime - aTime;
     });
+  }, [products]);
 
-    return source.filter((product) => {
+  const filteredProducts = useMemo(() => {
+    const normalizedQuery = query.trim().toLowerCase();
+
+    return sortedProducts.filter((product) => {
       const productCategory =
         product.category?.name ?? categoryMap.get(product.categoryId ?? '')?.name ?? 'Nao categorizado';
       const matchesCategory = categoryFilter === 'Todos' || productCategory === categoryFilter;
-      const normalizedQuery = query.trim().toLowerCase();
       const matchesQuery =
         product.name.toLowerCase().includes(normalizedQuery) ||
         product.description.toLowerCase().includes(normalizedQuery);
 
       return matchesCategory && matchesQuery;
     });
-  }, [categoryFilter, categoryMap, products, query]);
+  }, [categoryFilter, categoryMap, sortedProducts, query]);
 
   const categoryMutation = useMutation({
     mutationFn: async (payload: { id?: string; name: string }) => {
@@ -616,7 +621,7 @@ function ProductsPageContent() {
                     alt={product.name}
                     width={80}
                     height={80}
-                    unoptimized
+                    
                     className="h-full w-full object-cover"
                   />
                 ) : (
@@ -770,7 +775,7 @@ function ProductsPageContent() {
                       alt="Preview"
                       width={56}
                       height={56}
-                      unoptimized
+                      
                       className="h-full w-full object-cover"
                     />
                   </div>
@@ -861,7 +866,7 @@ function ProductsPageContent() {
                       alt="Preview"
                       width={56}
                       height={56}
-                      unoptimized
+                      
                       className="h-full w-full object-cover"
                     />
                   </div>

@@ -6,7 +6,7 @@ import { FormEvent, useState } from 'react';
 import { BrandIcon } from '@/components/ui/brand-icon';
 import { ChevronLeft, UserPlus } from 'lucide-react';
 import toast from 'react-hot-toast';
-import { getGoogleOAuthUrl, register } from '@/lib/api/auth';
+import { register, handleGoogleLogin } from '@/lib/api/auth';
 
 export default function RegisterPage() {
   const router = useRouter();
@@ -31,12 +31,6 @@ export default function RegisterPage() {
     } finally {
       setLoading(false);
     }
-  }
-
-  function handleGoogleLogin() {
-    setGoogleLoading(true);
-    const redirectUri = `${window.location.origin}/auth/callback`;
-    window.location.href = getGoogleOAuthUrl(redirectUri);
   }
 
   return (
@@ -124,7 +118,7 @@ export default function RegisterPage() {
 
             <button
               type="button"
-              onClick={handleGoogleLogin}
+              onClick={() => handleGoogleLogin(setGoogleLoading)}
               disabled={googleLoading}
               className="flex w-full items-center justify-center gap-3 rounded-lg border-2 border-(--stroke) bg-(--card) px-5 py-3 text-sm font-bold text-(--ink) transition-colors hover:bg-(--soft) disabled:opacity-60"
             >

@@ -6,7 +6,7 @@ import { FormEvent, useState } from 'react';
 import { BrandIcon } from '@/components/ui/brand-icon';
 import { ChevronLeft, LogIn } from 'lucide-react';
 import toast from 'react-hot-toast';
-import { getGoogleOAuthUrl, login } from '@/lib/api/auth';
+import { login, handleGoogleLogin } from '@/lib/api/auth';
 import { useAuthStore } from '@/store/auth-store';
 
 export default function LoginPage() {
@@ -35,12 +35,6 @@ export default function LoginPage() {
     } finally {
       setLoading(false);
     }
-  }
-
-  function handleGoogleLogin() {
-    setGoogleLoading(true);
-    const redirectUri = `${window.location.origin}/auth/callback`;
-    window.location.href = getGoogleOAuthUrl(redirectUri);
   }
 
   return (
@@ -121,7 +115,7 @@ export default function LoginPage() {
 
             <button
               type="button"
-              onClick={handleGoogleLogin}
+              onClick={() => handleGoogleLogin(setGoogleLoading)}
               disabled={googleLoading}
               className="flex w-full items-center justify-center gap-3 rounded-lg border-2 border-(--stroke) bg-(--card) px-5 py-3 text-sm font-bold text-(--ink) transition-colors hover:bg-(--soft) disabled:opacity-60"
             >

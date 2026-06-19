@@ -1,6 +1,8 @@
 import { withSentryConfig } from '@sentry/nextjs';
 import type { NextConfig } from "next";
 
+const supabaseHost = 'grlnxjoydczvzjupcobe.supabase.co';
+
 function getBackendApiUrl() {
 	return process.env.NEXT_PUBLIC_API_URL ?? 'http://localhost:3000/api';
 }
@@ -61,7 +63,20 @@ const nextConfig: NextConfig = {
 			},
 		];
 	},
-	reactStrictMode: false,
+	reactStrictMode: true,
+	images: {
+		remotePatterns: [
+			{
+				protocol: 'https',
+				hostname: supabaseHost,
+				port: '',
+				pathname: '/storage/v1/object/public/**',
+			},
+		],
+	},
+	experimental: {
+		optimizePackageImports: ['lucide-react', '@supabase/supabase-js', '@tanstack/react-query'],
+	},
 };
 
 export default withSentryConfig(nextConfig, {

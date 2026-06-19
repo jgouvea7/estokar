@@ -1,5 +1,3 @@
-"use client";
-
 import { CURRENT_VERSION } from '@/lib/version';
 import { Boxes, Users, Zap, Globe } from 'lucide-react';
 

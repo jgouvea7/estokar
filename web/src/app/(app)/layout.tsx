@@ -6,12 +6,14 @@ import { useEffect, useRef, useState } from 'react';
 import { useQueryClient } from '@tanstack/react-query';
 import { FileText, Info, Shield, Smartphone, X, ChevronRight, type LucideIcon } from 'lucide-react';
 import toast from 'react-hot-toast';
+import dynamic from 'next/dynamic';
 import { useAuthStore } from '@/store/auth-store';
 import { useUIStore } from '@/store/ui-store';
 import { updateUser } from '@/lib/api/users';
 import { BUILD_STRING } from '@/lib/version';
-import { VersionModal } from '@/components/settings/version-modal';
 import Sidebar from '@/components/sidebar';
+
+const VersionModal = dynamic(() => import('@/components/settings/version-modal').then((m) => m.VersionModal));
 
 function getHeaderTitle(pathname: string) {
   if (pathname.startsWith('/dashboard')) return 'Dashboard';

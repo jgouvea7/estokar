@@ -1,11 +1,13 @@
 "use client";
 
+import dynamic from 'next/dynamic';
 import { useState, useEffect, useCallback } from 'react';
 import { useAuthStore } from '@/store/auth-store';
 import { getAdminUsers, promoteUser, deleteUser } from '@/lib/api/admin';
-import { AdminUsersTable } from '@/components/admin/admin-users-table';
-import { ConfirmationModal } from '@/components/admin/confirmation-modal';
 import type { AdminUser, PaginatedResponse } from '@/lib/types';
+
+const AdminUsersTable = dynamic(() => import('@/components/admin/admin-users-table').then((m) => m.AdminUsersTable));
+const ConfirmationModal = dynamic(() => import('@/components/admin/confirmation-modal').then((m) => m.ConfirmationModal));
 import toast from 'react-hot-toast';
 
 export default function AdminUsersPage() {

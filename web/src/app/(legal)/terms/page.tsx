@@ -1,13 +1,9 @@
-"use client";
-
-import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { BrandIcon } from '@/components/ui/brand-icon';
-import { ChevronLeft, Scale } from 'lucide-react';
+import { BackButton } from '@/components/ui/back-button';
+import { Scale } from 'lucide-react';
 
 export default function PublicTermsPage() {
-  const router = useRouter();
-
   return (
     <div className="mx-auto flex min-h-screen w-full max-w-6xl flex-col px-6 py-6 sm:px-8 lg:py-8">
       <header className="mb-20 flex items-center justify-between rounded-xl border-2 border-(--stroke) bg-(--card) px-5 py-3.5">
@@ -22,13 +18,7 @@ export default function PublicTermsPage() {
             </div>
           </Link>
         </div>
-        <button
-          onClick={() => router.back()}
-          className="flex items-center gap-1.5 rounded-lg border-2 border-(--stroke) bg-(--card) px-3.5 py-2 text-xs font-bold text-(--ink) transition-colors hover:bg-(--soft)"
-        >
-          <ChevronLeft size={14} />
-          Voltar
-        </button>
+        <BackButton />
       </header>
 
       <main className="flex-1 mx-auto w-full max-w-3xl">

@@ -20,6 +20,7 @@ import {
 import { getProductDetails } from '@/lib/api/products';
 import type { ProductDashboardMovement } from '@/lib/types';
 import { useAuthStore } from '@/store/auth-store';
+import { formatMetric, formatDays } from '@/lib/utils';
 
 const NO_PHOTO_IMAGE = 'sem-foto';
 
@@ -221,7 +222,6 @@ export default function ProductDetailsPage() {
                     alt={dashboard.productName}
                     width={48}
                     height={48}
-                    unoptimized
                     className="h-full w-full object-cover"
                   />
                 ) : (
@@ -604,14 +604,3 @@ function getStatusBadge(currentStock: number, estimatedDaysLeft: number | null, 
   };
 }
 
-function formatMetric(value: number) {
-  return new Intl.NumberFormat('pt-BR', {
-    maximumFractionDigits: 1,
-  }).format(value);
-}
-
-function formatDays(value: number) {
-  return new Intl.NumberFormat('pt-BR', {
-    maximumFractionDigits: 1,
-  }).format(Math.max(value, 0));
-}
