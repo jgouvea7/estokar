@@ -4,7 +4,7 @@ import Link from 'next/link';
 import { usePathname, useRouter } from 'next/navigation';
 import { useEffect, useRef, useState } from 'react';
 import { useQueryClient } from '@tanstack/react-query';
-import { FileText, Info, Moon, Monitor, Shield, Smartphone, Sun, Trash2, User, X, ChevronRight, type LucideIcon } from 'lucide-react';
+import { FileText, Info, Moon, Monitor, Shield, Smartphone, Sun, Trash2, X, ChevronRight, type LucideIcon } from 'lucide-react';
 import toast from 'react-hot-toast';
 import dynamic from 'next/dynamic';
 import { useAuthStore } from '@/store/auth-store';
