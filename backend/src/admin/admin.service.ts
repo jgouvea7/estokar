@@ -78,6 +78,15 @@ export class AdminService {
 
     const recentMovements = await this.stockMovementsRepository.find({
       where: { userId },
+      select: [
+        'id',
+        'productId',
+        'productName',
+        'type',
+        'quantity',
+        'context',
+        'createdAt',
+      ],
       order: { createdAt: 'DESC' },
       take: 10,
     });

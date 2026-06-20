@@ -56,6 +56,15 @@ export class DashboardService {
       }),
       this.stockMovementsRepository.find({
         where: { userId },
+        select: [
+          'id',
+          'productId',
+          'productName',
+          'type',
+          'quantity',
+          'context',
+          'createdAt',
+        ],
         order: { createdAt: 'DESC' },
         take: 9,
       }),
@@ -221,8 +230,73 @@ export class DashboardService {
   }
 
   async getAlerts(userId: string) {
-    const dashboard = await this.getDashboard(userId);
-    return dashboard.alerts;
+    const sevenDaysAgo = new Date();
+    sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 7);
+
+    const [user, products, salesData] = await Promise.all([
+      this.usersRepository.findOne({
+        where: { id: userId },
+        select: ['id', 'alertDaysBefore'],
+      }),
+      this.productsRepository.find({
+        where: { userId },
+        order: { name: 'ASC' },
+        select: ['id', 'name', 'quantity'],
+      }),
+      this.stockMovementsRepository
+        .createQueryBuilder('m')
+        .select('m.productId', 'productId')
+        .addSelect(
+          `COALESCE(SUM(CASE WHEN m.createdAt >= :sevenDaysAgo THEN m.quantity ELSE 0 END), 0)`,
+          'recentSoldQuantity',
+        )
+        .where('m.userId = :userId', { userId })
+        .andWhere('m.type = :outType', { outType: StockMovementType.OUT })
+        .setParameter('sevenDaysAgo', sevenDaysAgo)
+        .groupBy('m.productId')
+        .getRawMany<{
+          productId: string;
+          recentSoldQuantity: string;
+        }>(),
+    ]);
+
+    const alertDaysBefore = user?.alertDaysBefore ?? 7;
+
+    const salesMap = new Map(
+      salesData.map((row) => [
+        row.productId,
+        { recentSoldQuantity: toNumber(row.recentSoldQuantity) },
+      ]),
+    );
+
+    return products
+      .map((product) => {
+        const sales = salesMap.get(product.id);
+        if (!sales || sales.recentSoldQuantity <= 0) return null;
+
+        const forecast = calculateForecast(
+          product.quantity,
+          sales.recentSoldQuantity,
+          7,
+        );
+        if (
+          forecast.averageDailySales <= 0 ||
+          forecast.estimatedDaysLeft == null
+        )
+          return null;
+        if (forecast.estimatedDaysLeft > alertDaysBefore) return null;
+
+        return {
+          productId: product.id,
+          productName: product.name,
+          currentQuantity: product.quantity,
+          status: forecast.estimatedDaysLeft <= 0 ? 'critical' : 'warning',
+          estimatedDaysLeft: forecast.estimatedDaysLeft,
+          averageDailySales: forecast.averageDailySales,
+        };
+      })
+      .filter(Boolean)
+      .sort((a, b) => a!.estimatedDaysLeft - b!.estimatedDaysLeft);
   }
 
   private formatWeeklySales(

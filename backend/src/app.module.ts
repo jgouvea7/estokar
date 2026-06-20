@@ -44,6 +44,7 @@ import { ExportModule } from './export/export.module';
                 process.env.DB_SSL_REJECT_UNAUTHORIZED === 'true',
             },
             extra: {
+              max: 20,
               ssl: {
                 rejectUnauthorized:
                   process.env.DB_SSL_REJECT_UNAUTHORIZED === 'true',
@@ -56,6 +57,9 @@ import { ExportModule } from './export/export.module';
             username: process.env.DB_USER,
             password: process.env.DB_PASSWORD,
             database: process.env.DB_NAME,
+            extra: {
+              max: 20,
+            },
           }),
 
       autoLoadEntities: true,
