@@ -23,6 +23,11 @@ import { CurrentUser } from '../common/decorators/current-user.decorator';
 export class AdminController {
   constructor(private readonly adminService: AdminService) {}
 
+  @Get('dashboard')
+  getDashboard() {
+    return this.adminService.getDashboard();
+  }
+
   @Get('users')
   listUsers(
     @Query('page') page = 1,
@@ -32,6 +37,11 @@ export class AdminController {
     const safePage = Math.max(Number(page), 1);
     const safePerPage = Math.min(Math.max(Number(perPage), 1), 100);
     return this.adminService.listUsers(safePage, safePerPage, search);
+  }
+
+  @Get('users/:id')
+  getUserDetail(@Param('id', ParseUUIDPipe) id: string) {
+    return this.adminService.getUserDetail(id);
   }
 
   @Patch('users/:id/promote')
@@ -54,5 +64,35 @@ export class AdminController {
   getStats(@Query('period') period?: 'total' | 'monthly') {
     const normalizedPeriod = period === 'monthly' ? 'monthly' : 'total';
     return this.adminService.getStats(normalizedPeriod);
+  }
+
+  @Get('logs')
+  getLogs(@Query('page') page = 1, @Query('perPage') perPage = 10) {
+    const safePage = Math.max(Number(page), 1);
+    const safePerPage = Math.min(Math.max(Number(perPage), 1), 100);
+    return this.adminService.getLogs(safePage, safePerPage);
+  }
+
+  @Get('products')
+  listAllProducts(
+    @Query('page') page = 1,
+    @Query('perPage') perPage = 20,
+    @Query('search') search?: string,
+  ) {
+    const safePage = Math.max(Number(page), 1);
+    const safePerPage = Math.min(Math.max(Number(perPage), 1), 100);
+    return this.adminService.listAllProducts(safePage, safePerPage, search);
+  }
+
+  @Get('movements')
+  listAllMovements(@Query('page') page = 1, @Query('perPage') perPage = 20) {
+    const safePage = Math.max(Number(page), 1);
+    const safePerPage = Math.min(Math.max(Number(perPage), 1), 100);
+    return this.adminService.listAllMovements(safePage, safePerPage);
+  }
+
+  @Get('health')
+  getHealth() {
+    return this.adminService.getHealth();
   }
 }

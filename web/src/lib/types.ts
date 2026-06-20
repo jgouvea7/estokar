@@ -200,3 +200,74 @@ export type PaginatedResponse<T> = {
     perPage: number;
   };
 };
+
+export type AdminUserDetail = {
+  id: string;
+  name: string;
+  email: string;
+  role: UserRole;
+  createdAt: string;
+  updatedAt: string;
+  alertDaysBefore: number;
+  productCount: number;
+  categoryCount: number;
+  movementCount: number;
+  totalStock: number;
+  recentMovements: StockHistoryItem[];
+};
+
+export type AdminLogEntry = {
+  id: string;
+  action: string;
+  actorId: string;
+  actorName: string;
+  targetUserId: string;
+  targetUserName: string;
+  createdAt: string;
+};
+
+export type AdminDashboardData = {
+  totalUsers: number;
+  totalProducts: number;
+  totalCategories: number;
+  totalMovements: number;
+  usersThisMonth: number;
+  productsThisMonth: number;
+  movementsThisMonth: number;
+  lowStockProducts: number;
+  recentUsers: AdminUser[];
+  topUsersByProducts: { userId: string; count: number; userName: string }[];
+};
+
+export type AdminProductItem = {
+  id: string;
+  name: string;
+  description: string;
+  quantity: number;
+  image: string;
+  userId: string;
+  userName: string;
+  categoryName: string | null;
+  createdAt: string;
+  updatedAt: string;
+};
+
+export type AdminMovementItem = {
+  id: string;
+  productId: string;
+  productName: string;
+  type: 'in' | 'out';
+  quantity: number;
+  context?: string;
+  userId: string;
+  userName: string;
+  createdAt: string;
+};
+
+export type AdminHealthData = {
+  status: string;
+  database: string;
+  uptime: number;
+  timestamp: string;
+  memory?: { heapUsed: number; heapTotal: number; rss: number };
+};

@@ -6,11 +6,20 @@ import { AdminLog } from './entities/admin-log.entity';
 import { User } from '../users/entities/user.entity';
 import { Category } from '../categories/entities/category.entity';
 import { Product } from '../products/entities/product.entity';
+import { StockMovement } from '../stock-movements/entities/stock-movement.entity';
 import { AdminSeedService } from './admin-seed.service';
 import { RolesGuard } from '../common/guards/roles.guard';
 
 @Module({
-  imports: [TypeOrmModule.forFeature([User, AdminLog, Category, Product])],
+  imports: [
+    TypeOrmModule.forFeature([
+      User,
+      AdminLog,
+      Category,
+      Product,
+      StockMovement,
+    ]),
+  ],
   controllers: [AdminController],
   providers: [AdminService, AdminSeedService, RolesGuard],
 })

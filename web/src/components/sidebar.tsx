@@ -6,12 +6,16 @@ import { useQueryClient } from '@tanstack/react-query';
 import { memo, useEffect, useRef, useState } from 'react';
 import { BrandIcon } from '@/components/ui/brand-icon';
 import {
+  Activity,
+  ArrowUpDown,
   BarChart3,
   Grid2x2,
   History,
+  LayoutDashboard,
   LogOut,
   Menu,
   Package2,
+  ScrollText,
   Settings,
   UserCircle2,
   Users,
@@ -29,8 +33,13 @@ const navItems = [
 ];
 
 const adminItems = [
+  { href: '/admin', icon: LayoutDashboard, label: 'Dashboard' },
   { href: '/admin/users', icon: Users, label: 'Usuários' },
+  { href: '/admin/products', icon: Package2, label: 'Produtos' },
+  { href: '/admin/movements', icon: ArrowUpDown, label: 'Movimentações' },
+  { href: '/admin/logs', icon: ScrollText, label: 'Atividades' },
   { href: '/admin/stats', icon: BarChart3, label: 'Estatísticas' },
+  { href: '/admin/health', icon: Activity, label: 'Saúde' },
 ];
 
 function isNavItemActive(pathname: string, href: string) {

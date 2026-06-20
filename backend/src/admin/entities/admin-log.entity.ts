@@ -21,8 +21,14 @@ export class AdminLog {
   @Column({ type: 'uuid' })
   actorId: string;
 
+  @Column()
+  actorName: string;
+
   @Column({ type: 'uuid' })
   targetUserId: string;
+
+  @Column()
+  targetUserName: string;
 
   @CreateDateColumn()
   createdAt: Date;
