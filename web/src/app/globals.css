@@ -16,11 +16,39 @@
   --low-soft: #fffbeb;
   --critical: #dc2626;
   --critical-soft: #fef2f2;
+  --sidebar-bg: #111111;
+  --brand-bg: #1a1a2e;
+  --button: #1a1a2e;
+  --overlay: rgba(26, 26, 46, 0.45);
   --elevated-shadow: 0 4px 12px rgba(0, 0, 0, 0.06);
   --elevated-shadow-strong: 0 8px 24px rgba(0, 0, 0, 0.08);
   --font-sora: var(--font-sora);
   --font-inter: var(--font-geist-sans);
   --font-mono-custom: var(--font-jetbrains-mono);
+}
+
+.dark {
+  --bg: #141416;
+  --card: #1c1c20;
+  --ink: #e8e8ec;
+  --muted: #8b8d97;
+  --accent: #f59e0b;
+  --accent-soft: #2a1f0a;
+  --stroke: #2a2a2e;
+  --soft: #1a1a1e;
+  --surface-2: #16161a;
+  --ok: #10b981;
+  --ok-soft: #052e1c;
+  --low: #f59e0b;
+  --low-soft: #2a1f0a;
+  --critical: #ef4444;
+  --critical-soft: #2f0a0a;
+  --sidebar-bg: #0a0a0c;
+  --brand-bg: #0a0a0c;
+  --button: #3a3a3e;
+  --overlay: rgba(0, 0, 0, 0.6);
+  --elevated-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+  --elevated-shadow-strong: 0 8px 24px rgba(0, 0, 0, 0.4);
 }
 
 @theme inline {
@@ -39,6 +67,10 @@
   --color-low-soft: var(--low-soft);
   --color-critical: var(--critical);
   --color-critical-soft: var(--critical-soft);
+  --color-sidebar-bg: var(--sidebar-bg);
+  --color-brand-bg: var(--brand-bg);
+  --color-button: var(--button);
+  --color-overlay: var(--overlay);
   --font-sans: var(--font-inter);
   --font-mono: var(--font-mono-custom);
 }
@@ -63,7 +95,7 @@ h6 {
 }
 
 *::selection {
-  background: rgba(217, 119, 6, 0.2);
+  background: color-mix(in srgb, var(--accent) 20%, transparent);
 }
 
 .surface-card {

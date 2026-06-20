@@ -16,7 +16,6 @@ import {
   Package2,
   ScrollText,
   Settings,
-  UserCircle2,
   Users,
   X,
 } from 'lucide-react';
@@ -166,7 +165,7 @@ export default function Sidebar({
 
       <aside
         data-desktop-collapsed={isDesktopCollapsed}
-        className="fixed inset-y-0 left-0 z-[70] flex flex-col bg-[#111111] text-white transition-all duration-300 ease-in-out
+        className="fixed inset-y-0 left-0 z-[70] flex flex-col bg-(--sidebar-bg) text-white transition-all duration-300 ease-in-out
           translate-x-0
           data-[desktop-collapsed=true]:w-[72px]
           data-[desktop-collapsed=false]:w-[280px]"
@@ -287,17 +286,6 @@ export default function Sidebar({
                   <p className="text-sm font-bold text-(--ink)">{session?.user?.name}</p>
                 </div>
                 <div className="mt-1 space-y-0.5">
-                  <button
-                    type="button"
-                    onClick={() => {
-                      setIsAccountOpen(false);
-                      router.push('/profile');
-                    }}
-                    className="flex w-full items-center gap-3 rounded-lg px-3.5 py-2.5 text-sm font-semibold text-(--ink) transition-colors hover:bg-(--soft)"
-                  >
-                    <UserCircle2 size={18} />
-                    Perfil
-                  </button>
                   <button
                     type="button"
                     onClick={() => {

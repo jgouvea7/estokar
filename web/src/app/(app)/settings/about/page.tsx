@@ -11,7 +11,7 @@ export default function AboutPage() {
 
       <section className="surface-card rounded-xl border-2 border-(--stroke) p-8 space-y-8 text-sm leading-relaxed text-(--muted)">
         <div className="text-center space-y-4">
-          <div className="mx-auto grid h-20 w-20 place-items-center rounded-2xl bg-(--ink) text-white">
+          <div className="mx-auto grid h-20 w-20 place-items-center rounded-2xl bg-(--brand-bg) text-(--accent)">
             <Boxes size={40} />
           </div>
           <div>

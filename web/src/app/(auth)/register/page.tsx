@@ -37,7 +37,7 @@ export default function RegisterPage() {
     <div className="mx-auto flex min-h-screen w-full max-w-6xl flex-col px-6 py-6 sm:px-8 lg:py-8">
       <header className="mb-20 flex items-center justify-between rounded-xl border-2 border-(--stroke) bg-(--card) px-5 py-3.5">
         <Link href="/" className="flex items-center gap-2.5">
-          <div className="grid h-10 w-10 place-items-center rounded-lg bg-(--ink) text-amber-400">
+          <div className="grid h-10 w-10 place-items-center rounded-lg bg-(--brand-bg) text-(--accent)">
             <BrandIcon size={20} />
           </div>
           <div className="hidden sm:block">
@@ -101,7 +101,7 @@ export default function RegisterPage() {
               <button
                 type="submit"
                 disabled={loading}
-                className="flex w-full items-center justify-center gap-2 rounded-lg bg-(--ink) px-5 py-3 text-sm font-bold text-white transition-all hover:brightness-125 disabled:opacity-60"
+                className="flex w-full items-center justify-center gap-2 rounded-lg bg-(--button) px-5 py-3 text-sm font-bold text-white transition-all hover:brightness-125 disabled:opacity-60"
               >
                 {loading ? 'Criando conta...' : 'Criar conta gratuitamente'}
               </button>
@@ -150,7 +150,7 @@ export default function RegisterPage() {
       <footer className="mt-12 border-t-2 border-(--stroke) pt-8 pb-6">
         <div className="flex flex-col items-center justify-between gap-4 sm:flex-row">
           <div className="flex items-center gap-2.5">
-            <div className="grid h-8 w-8 place-items-center rounded-md bg-(--ink) text-amber-400">
+            <div className="grid h-8 w-8 place-items-center rounded-md bg-(--brand-bg) text-(--accent)">
               <BrandIcon size={14} />
             </div>
             <div>

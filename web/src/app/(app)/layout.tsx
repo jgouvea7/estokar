@@ -4,12 +4,13 @@ import Link from 'next/link';
 import { usePathname, useRouter } from 'next/navigation';
 import { useEffect, useRef, useState } from 'react';
 import { useQueryClient } from '@tanstack/react-query';
-import { FileText, Info, Shield, Smartphone, X, ChevronRight, type LucideIcon } from 'lucide-react';
+import { FileText, Info, Moon, Monitor, Shield, Smartphone, Sun, Trash2, User, X, ChevronRight, type LucideIcon } from 'lucide-react';
 import toast from 'react-hot-toast';
 import dynamic from 'next/dynamic';
 import { useAuthStore } from '@/store/auth-store';
+import { useHistoryStore } from '@/store/history-store';
 import { useUIStore } from '@/store/ui-store';
-import { updateUser } from '@/lib/api/users';
+import { deleteMyAccount, updateUser } from '@/lib/api/users';
 import { BUILD_STRING } from '@/lib/version';
 import Sidebar from '@/components/sidebar';
 
@@ -33,6 +34,8 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
 
   const isDesktopCollapsed = useUIStore((state) => state.isDesktopCollapsed);
   const toggleDesktopCollapsed = useUIStore((state) => state.toggleDesktopCollapsed);
+  const theme = useUIStore((state) => state.theme);
+  const setTheme = useUIStore((state) => state.setTheme);
   const [isMobile, setIsMobile] = useState(false);
 
   const [isSettingsOpen, setIsSettingsOpen] = useState(false);
@@ -168,8 +171,33 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
     }
   }
 
+  const clearHistory = useHistoryStore((state) => state.clearHistory);
+  const clearSession = useAuthStore((state) => state.clearSession);
+
+  async function handleDeleteAccount() {
+    const confirmed = window.confirm('Tem certeza que deseja excluir sua conta? Essa acao nao pode ser desfeita.');
+    if (!confirmed) return;
+
+    if (!session) {
+      toast.error('Usuario nao autenticado');
+      return;
+    }
+
+    try {
+      await deleteMyAccount(session.accessToken);
+      clearHistory();
+      clearSession();
+      setIsSettingsOpen(false);
+      toast.success('Conta excluida com sucesso.');
+      router.replace('/login');
+    } catch (error) {
+      toast.error(error instanceof Error ? error.message : 'Nao foi possivel excluir sua conta.');
+    }
+  }
+
   const settingsTabs = [
-    { id: 'stock-alerts', label: 'Estoque e Alertas', description: 'Alertas de reposicao e limites', enabled: true },
+    { id: 'preferences', label: 'Preferencias', description: 'Ajustes de estoque e aparencia', enabled: true },
+    { id: 'profile', label: 'Perfil', description: 'Informacoes da conta', enabled: true },
     { id: 'legal', label: 'Informacoes legais', description: 'Versao e documentos', enabled: true },
   ];
 
@@ -207,13 +235,13 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
       </div>
 
       {isSettingsOpen ? (
-        <div className="fixed inset-0 z-[120] flex items-center justify-center bg-[rgba(26,26,46,0.45)] px-6 py-10">
+          <div className="fixed inset-0 z-[120] flex items-center justify-center bg-(--overlay) px-6 py-10">
           <div
             className="absolute inset-0"
             onClick={() => setIsSettingsOpen(false)}
             aria-hidden="true"
           />
-          <div className="relative w-full max-w-5xl max-h-[85vh] flex flex-col overflow-hidden rounded-xl border-2 border-(--stroke) bg-(--card) reveal-up">
+          <div className="relative w-full max-w-5xl h-[85vh] flex flex-col overflow-hidden rounded-xl border-2 border-(--stroke) bg-(--card) reveal-up">
             <div className="flex items-center justify-between border-b-2 border-(--stroke) px-6 py-5 shrink-0">
               <div>
                 <p className="text-[10px] font-bold uppercase tracking-[0.2em] text-(--muted)">Configuracoes</p>
@@ -261,49 +289,151 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
               </aside>
 
         <section className="p-4 sm:p-6">
-                {activeSettingsTab === 'stock-alerts' ? (
+                {activeSettingsTab === 'preferences' ? (
+                  <div className="space-y-8">
+                    <div className="space-y-6">
+                      <header className="space-y-2">
+                        <h4 className="text-lg font-bold text-(--ink)">Estoque e Alertas</h4>
+                        <p className="text-sm font-medium text-(--muted)">
+                          Ajuste os dias de antecedencia para alertas de reposicao.
+                        </p>
+                      </header>
+
+                      <div className="rounded-lg border-2 border-(--stroke) bg-(--card) p-6">
+                        <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+                          <div>
+                            <p className="text-sm font-bold text-(--ink)">Avisar quando faltar</p>
+                            <p className="text-xs font-medium text-(--muted)">Defina com quantos dias de antecedência o sistema deve alertar que o estoque de um produto está próximo do fim.</p>
+                          </div>
+                          <div className="flex items-center gap-3">
+                            <input
+                              type="number"
+                              min={1}
+                              max={365}
+                              value={stockAlertDays}
+                              onChange={(event) => setStockAlertDays(event.target.value)}
+                              className="h-11 w-24 rounded-lg border-2 border-(--stroke) bg-(--surface-2) px-3 text-sm font-semibold text-(--ink) outline-none transition-all focus:border-(--accent) focus:bg-(--card) focus:ring-4 focus:[--tw-ring-color:var(--accent)]/30"
+                            />
+                            <span className="text-sm font-semibold text-(--muted)">dias</span>
+                          </div>
+                        </div>
+                        <div className="mt-6 flex flex-wrap items-center gap-3">
+                          <button
+                            type="button"
+                            onClick={handleSaveStockAlertDays}
+                            className="rounded-lg bg-(--button) px-4 py-2 text-sm font-bold text-white transition-all hover:brightness-125"
+                          >
+                            Salvar preferencia
+                          </button>
+                          <button
+                            type="button"
+                            onClick={() => setIsSettingsOpen(false)}
+                            className="rounded-lg border-2 border-(--stroke) px-4 py-2 text-sm font-semibold text-(--muted) hover:bg-(--soft)"
+                          >
+                            Fechar
+                          </button>
+                        </div>
+                      </div>
+                    </div>
+
+                    <div className="space-y-6">
+                      <header className="space-y-2">
+                        <h4 className="text-lg font-bold text-(--ink)">Aparencia</h4>
+                        <p className="text-sm font-medium text-(--muted)">
+                          Escolha entre tema claro, escuro ou acompanhe o sistema.
+                        </p>
+                      </header>
+
+                      <div className="space-y-3">
+                        {[
+                          { id: 'light' as const, icon: Sun, label: 'Claro', desc: 'Fundo claro e contraste padrao' },
+                          { id: 'dark' as const, icon: Moon, label: 'Escuro', desc: 'Fundo escuro para baixa luminosidade' },
+                          { id: 'system' as const, icon: Monitor, label: 'Sistema', desc: 'Acompanha a preferencia do seu dispositivo' },
+                        ].map(({ id: mode, icon: Icon, label, desc }) => {
+                          const active = theme === mode;
+                          return (
+                            <button
+                              key={mode}
+                              type="button"
+                              onClick={() => setTheme(mode)}
+                              className={`flex w-full items-center gap-4 rounded-lg border-2 p-4 text-left transition-all ${
+                                active
+                                  ? 'border-(--accent) bg-(--accent-soft)'
+                                  : 'border-(--stroke) bg-(--card) hover:bg-(--soft)'
+                              }`}
+                            >
+                              <div className={`flex h-10 w-10 items-center justify-center rounded-lg ${
+                                active ? 'bg-(--card) text-(--accent)' : 'bg-(--soft) text-(--muted)'
+                              }`}>
+                                <Icon size={18} />
+                              </div>
+                              <div className="flex-1">
+                                <p className={`text-sm font-bold ${active ? 'text-(--accent)' : 'text-(--ink)'}`}>{label}</p>
+                                <p className="text-xs font-medium text-(--muted)">{desc}</p>
+                              </div>
+                              {active && (
+                                <span className="flex h-6 w-6 items-center justify-center rounded-full bg-(--accent) text-white text-xs font-bold">
+                                  ✓
+                                </span>
+                              )}
+                            </button>
+                          );
+                        })}
+                      </div>
+                    </div>
+                  </div>
+                ) : null}
+                {activeSettingsTab === 'profile' ? (
                   <div className="space-y-6">
                     <header className="space-y-2">
-                      <h4 className="text-lg font-bold text-(--ink)">Estoque e Alertas</h4>
+                      <h4 className="text-lg font-bold text-(--ink)">Perfil</h4>
                       <p className="text-sm font-medium text-(--muted)">
-                        Ajuste os dias de antecedencia para alertas de reposicao.
+                        Informacoes da sua conta.
                       </p>
                     </header>
 
                     <div className="rounded-lg border-2 border-(--stroke) bg-(--card) p-6">
-                      <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+                      <div className="flex items-center gap-5">
+                        <div className="flex h-16 w-16 shrink-0 items-center justify-center rounded-full bg-(--soft) text-xl font-bold text-(--ink) border-4 border-(--card)">
+                          {(session?.user?.name?.trim().slice(0, 1) || 'E').toUpperCase()}
+                        </div>
                         <div>
-                          <p className="text-sm font-bold text-(--ink)">Avisar quando faltar</p>
-                          <p className="text-xs font-medium text-(--muted)">Defina com quantos dias de antecedência o sistema deve alertar que o estoque de um produto está próximo do fim.</p>
-                        </div>
-                        <div className="flex items-center gap-3">
-                          <input
-                            type="number"
-                            min={1}
-                            max={365}
-                            value={stockAlertDays}
-                            onChange={(event) => setStockAlertDays(event.target.value)}
-                            className="h-11 w-24 rounded-lg border-2 border-(--stroke) bg-(--surface-2) px-3 text-sm font-semibold text-(--ink) outline-none transition-all focus:border-(--accent) focus:bg-(--card) focus:ring-4 focus:[--tw-ring-color:var(--accent)]/30"
-                          />
-                          <span className="text-sm font-semibold text-(--muted)">dias</span>
+                          <p className="text-base font-bold text-(--ink)">{session?.user?.name}</p>
+                          <p className="text-sm font-medium text-(--muted)">{session?.user?.email}</p>
+                          <div className="mt-1.5 flex items-center gap-2">
+                            <div className="h-2 w-2 rounded-full bg-(--ok)" />
+                            <span className="text-xs font-bold text-(--ok)">Conta ativa</span>
+                          </div>
                         </div>
                       </div>
-                      <div className="mt-6 flex flex-wrap items-center gap-3">
-                        <button
-                          type="button"
-                          onClick={handleSaveStockAlertDays}
-                          className="rounded-lg bg-(--ink) px-4 py-2 text-sm font-bold text-white transition-all hover:brightness-125"
-                        >
-                          Salvar preferencia
-                        </button>
-                        <button
-                          type="button"
-                          onClick={() => setIsSettingsOpen(false)}
-                          className="rounded-lg border-2 border-(--stroke) px-4 py-2 text-sm font-semibold text-(--muted) hover:bg-(--soft)"
-                        >
-                          Fechar
-                        </button>
+                    </div>
+
+                    <div className="rounded-lg border-2 border-(--stroke) bg-(--card) p-6">
+                      <div className="flex flex-col gap-3">
+                        <div className="flex flex-col gap-1.5 rounded-lg border-2 border-(--stroke) bg-(--surface-2) px-4 py-3">
+                          <span className="text-[10px] font-bold uppercase tracking-wider text-(--muted)">Nome Completo</span>
+                          <span className="text-sm font-bold text-(--ink)">{session?.user?.name}</span>
+                        </div>
+                        <div className="flex flex-col gap-1.5 rounded-lg border-2 border-(--stroke) bg-(--surface-2) px-4 py-3">
+                          <span className="text-[10px] font-bold uppercase tracking-wider text-(--muted)">Endereco de E-mail</span>
+                          <span className="text-sm font-bold text-(--ink)">{session?.user?.email}</span>
+                        </div>
                       </div>
+                    </div>
+
+                    <div className="rounded-lg border-2 border-(--stroke) bg-(--card) p-6">
+                      <h4 className="text-lg font-bold text-(--critical)">Zona de Perigo</h4>
+                      <p className="mt-1 text-sm font-medium text-(--muted)">
+                        Ao excluir sua conta, todos os seus dados de estoque, produtos e historico serao removidos permanentemente. Esta acao nao pode ser desfeita.
+                      </p>
+                      <button
+                        type="button"
+                        onClick={handleDeleteAccount}
+                        className="mt-5 inline-flex items-center gap-2 rounded-lg border-2 border-(--critical) bg-(--card) px-4 py-2.5 text-xs font-bold text-(--critical) transition-all hover:bg-(--critical-soft)"
+                      >
+                        <Trash2 size={14} />
+                        Excluir Minha Conta Permanentemente
+                      </button>
                     </div>
                   </div>
                 ) : null}

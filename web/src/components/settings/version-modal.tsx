@@ -24,7 +24,7 @@ export function VersionModal({ isOpen, onClose }: VersionModalProps) {
   return (
     <div className="fixed inset-0 z-[140] flex items-center justify-center p-2 sm:p-6">
       <div
-        className="absolute inset-0 bg-[rgba(26,26,46,0.45)]"
+        className="absolute inset-0 bg-(--overlay)"
         onClick={onClose}
       />
 
@@ -86,7 +86,7 @@ export function VersionModal({ isOpen, onClose }: VersionModalProps) {
         <div className="border-t-2 border-(--stroke) bg-(--soft) px-8 py-6">
           <button
             onClick={onClose}
-            className="w-full rounded-lg bg-(--ink) py-4 text-sm font-bold text-white transition-all hover:brightness-125"
+            className="w-full rounded-lg bg-(--ink) py-4 text-sm font-bold text-(--card) transition-all hover:brightness-125"
           >
             Entendi, obrigado!
           </button>

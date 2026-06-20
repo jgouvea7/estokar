@@ -5,6 +5,7 @@ import { DisableServiceWorker } from '@/components/disable-service-worker';
 import { QueryProvider } from '@/providers/query-provider';
 import "./globals.css";
 import { AuthProvider } from "@/providers/auth-provider";
+import { ThemeProvider } from "@/providers/theme-provider";
 import { Analytics } from "@vercel/analytics/next";
 import { SpeedInsights } from "@vercel/speed-insights/next"
 
@@ -44,12 +45,19 @@ export default function RootLayout({
       className={`${geistSans.variable} ${sora.variable} ${jetbrainsMono.variable} h-full antialiased`}
     >
       <body className="min-h-full flex flex-col">
+        <script
+          dangerouslySetInnerHTML={{
+            __html: `(function(){try{var s=JSON.parse(localStorage.getItem('estokar-ui-storage')||'{}'),t=s&&s.state&&s.state.theme;if(t==='dark'||(t==='system'&&window.matchMedia('(prefers-color-scheme:dark)').matches))document.documentElement.classList.add('dark')}catch(e){}})();`,
+          }}
+        />
         <DisableServiceWorker />
         <Analytics />
         <SpeedInsights />
         <QueryProvider>
           <AuthProvider>
-            {children}
+            <ThemeProvider>
+              {children}
+            </ThemeProvider>
           </AuthProvider>
           <Toaster position="top-right" toastOptions={{ duration: 3200 }} />
         </QueryProvider>

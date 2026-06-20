@@ -28,9 +28,9 @@ export function ConfirmationModal({
   if (!isOpen) return null;
 
   const variantStyles = {
-    danger: 'bg-(--critical) hover:brightness-125',
-    warning: 'bg-(--accent) hover:brightness-125',
-    info: 'bg-(--ink) hover:brightness-125',
+    danger: 'bg-(--critical) text-white hover:brightness-125',
+    warning: 'bg-(--accent) text-white hover:brightness-125',
+    info: 'bg-(--ink) text-(--card) hover:brightness-125',
   };
 
   const iconStyles = {
@@ -42,7 +42,7 @@ export function ConfirmationModal({
   return (
     <div className="fixed inset-0 z-[70] flex items-center justify-center p-4">
       <div
-        className="absolute inset-0 bg-[rgba(26,26,46,0.45)]"
+        className="absolute inset-0 bg-(--overlay)"
         onClick={onClose}
       />
       <div className="relative w-full max-w-md overflow-hidden rounded-xl border-2 border-(--stroke) bg-(--card) reveal-up">
@@ -79,11 +79,11 @@ export function ConfirmationModal({
               type="button"
               onClick={onConfirm}
               disabled={isLoading}
-              className={`flex-1 rounded-lg px-4 py-2.5 text-xs font-bold text-white transition-all disabled:opacity-50 ${variantStyles[variant]}`}
+              className={`flex-1 rounded-lg px-4 py-2.5 text-xs font-bold transition-all disabled:opacity-50 ${variantStyles[variant]}`}
             >
               {isLoading ? (
                 <div className="flex items-center justify-center gap-2">
-                  <div className="h-4 w-4 animate-spin rounded-full border-2 border-white/30 border-t-white" />
+                  <div className="h-4 w-4 animate-spin rounded-full border-2 border-(--card)/30 border-t-(--card)" />
                   <span>Processando...</span>
                 </div>
               ) : confirmText}

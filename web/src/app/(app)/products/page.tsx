@@ -528,7 +528,7 @@ function ProductsPageContent() {
             <button
               type="button"
               onClick={openCreateProduct}
-              className="inline-flex h-9 shrink-0 items-center gap-1.5 rounded-lg bg-(--ink) px-4 text-xs font-bold text-white transition-all hover:brightness-125 self-end sm:self-auto"
+              className="inline-flex h-9 shrink-0 items-center gap-1.5 rounded-lg bg-(--button) px-4 text-xs font-bold text-white transition-all hover:brightness-125 self-end sm:self-auto"
             >
               <Plus size={14} strokeWidth={2.5} />
               Novo
@@ -551,7 +551,7 @@ function ProductsPageContent() {
                     setShowCategoryModal(true);
                   }}
                   className={`h-8 rounded-full border-2 px-3 text-xs font-semibold transition-all ${isActive
-                    ? 'border-(--ink) bg-(--ink) text-white'
+                    ? 'border-(--button) bg-(--button) text-white'
                     : 'border-(--stroke) bg-(--card) text-(--muted) hover:bg-(--soft) hover:text-(--ink)'
                     }`}>
                   {category.name}
@@ -565,7 +565,7 @@ function ProductsPageContent() {
                 setCategoryDraft('');
                 setShowCategoryModal(true);
               }}
-              className="inline-flex h-8 items-center gap-1 rounded-full border-2 border-(--stroke) bg-(--card) px-3 text-xs font-semibold text-(--muted) transition-all hover:border-(--ink) hover:text-(--ink)">
+              className="inline-flex h-8 items-center gap-1 rounded-full border-2 border-(--stroke) bg-(--card) px-3 text-xs font-semibold text-(--muted) transition-all hover:border-(--button) hover:text-(--ink)">
               <Plus size={14} strokeWidth={2.5} />
               Nova
             </button>
@@ -818,7 +818,7 @@ function ProductsPageContent() {
               type="button"
               onClick={handleSaveProduct}
               disabled={isImageUploading || createProductMutation.isPending || updateProductMutation.isPending}
-              className="w-full rounded-lg bg-(--ink) py-3.5 text-sm font-bold text-white transition-all hover:brightness-125 disabled:opacity-60">
+              className="w-full rounded-lg bg-(--button) py-3.5 text-sm font-bold text-white transition-all hover:brightness-125 disabled:opacity-60">
               {isImageUploading ? 'Enviando imagem...' : 'Criar produto'}
             </button>
           </div>
@@ -909,7 +909,7 @@ function ProductsPageContent() {
               type="button"
               onClick={handleSaveProduct}
               disabled={isImageUploading || createProductMutation.isPending || updateProductMutation.isPending}
-              className="w-full rounded-lg bg-(--ink) py-3.5 text-sm font-bold text-white transition-all hover:brightness-125 disabled:opacity-60">
+              className="w-full rounded-lg bg-(--button) py-3.5 text-sm font-bold text-white transition-all hover:brightness-125 disabled:opacity-60">
               {isImageUploading ? 'Enviando imagem...' : 'Salvar alterações'}
             </button>
 
@@ -950,7 +950,7 @@ function ProductsPageContent() {
                 }
                 categoryMutation.mutate({ id: categoryEditing?.id, name: value });
               }}
-              className="w-full rounded-lg bg-(--ink) py-3.5 text-sm font-bold text-white transition-all hover:brightness-125">
+              className="w-full rounded-lg bg-(--button) py-3.5 text-sm font-bold text-white transition-all hover:brightness-125">
               {categoryMutation.isPending ? 'Salvando...' : categoryEditing ? 'Salvar alterações' : 'Criar categoria'}
             </button>
             {categoryEditing && (
@@ -986,7 +986,7 @@ function CategoryChip({
       type="button"
       onClick={onClick}
       className={`h-8 rounded-full border-2 px-3 text-xs font-semibold transition-all ${active
-        ? 'border-(--ink) bg-(--ink) text-white'
+        ? 'border-(--button) bg-(--button) text-white'
         : 'border-(--stroke) bg-(--card) text-(--muted) hover:bg-(--soft) hover:text-(--ink)'
         }`}>
       {label}
@@ -997,27 +997,27 @@ function CategoryChip({
 function getStatusBadge(currentStock: number, estimatedDaysLeft: number | null, alertDaysBefore: number) {
   if (currentStock <= 0) {
     return {
-      accent: 'text-rose-600',
-      className: 'bg-rose-100 text-rose-700',
+      accent: 'text-(--critical)',
+      className: 'bg-(--critical-soft) text-(--critical)',
       label: 'Sem estoque',
-      tone: 'bg-rose-50',
+      tone: 'bg-(--critical-soft)',
     };
   }
 
   if (estimatedDaysLeft !== null && estimatedDaysLeft <= alertDaysBefore) {
     return {
-      accent: 'text-orange-600',
-      className: 'bg-orange-100 text-orange-700',
+      accent: 'text-(--low)',
+      className: 'bg-(--low-soft) text-(--low)',
       label: 'Atenção',
-      tone: 'bg-orange-50',
+      tone: 'bg-(--low-soft)',
     };
   }
 
   return {
-    accent: 'text-emerald-600',
-    className: 'bg-emerald-100 text-emerald-700',
+    accent: 'text-(--ok)',
+    className: 'bg-(--ok-soft) text-(--ok)',
     label: 'Estoque OK',
-    tone: 'bg-emerald-50',
+    tone: 'bg-(--ok-soft)',
   };
 }
 
@@ -1044,7 +1044,7 @@ function Modal({
   return createPortal(
     <div className="fixed inset-0 z-[70] flex items-center justify-center p-4 sm:p-6">
       <div
-        className="absolute inset-0 bg-[rgba(26,26,46,0.45)]"
+        className="absolute inset-0 bg-(--overlay)"
         onClick={onClose}
       />
       <div

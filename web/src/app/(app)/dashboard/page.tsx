@@ -38,8 +38,8 @@ export default function DashboardPage() {
   if (dashboardQuery.isError || !dashboardQuery.data) {
     return (
       <div className="surface-card p-8 text-center">
-        <p className="text-lg font-bold text-[#0f172a]">Não foi possível carregar o dashboard</p>
-        <p className="mt-2 text-sm text-slate-500">Tente atualizar a página em instantes.</p>
+        <p className="text-lg font-bold text-(--ink)">Não foi possível carregar o dashboard</p>
+        <p className="mt-2 text-sm text-(--muted)">Tente atualizar a página em instantes.</p>
       </div>
     );
   }
@@ -52,20 +52,20 @@ export default function DashboardPage() {
 function DashboardLoadingState() {
   return (
     <div className="space-y-6 animate-pulse">
-      <div className="surface-card h-56 rounded-4xl bg-linear-to-br from-slate-100 to-slate-200" />
+      <div className="surface-card h-56 rounded-4xl bg-linear-to-br from-(--soft) to-(--surface-2)" />
       <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
         {Array.from({ length: 4 }).map((_, index) => (
-          <div key={index} className="surface-card h-24 rounded-3xl bg-slate-100" />
+          <div key={index} className="surface-card h-24 rounded-3xl bg-(--soft)" />
         ))}
       </div>
       <div className="grid gap-6 lg:grid-cols-[1.35fr_0.95fr]">
         <div className="space-y-6">
-          <div className="surface-card h-96 rounded-3xl bg-slate-100" />
-          <div className="surface-card h-80 rounded-3xl bg-slate-100" />
+          <div className="surface-card h-96 rounded-3xl bg-(--soft)" />
+          <div className="surface-card h-80 rounded-3xl bg-(--soft)" />
         </div>
         <div className="space-y-6">
-          <div className="surface-card h-80 rounded-3xl bg-slate-100" />
-          <div className="surface-card h-80 rounded-3xl bg-slate-100" />
+          <div className="surface-card h-80 rounded-3xl bg-(--soft)" />
+          <div className="surface-card h-80 rounded-3xl bg-(--soft)" />
         </div>
       </div>
     </div>

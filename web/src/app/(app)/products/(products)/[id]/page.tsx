@@ -245,7 +245,7 @@ export default function ProductDetailsPage() {
             </div>
             <Link
               href="/history"
-              className="inline-flex shrink-0 items-center gap-1.5 rounded-lg bg-(--ink) px-3.5 py-2 text-xs font-bold text-white transition-all hover:brightness-125"
+              className="inline-flex shrink-0 items-center gap-1.5 rounded-lg bg-(--button) px-3.5 py-2 text-xs font-bold text-white transition-all hover:brightness-125"
             >
               <Clock3 size={14} />
               Histórico geral
@@ -421,7 +421,7 @@ function PageShell({
             <button
               type="button"
               onClick={onRetry}
-              className="inline-flex items-center gap-2 rounded-lg bg-(--ink) px-4 py-2.5 text-xs font-bold text-white transition-all hover:brightness-125"
+              className="inline-flex items-center gap-2 rounded-lg bg-(--button) px-4 py-2.5 text-xs font-bold text-white transition-all hover:brightness-125"
             >
               Tentar novamente
             </button>

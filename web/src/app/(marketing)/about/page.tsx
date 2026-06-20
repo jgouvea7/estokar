@@ -9,7 +9,7 @@ export default function PublicAboutPage() {
       <header className="mb-20 flex items-center justify-between rounded-xl border-2 border-(--stroke) bg-(--card) px-5 py-3.5">
         <div className="flex items-center gap-3">
           <Link href="/" className="flex items-center gap-2.5">
-            <div className="grid h-10 w-10 place-items-center rounded-lg bg-(--ink) text-amber-400">
+            <div className="grid h-10 w-10 place-items-center rounded-lg bg-(--brand-bg) text-(--accent)">
               <BrandIcon size={20} />
             </div>
             <div className="hidden sm:block">
@@ -85,7 +85,7 @@ export default function PublicAboutPage() {
           <div className="flex flex-wrap gap-4 justify-center">
             <Link
               href="/contact"
-              className="inline-flex items-center gap-2 rounded-lg bg-(--ink) px-4 py-2.5 text-xs font-bold text-white transition-all hover:brightness-125"
+              className="inline-flex items-center gap-2 rounded-lg bg-(--button) px-4 py-2.5 text-xs font-bold text-white transition-all hover:brightness-125"
             >
               Entrar em contato
             </Link>
@@ -97,7 +97,7 @@ export default function PublicAboutPage() {
         <div className="grid grid-cols-2 gap-8 sm:grid-cols-4">
           <div className="col-span-2 sm:col-span-1">
             <div className="flex items-center gap-2.5">
-              <div className="grid h-8 w-8 place-items-center rounded-md bg-(--ink) text-amber-400">
+              <div className="grid h-8 w-8 place-items-center rounded-md bg-(--brand-bg) text-(--accent)">
                 <BrandIcon size={14} />
               </div>
               <div>
