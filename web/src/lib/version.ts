@@ -15,18 +15,17 @@ interface VersionEntry {
 const changelog: VersionEntry[] = [
   {
     version: "v1.14.0",
-    date: "19 de Junho, 2026",
-    build: "20260619",
+    date: "20 de Junho, 2026",
+    build: "20260620",
     changes: [
       {
         type: "feature",
-        text: "Adicionada exportação de produtos em formato CSV",
+        text: "Implementado novo design da interface e modo escuro",
       },
       {
-        type: "improvement",
-        text: "Redesign completo da aplicação.",
-      },
-      
+        type: "feature",
+        text: "Adicionada exportação de produtos em formato CSV",
+      }      
     ],
   },
 ];
