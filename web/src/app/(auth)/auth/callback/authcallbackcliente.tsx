@@ -39,7 +39,7 @@ export default function AuthCallbackClient() {
         localStorage.setItem('refreshToken', refreshToken);
         setSession(session);
         toast.success('Login realizado com sucesso.');
-        router.replace('/');
+        router.replace('/dashboard');
     }, [router, searchParams, setSession]);
 
     return (
