@@ -41,8 +41,8 @@ export default function AdminDashboardPage() {
   return (
     <div className="space-y-8">
       <header>
-        <h1 className="text-2xl font-black text-(--ink)">Dashboard Administrativo</h1>
-        <p className="text-xs font-bold text-(--muted) uppercase tracking-wider">Visão geral do sistema</p>
+        <h1 className="text-2xl font-bold">Painel</h1>
+        <p className="text-sm font-medium text-(--muted)">Visão geral do sistema</p>
       </header>
 
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5">

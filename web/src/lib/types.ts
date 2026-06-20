@@ -264,10 +264,3 @@ export type AdminMovementItem = {
   createdAt: string;
 };
 
-export type AdminHealthData = {
-  status: string;
-  database: string;
-  uptime: number;
-  timestamp: string;
-  memory?: { heapUsed: number; heapTotal: number; rss: number };
-};

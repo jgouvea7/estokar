@@ -289,27 +289,6 @@ export class AdminService {
       meta: { total, page, perPage, lastPage: Math.ceil(total / perPage) },
     };
   }
-
-  async getHealth() {
-    try {
-      await this.usersRepository.query('SELECT 1');
-      return {
-        status: 'healthy',
-        database: 'connected',
-        uptime: process.uptime(),
-        timestamp: new Date().toISOString(),
-        memory: process.memoryUsage(),
-      };
-    } catch {
-      return {
-        status: 'unhealthy',
-        database: 'disconnected',
-        uptime: process.uptime(),
-        timestamp: new Date().toISOString(),
-      };
-    }
-  }
-
   async getStats(period: 'total' | 'monthly' = 'total') {
     if (period === 'monthly') {
       const now = new Date();

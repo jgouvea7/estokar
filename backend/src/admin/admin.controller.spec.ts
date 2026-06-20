@@ -21,7 +21,6 @@ describe('AdminController', () => {
       getLogs: jest.fn(),
       listAllProducts: jest.fn(),
       listAllMovements: jest.fn(),
-      getHealth: jest.fn(),
     };
 
     const module: TestingModule = await Test.createTestingModule({
@@ -160,20 +159,6 @@ describe('AdminController', () => {
       });
       await controller.listAllMovements(1, 20);
       expect(adminService.listAllMovements).toHaveBeenCalledWith(1, 20);
-    });
-  });
-
-  describe('getHealth', () => {
-    it('should call getHealth', async () => {
-      adminService.getHealth.mockResolvedValue({
-        status: 'healthy',
-        database: 'connected',
-        uptime: 100,
-        timestamp: new Date().toISOString(),
-      });
-      const result = await controller.getHealth();
-      expect(adminService.getHealth).toHaveBeenCalled();
-      expect(result.status).toBe('healthy');
     });
   });
 });

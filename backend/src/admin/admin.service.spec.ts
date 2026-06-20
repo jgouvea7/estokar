@@ -284,24 +284,4 @@ describe('AdminService', () => {
       expect(result.meta.total).toBe(1);
     });
   });
-
-  describe('getHealth', () => {
-    it('should return healthy status when DB responds', async () => {
-      usersRepository.createQueryBuilder = jest.fn().mockReturnValue({
-        query: jest.fn().mockResolvedValue([{ 1: 1 }]),
-      });
-
-      const mockQueryBuilder = {
-        query: jest.fn().mockResolvedValue([{ 1: 1 }]),
-      };
-      usersRepository.query = mockQueryBuilder.query;
-
-      const result = await service.getHealth();
-
-      expect(result.status).toBe('healthy');
-      expect(result.database).toBe('connected');
-      expect(result.uptime).toBeGreaterThan(0);
-      expect(result).toHaveProperty('memory');
-    });
-  });
 });

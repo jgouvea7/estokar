@@ -9,7 +9,6 @@ import type {
   AdminDashboardData,
   AdminProductItem,
   AdminMovementItem,
-  AdminHealthData,
 } from '@/lib/types';
 
 export async function getAdminUsers(params: {
@@ -128,9 +127,3 @@ export async function getAdminMovements(params: {
   });
 }
 
-export async function getAdminHealth(accessToken: string): Promise<AdminHealthData> {
-  return apiRequest<AdminHealthData>('/admin/health', {
-    method: 'GET',
-    accessToken,
-  });
-}

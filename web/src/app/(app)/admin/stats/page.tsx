@@ -48,6 +48,7 @@ export default function AdminStatsPage() {
     <div className="space-y-8">
       <header className="flex items-center justify-between">
         <div>
+          <h1 className='text-2xl font-bold'>Estatisticas</h1>
           <p className="text-sm font-medium text-(--muted)">
             Visão geral do ecossistema Estokar.
           </p>

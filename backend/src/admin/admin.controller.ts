@@ -90,9 +90,4 @@ export class AdminController {
     const safePerPage = Math.min(Math.max(Number(perPage), 1), 100);
     return this.adminService.listAllMovements(safePage, safePerPage);
   }
-
-  @Get('health')
-  getHealth() {
-    return this.adminService.getHealth();
-  }
 }

@@ -6,7 +6,6 @@ import { useQueryClient } from '@tanstack/react-query';
 import { memo, useEffect, useRef, useState } from 'react';
 import { BrandIcon } from '@/components/ui/brand-icon';
 import {
-  Activity,
   ArrowUpDown,
   BarChart3,
   Grid2x2,
@@ -33,17 +32,18 @@ const navItems = [
 ];
 
 const adminItems = [
-  { href: '/admin', icon: LayoutDashboard, label: 'Dashboard' },
+  { href: '/admin', icon: LayoutDashboard, label: 'Painel' },
   { href: '/admin/users', icon: Users, label: 'Usuários' },
   { href: '/admin/products', icon: Package2, label: 'Produtos' },
   { href: '/admin/movements', icon: ArrowUpDown, label: 'Movimentações' },
   { href: '/admin/logs', icon: ScrollText, label: 'Atividades' },
   { href: '/admin/stats', icon: BarChart3, label: 'Estatísticas' },
-  { href: '/admin/health', icon: Activity, label: 'Saúde' },
 ];
 
 function isNavItemActive(pathname: string, href: string) {
-  return pathname.startsWith(href);
+  if (href === '/') return pathname === '/';
+  if (href === '/admin') return pathname === '/admin';
+  return pathname === href || pathname.startsWith(href + '/');
 }
 
 const NavItem = memo(function NavItem({
@@ -75,7 +75,7 @@ const NavItem = memo(function NavItem({
       <div className="flex w-[60px] shrink-0 items-center justify-center"
         style={{ width: sidebarOpen ? '60px' : '100%' }}
       >
-        <Icon size={20} strokeWidth={active ? 2.5 : 2} />
+        <Icon size={18} strokeWidth={active ? 2.5 : 2} />
       </div>
       <span
         className="overflow-hidden whitespace-nowrap text-[15px] transition-all duration-300 ease-out"
@@ -185,7 +185,7 @@ export default function Sidebar({
           >
             <Link href="/dashboard" className="flex items-center gap-3">
               <div className="grid h-11 w-11 shrink-0 place-items-center rounded-xl bg-(--accent-soft) text-(--accent)">
-                <BrandIcon size={22} strokeWidth={2.5} />
+                <BrandIcon size={20} strokeWidth={2.5} />
               </div>
               <div>
                 <p className="text-lg font-bold leading-tight tracking-tight text-white">Estokar</p>

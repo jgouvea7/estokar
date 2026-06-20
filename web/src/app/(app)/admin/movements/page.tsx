@@ -29,12 +29,12 @@ export default function AdminMovementsPage() {
 
   return (
     <div className="space-y-6">
-      <header>
-        <h1 className="text-2xl font-black text-(--ink)">Movimentações</h1>
-        <p className="text-xs font-bold text-(--muted) uppercase tracking-wider">
-          Todas as movimentações de estoque do sistema
-        </p>
-      </header>
+        <header>
+          <h1 className="text-2xl font-black text-(--ink)">Movimentações</h1>
+          <p className="text-xs font-bold text-(--muted) uppercase tracking-wider">
+            Todas as movimentações de estoque do sistema
+          </p>
+        </header>
 
       <div className="surface-card overflow-hidden rounded-xl border-2 border-(--stroke)">
         <div className="overflow-x-auto">
