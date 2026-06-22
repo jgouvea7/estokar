@@ -168,7 +168,7 @@ function LandingPage() {
               </div>
             </div>
             <p className="mt-3 text-xs text-(--muted) leading-relaxed">
-              Plataforma de gestão de inventário para pequenas e médias empresas.
+              Plataforma de gestão de inventário.
             </p>
           </div>
           <div>

@@ -113,7 +113,7 @@ export default function PublicTermsPage() {
             </p>
           </div>
 
-          <div className="space-y-4">
+          <div className="space-y-4 pb-8 border-b-2 border-(--stroke)">
             <h2 className="text-xl font-bold text-(--ink) flex items-center gap-3">
               <span className="flex h-7 w-7 items-center justify-center rounded-lg bg-(--accent-soft) text-(--accent) font-bold text-xs">
                 6
@@ -127,12 +127,71 @@ export default function PublicTermsPage() {
             </p>
           </div>
 
+          <div className="space-y-4 pb-8 border-b-2 border-(--stroke)">
+            <h2 className="text-xl font-bold text-(--ink) flex items-center gap-3">
+              <span className="flex h-7 w-7 items-center justify-center rounded-lg bg-(--accent-soft) text-(--accent) font-bold text-xs">
+                7
+              </span>
+              Exclusão de Conta e Dados
+            </h2>
+            <p>
+              Você pode solicitar a exclusão da sua conta e dos dados associados a qualquer
+              momento. Ao excluir sua conta:
+            </p>
+            <ul className="list-disc pl-6 space-y-2">
+              <li>Todos os dados de inventário (produtos, movimentações, categorias) serão eliminados definitivamente.</li>
+              <li>Seu perfil de usuário será removido do sistema.</li>
+              <li>Registros de auditoria administrativa poderão ser mantidos conforme nossa política de retenção (consulte nossa Política de Privacidade).</li>
+            </ul>
+            <p>
+              Para solicitar a exclusão, acesse as configurações da sua conta ou entre em contato
+              através do email:{' '}
+              <a href="mailto:jonnathasg@gmail.com" className="text-(--accent) underline underline-offset-2 hover:brightness-110">
+                jonnathasg@gmail.com
+              </a>.
+            </p>
+          </div>
+
+          <div className="space-y-4 pb-8 border-b-2 border-(--stroke)">
+            <h2 className="text-xl font-bold text-(--ink) flex items-center gap-3">
+              <span className="flex h-7 w-7 items-center justify-center rounded-lg bg-(--accent-soft) text-(--accent) font-bold text-xs">
+                8
+              </span>
+              Lei Aplicável e Foro
+            </h2>
+            <p>
+              Estes Termos de Uso são regidos pela legislação brasileira, em especial
+              pela Lei Geral de Proteção de Dados (Lei 13.709/2018) e pelo Código Civil
+              Brasileiro (Lei 10.406/2002).
+            </p>
+            <p>
+              Fica eleito o foro da comarca do domicílio do usuário para dirimir
+              quaisquer controvérsias decorrentes destes termos, com renúncia expressa
+              a qualquer outro foro, por mais privilegiado que seja.
+            </p>
+          </div>
+
+          <div className="space-y-4">
+            <h2 className="text-xl font-bold text-(--ink) flex items-center gap-3">
+              <span className="flex h-7 w-7 items-center justify-center rounded-lg bg-(--accent-soft) text-(--accent) font-bold text-xs">
+                9
+              </span>
+              Comunicações
+            </h2>
+            <p>
+              O Estokar não envia emails de marketing, newsletters ou qualquer forma
+              de comunicação publicitária. As únicas comunicações enviadas aos usuários
+              são relacionadas à prestação do serviço, como notificações de segurança,
+              alterações nos termos ou avisos técnicos.
+            </p>
+          </div>
+
           <div className="pt-8 border-t-2 border-(--stroke) text-center">
             <p className="text-sm italic text-(--muted)">
               Leia atentamente antes de utilizar o sistema
             </p>
             <p className="mt-2 text-xs text-(--muted)">
-              Última atualização: 28 de Abril de 2026
+              Última atualização: 22 de Junho de 2026
             </p>
           </div>
         </section>

@@ -85,7 +85,7 @@ export default function PublicPrivacyPage() {
             </p>
           </div>
 
-          <div className="space-y-4">
+          <div className="space-y-4 pb-8 border-b-2 border-(--stroke)">
             <h2 className="text-xl font-bold text-(--ink) flex items-center gap-3">
               <span className="flex h-7 w-7 items-center justify-center rounded-lg bg-(--accent-soft) text-(--accent) font-bold text-xs">
                 4
@@ -93,16 +93,136 @@ export default function PublicPrivacyPage() {
               Compartilhamento com Terceiros
             </h2>
             <p>
-              O Estokar não vende, aluga ou compartilha dados de inventário com terceiros para fins comerciais. O acesso aos dados é restrito aos usuários autorizados pela organização contratante.
+              O Estokar não vende, aluga ou compartilha seus dados com terceiros para fins comerciais. O acesso aos dados é restrito a usuários autorizados pela sua organização. No entanto, alguns serviços terceiros são necessários para o funcionamento da plataforma:
+            </p>
+            <ul className="list-disc pl-6 space-y-2">
+              <li>
+                <strong className="font-bold text-(--ink)">Supabase:</strong> Hospedagem do banco de dados PostgreSQL e armazenamento de imagens (CDN). Nenhum dado de inventário é acessível diretamente pela Supabase.
+              </li>
+              <li>
+                <strong className="font-bold text-(--ink)">Sentry:</strong> Monitoramento de erros. Pode receber identificador interno do usuário e email em caso de falhas, estritamente para correção de bugs.
+              </li>
+              <li>
+                <strong className="font-bold text-(--ink)">Vercel Analytics:</strong> Coleta estatísticas anônimas de navegação (páginas acessadas, origem do tráfego, navegador) sem identificar individualmente os usuários.
+              </li>
+              <li>
+                <strong className="font-bold text-(--ink)">Google OAuth:</strong> Ao fazer login com Google, recebemos nome, email e identificador único da sua conta Google exclusivamente para autenticação.
+              </li>
+            </ul>
+          </div>
+
+          <div className="space-y-4 pb-8 border-b-2 border-(--stroke)">
+            <h2 className="text-xl font-bold text-(--ink) flex items-center gap-3">
+              <span className="flex h-7 w-7 items-center justify-center rounded-lg bg-(--accent-soft) text-(--accent) font-bold text-xs">
+                5
+              </span>
+              Seus Direitos (LGPD)
+            </h2>
+            <p>
+              Nos termos da Lei Geral de Proteção de Dados (Lei 13.709/2018), você possui os seguintes direitos sobre seus dados pessoais:
+            </p>
+            <ul className="list-disc pl-6 space-y-2">
+              <li>
+                <strong className="font-bold text-(--ink)">Confirmação e Acesso:</strong> Saber quais dados tratamos e solicitar uma cópia.
+              </li>
+              <li>
+                <strong className="font-bold text-(--ink)">Correção:</strong> Atualizar dados incompletos, inexatos ou desatualizados.
+              </li>
+              <li>
+                <strong className="font-bold text-(--ink)">Exclusão:</strong> Solicitar a eliminação dos seus dados pessoais, exceto quando houver obrigação legal de retenção.
+              </li>
+              <li>
+                <strong className="font-bold text-(--ink)">Portabilidade:</strong> Solicitar a exportação dos seus dados em formato estruturado (CSV/JSON).
+              </li>
+              <li>
+                <strong className="font-bold text-(--ink)">Revogação do Consentimento:</strong> Retirar seu consentimento a qualquer momento, sem comprometer a legalidade do tratamento anterior.
+              </li>
+              <li>
+                <strong className="font-bold text-(--ink)">Oposição:</strong> Opor-se ao tratamento de dados para finalidades específicas.
+              </li>
+            </ul>
+            <p>
+              Para exercer qualquer um desses direitos, entre em contato com nosso Encarregado de Dados (seção 8).
+            </p>
+          </div>
+
+          <div className="space-y-4 pb-8 border-b-2 border-(--stroke)">
+            <h2 className="text-xl font-bold text-(--ink) flex items-center gap-3">
+              <span className="flex h-7 w-7 items-center justify-center rounded-lg bg-(--accent-soft) text-(--accent) font-bold text-xs">
+                6
+              </span>
+              Transferência Internacional
+            </h2>
+            <p>
+              Seus dados podem ser armazenados e processados em servidores localizados fora do Brasil, incluindo Estados Unidos (AWS / Supabase). Adotamos medidas contratuais e técnicas para garantir que seus dados recebam nível de proteção equivalente ao exigido pela LGPD, incluindo cláusulas-padrão de proteção de dados com nossos fornecedores.
+            </p>
+          </div>
+
+          <div className="space-y-4 pb-8 border-b-2 border-(--stroke)">
+            <h2 className="text-xl font-bold text-(--ink) flex items-center gap-3">
+              <span className="flex h-7 w-7 items-center justify-center rounded-lg bg-(--accent-soft) text-(--accent) font-bold text-xs">
+                7
+              </span>
+              Retenção e Exclusão de Dados
+            </h2>
+            <p>
+              Mantemos seus dados pessoais enquanto sua conta estiver ativa ou pelo período necessário para cumprir as finalidades descritas nesta política. Ao excluir sua conta:
+            </p>
+            <ul className="list-disc pl-6 space-y-2">
+              <li>Seus dados de inventário (produtos, movimentações, categorias) são eliminados definitivamente.</li>
+              <li>Seu perfil de usuário (nome, email, senha) é removido.</li>
+              <li>Registros de <strong className="font-bold text-(--ink)">AdminLog</strong> (logs de auditoria administrativa) são mantidos por até 5 anos para cumprimento de obrigações legais e regulatórias, sem vinculação direta a dados pessoais ativos.</li>
+              <li>Dados anonimizados de analytics podem ser retidos indefinidamente, pois não permitem identificação individual.</li>
+            </ul>
+          </div>
+
+          <div className="space-y-4 pb-8 border-b-2 border-(--stroke)">
+            <h2 className="text-xl font-bold text-(--ink) flex items-center gap-3">
+              <span className="flex h-7 w-7 items-center justify-center rounded-lg bg-(--accent-soft) text-(--accent) font-bold text-xs">
+                8
+              </span>
+              Encarregado de Dados (DPO)
+            </h2>
+            <p>
+              Para exercer seus direitos LGPD, esclarecer dúvidas sobre o tratamento de seus dados ou reportar preocupações, entre em contato com nosso Encarregado de Dados:
+            </p>
+            <ul className="list-disc pl-6 space-y-2">
+              <li>
+                <strong className="font-bold text-(--ink)">Email:</strong>{' '}
+                <a href="mailto:jonnathasg@gmail.com" className="text-(--accent) underline underline-offset-2 hover:brightness-110">
+                  jonnathasg@gmail.com
+                </a>
+              </li>
+              <li>
+                <strong className="font-bold text-(--ink)">Prazo de resposta:</strong> Até 5 dias úteis.
+              </li>
+            </ul>
+            <p className="mt-2">
+              Você também pode entrar em contato com a Autoridade Nacional de Proteção de Dados (ANPD) caso não fique satisfeito com nossa resposta.
+            </p>
+          </div>
+
+          <div className="space-y-4">
+            <h2 className="text-xl font-bold text-(--ink) flex items-center gap-3">
+              <span className="flex h-7 w-7 items-center justify-center rounded-lg bg-(--accent-soft) text-(--accent) font-bold text-xs">
+                9
+              </span>
+              Cookies e Analytics
+            </h2>
+            <p>
+              Utilizamos o <strong className="font-bold text-(--ink)">Vercel Analytics</strong>, uma ferramenta que coleta dados estatísticos anônimos de navegação — como páginas visitadas, origem do tráfego e tipo de navegador. Esses dados não permitem identificar individualmente os usuários e são armazenados em servidores da Vercel Inc. nos Estados Unidos.
+            </p>
+            <p>
+              Não utilizamos cookies de marketing, rastreamento cross-site ou tecnologias similares para coleta de dados comportamentais. O Estokar não exibe anúncios e não comercializa dados de navegação.
             </p>
           </div>
 
           <div className="pt-8 border-t-2 border-(--stroke) text-center">
             <p className="text-sm italic text-(--muted)">
-              Compromisso com a LGPD e Segurança da Informação
+              Em conformidade com a Lei Geral de Proteção de Dados (Lei 13.709/2018)
             </p>
             <p className="mt-2 text-xs text-(--muted)">
-              Última atualização: 28 de Abril de 2026
+              Última atualização: 22 de Junho de 2026
             </p>
           </div>
         </section>
