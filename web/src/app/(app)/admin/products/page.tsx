@@ -4,7 +4,7 @@ import { useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { useAuthStore } from '@/store/auth-store';
 import { getAdminProducts } from '@/lib/api/admin';
-import { Search, ChevronLeft, ChevronRight, AlertTriangle } from 'lucide-react';
+import { Search, ChevronLeft, ChevronRight, AlertTriangle, Package2 } from 'lucide-react';
 import Link from 'next/link';
 
 export default function AdminProductsPage() {
@@ -28,6 +28,18 @@ export default function AdminProductsPage() {
           </p>
         </div>
       </header>
+
+      {data && (
+        <div className="flex items-center gap-3 rounded-lg border-2 border-(--stroke) bg-(--card) px-4 py-3">
+          <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-(--accent-soft) text-(--accent)">
+            <Package2 size={16} />
+          </div>
+          <div>
+            <p className="text-[10px] font-bold uppercase tracking-wider text-(--muted)">Total de produtos cadastrados</p>
+            <p className="text-lg font-bold text-(--ink)">{data.meta.total}</p>
+          </div>
+        </div>
+      )}
 
       <div className="relative">
         <Search size={16} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-(--muted)" />

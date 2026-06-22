@@ -1,7 +1,5 @@
 import { apiRequest } from './client';
 import type {
-  AdminStats,
-  AdminStatsPeriod,
   AdminUser,
   PaginatedResponse,
   AdminUserDetail,
@@ -55,21 +53,6 @@ export async function deleteUser(userId: string, accessToken: string): Promise<v
   await apiRequest<void>(`/admin/users/${userId}`, {
     method: 'DELETE',
     accessToken,
-  });
-}
-
-export async function getAdminStats(params: {
-  accessToken: string;
-  period?: AdminStatsPeriod;
-  signal?: AbortSignal;
-}): Promise<AdminStats> {
-  const query = new URLSearchParams();
-  if (params.period) query.set('period', params.period);
-  const path = query.toString() ? `/admin/stats?${query.toString()}` : '/admin/stats';
-  return apiRequest<AdminStats>(path, {
-    method: 'GET',
-    accessToken: params.accessToken,
-    signal: params.signal,
   });
 }
 

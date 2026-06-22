@@ -7,7 +7,7 @@ import { memo, useEffect, useRef, useState } from 'react';
 import { BrandIcon } from '@/components/ui/brand-icon';
 import {
   ArrowUpDown,
-  BarChart3,
+  FolderOpen,
   Grid2x2,
   History,
   LayoutDashboard,
@@ -26,17 +26,16 @@ import { useAuthStore } from '@/store/auth-store';
 
 const navItems = [
   { href: '/dashboard', icon: Grid2x2, label: 'Dashboard' },
-  { href: '/products', icon: Package2, label: 'Produtos' },
+  { href: '/products', icon: FolderOpen, label: 'Meus Produtos' },
   { href: '/history', icon: History, label: 'Historico' },
 ];
 
 const adminItems = [
   { href: '/admin', icon: LayoutDashboard, label: 'Painel' },
   { href: '/admin/users', icon: Users, label: 'Usuários' },
-  { href: '/admin/products', icon: Package2, label: 'Produtos' },
+  { href: '/admin/products', icon: Package2, label: 'Todos Produtos' },
   { href: '/admin/movements', icon: ArrowUpDown, label: 'Movimentações' },
   { href: '/admin/logs', icon: ScrollText, label: 'Atividades' },
-  { href: '/admin/stats', icon: BarChart3, label: 'Estatísticas' },
 ];
 
 function isNavItemActive(pathname: string, href: string) {

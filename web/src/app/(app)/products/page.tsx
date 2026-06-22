@@ -573,20 +573,19 @@ function ProductsPageContent() {
         </div>
       </section>
 
-      <div className="grid gap-4 md:grid-cols-2">
-        {productsQuery.isLoading ? <ProductsSkeleton /> : null}
-
-        {!productsQuery.isLoading && !filteredProducts.length ? (
-          <div className="flex flex-col items-center justify-center rounded-xl border-2 border-dashed border-(--stroke) bg-(--surface-2) py-16 text-center sm:py-20">
-            <div className="mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-(--soft) text-(--muted)">
-              <PackageSearch size={32} />
-            </div>
-            <p className="text-base font-bold text-(--ink)">Nenhum produto encontrado</p>
-            <p className="mt-1 text-sm font-medium text-(--muted)">Tente ajustar sua busca ou filtros.</p>
+      {productsQuery.isLoading ? (
+        <ProductsSkeleton />
+      ) : !filteredProducts.length ? (
+        <div className="flex flex-col items-center justify-center rounded-xl border-2 border-dashed border-(--stroke) bg-(--surface-2) py-16 text-center sm:py-20">
+          <div className="mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-(--soft) text-(--muted)">
+            <PackageSearch size={32} />
           </div>
-        ) : null}
-
-        {filteredProducts.map((product) => {
+          <p className="text-base font-bold text-(--ink)">Nenhum produto encontrado</p>
+          <p className="mt-1 text-sm font-medium text-(--muted)">Tente ajustar sua busca ou filtros.</p>
+        </div>
+      ) : (
+        <div className="grid gap-4 md:grid-cols-2">
+          {filteredProducts.map((product) => {
           const categoryName = product.category?.name ?? categoryMap.get(product.categoryId ?? '')?.name ?? 'Sem Categoria';
           const status = getStatusBadge(
             product.quantity,
@@ -724,7 +723,8 @@ function ProductsPageContent() {
             </article>
           );
         })}
-      </div>
+        </div>
+      )}
 
 
       {showCreateProductModal ? (

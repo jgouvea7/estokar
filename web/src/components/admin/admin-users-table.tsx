@@ -92,7 +92,7 @@ export function AdminUsersTable({
           <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 text-(--muted)" size={16} />
           <input
             type="text"
-            placeholder="Buscar por nome ou email..."
+            placeholder="Buscar por nome..."
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
             className="h-10 w-full rounded-lg border-2 border-(--stroke) bg-(--surface-2) pl-10 pr-4 text-xs font-medium text-(--ink) outline-none transition-all placeholder:text-(--muted) focus:border-(--accent) focus:bg-(--card) focus:ring-4 focus:[--tw-ring-color:var(--accent)]/30"
@@ -105,11 +105,10 @@ export function AdminUsersTable({
           <table className="w-full table-fixed text-left border-collapse">
             <thead>
               <tr className="border-b-2 border-(--stroke) bg-(--surface-2)">
-                <th className="w-[34%] px-4 py-3 text-[10px] font-bold uppercase tracking-wider text-(--muted)">Usuário</th>
-                <th className="w-[30%] px-4 py-3 text-[10px] font-bold uppercase tracking-wider text-(--muted)">Email</th>
-                <th className="w-[12%] px-4 py-3 text-[10px] font-bold uppercase tracking-wider text-(--muted)">Role</th>
-                <th className="hidden w-[14%] px-4 py-3 text-[10px] font-bold uppercase tracking-wider text-(--muted) sm:table-cell">Criado em</th>
-                <th className="w-[10%] px-4 py-3 text-right text-[10px] font-bold uppercase tracking-wider text-(--muted)">Ações</th>
+                <th className="w-[44%] px-4 py-3 text-[10px] font-bold uppercase tracking-wider text-(--muted)">Usuário</th>
+                <th className="w-[16%] px-4 py-3 text-[10px] font-bold uppercase tracking-wider text-(--muted)">Role</th>
+                <th className="hidden w-[22%] px-4 py-3 text-[10px] font-bold uppercase tracking-wider text-(--muted) sm:table-cell">Criado em</th>
+                <th className="w-[18%] px-4 py-3 text-right text-[10px] font-bold uppercase tracking-wider text-(--muted)">Ações</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-(--stroke)">
@@ -117,7 +116,6 @@ export function AdminUsersTable({
                 Array.from({ length: 5 }).map((_, i) => (
                   <tr key={i} className="animate-pulse">
                     <td className="px-4 py-3"><div className="h-4 w-24 rounded bg-(--soft)" /></td>
-                    <td className="px-4 py-3"><div className="h-4 w-28 rounded bg-(--soft)" /></td>
                     <td className="px-4 py-3"><div className="h-5 w-14 rounded bg-(--soft)" /></td>
                     <td className="px-4 py-3"><div className="h-4 w-20 rounded bg-(--soft)" /></td>
                     <td className="px-4 py-3"><div className="ml-auto h-7 w-7 rounded bg-(--soft)" /></td>
@@ -125,7 +123,7 @@ export function AdminUsersTable({
                 ))
               ) : users.length === 0 ? (
                 <tr>
-                  <td colSpan={5} className="px-6 py-12 text-center text-sm font-medium text-(--muted)">
+                  <td colSpan={4} className="px-6 py-12 text-center text-sm font-medium text-(--muted)">
                     Nenhum usuário encontrado.
                   </td>
                 </tr>
@@ -137,7 +135,6 @@ export function AdminUsersTable({
                         {user.name}
                       </span>
                     </td>
-                    <td className="px-4 py-3 text-xs font-medium text-(--muted) break-all">{user.email}</td>
                     <td className="px-4 py-3">
                       <span className={`inline-flex items-center rounded-lg border-2 px-2 py-0.5 text-[10px] font-bold ${user.role === 'ADMIN'
                         ? 'border-(--ok) bg-(--ok-soft) text-(--ok)'

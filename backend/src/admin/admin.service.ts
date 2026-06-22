@@ -4,7 +4,7 @@ import {
   NotFoundException,
 } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Between, ILike, Repository } from 'typeorm';
+import { ILike, Repository } from 'typeorm';
 import { AdminLog, AdminLogAction } from './entities/admin-log.entity';
 import { User } from '../users/entities/user.entity';
 import { UserRole } from '../users/enums/user-role.enum';
@@ -64,17 +64,16 @@ export class AdminService {
       throw new NotFoundException('Usuário não encontrado.');
     }
 
-    const [productCount, categoryCount, movementCount, totalStock] =
-      await Promise.all([
-        this.productsRepository.count({ where: { userId } }),
-        this.categoriesRepository.count({ where: { userId } }),
-        this.stockMovementsRepository.count({ where: { userId } }),
-        this.productsRepository
-          .createQueryBuilder('product')
-          .select('COALESCE(SUM(product.quantity), 0)', 'total')
-          .where('product.userId = :userId', { userId })
-          .getRawOne<{ total: number }>(),
-      ]);
+    const [productAgg, categoryCount, movementCount] = await Promise.all([
+      this.productsRepository
+        .createQueryBuilder('product')
+        .select('COUNT(*)', 'productCount')
+        .addSelect('COALESCE(SUM(product.quantity), 0)', 'totalStock')
+        .where('product.userId = :userId', { userId })
+        .getRawOne<{ productCount: string; totalStock: string }>(),
+      this.categoriesRepository.count({ where: { userId } }),
+      this.stockMovementsRepository.count({ where: { userId } }),
+    ]);
 
     const recentMovements = await this.stockMovementsRepository.find({
       where: { userId },
@@ -93,10 +92,10 @@ export class AdminService {
 
     return {
       ...user,
-      productCount,
+      productCount: Number(productAgg?.productCount ?? 0),
       categoryCount,
       movementCount,
-      totalStock: Number(totalStock?.total ?? 0),
+      totalStock: Number(productAgg?.totalStock ?? 0),
       recentMovements,
     };
   }
@@ -170,32 +169,51 @@ export class AdminService {
   async getDashboard() {
     const now = new Date();
     const startOfMonth = new Date(now.getFullYear(), now.getMonth(), 1);
-    const startOfNextMonth = new Date(now.getFullYear(), now.getMonth() + 1, 1);
-    const dateFilter = { createdAt: Between(startOfMonth, startOfNextMonth) };
 
     const [
-      totalUsers,
-      totalProducts,
+      userAgg,
+      productAgg,
+      movementAgg,
       totalCategories,
-      totalMovements,
-      usersThisMonth,
-      productsThisMonth,
-      movementsThisMonth,
-      lowStockProducts,
       recentUsers,
       topUsersByProducts,
     ] = await Promise.all([
-      this.usersRepository.count(),
-      this.productsRepository.count(),
-      this.categoriesRepository.count(),
-      this.stockMovementsRepository.count(),
-      this.usersRepository.count({ where: dateFilter }),
-      this.productsRepository.count({ where: dateFilter }),
-      this.stockMovementsRepository.count({ where: dateFilter }),
+      this.usersRepository
+        .createQueryBuilder('u')
+        .select('COUNT(*)', 'totalUsers')
+        .addSelect(
+          `COUNT(CASE WHEN u.createdAt >= :startOfMonth THEN 1 END)`,
+          'usersThisMonth',
+        )
+        .setParameter('startOfMonth', startOfMonth)
+        .getRawOne<{ totalUsers: string; usersThisMonth: string }>(),
       this.productsRepository
-        .createQueryBuilder('product')
-        .where('product.quantity <= 5')
-        .getCount(),
+        .createQueryBuilder('p')
+        .select('COUNT(*)', 'totalProducts')
+        .addSelect(
+          `COUNT(CASE WHEN p.createdAt >= :startOfMonth THEN 1 END)`,
+          'productsThisMonth',
+        )
+        .addSelect(
+          `COUNT(CASE WHEN p.quantity <= 5 THEN 1 END)`,
+          'lowStockProducts',
+        )
+        .setParameter('startOfMonth', startOfMonth)
+        .getRawOne<{
+          totalProducts: string;
+          productsThisMonth: string;
+          lowStockProducts: string;
+        }>(),
+      this.stockMovementsRepository
+        .createQueryBuilder('m')
+        .select('COUNT(*)', 'totalMovements')
+        .addSelect(
+          `COUNT(CASE WHEN m.createdAt >= :startOfMonth THEN 1 END)`,
+          'movementsThisMonth',
+        )
+        .setParameter('startOfMonth', startOfMonth)
+        .getRawOne<{ totalMovements: string; movementsThisMonth: string }>(),
+      this.categoriesRepository.count(),
       this.usersRepository.find({
         select: ['id', 'name', 'email', 'role', 'createdAt'],
         order: { createdAt: 'DESC' },
@@ -215,14 +233,14 @@ export class AdminService {
     ]);
 
     return {
-      totalUsers,
-      totalProducts,
+      totalUsers: Number(userAgg?.totalUsers ?? 0),
+      usersThisMonth: Number(userAgg?.usersThisMonth ?? 0),
+      totalProducts: Number(productAgg?.totalProducts ?? 0),
+      productsThisMonth: Number(productAgg?.productsThisMonth ?? 0),
+      lowStockProducts: Number(productAgg?.lowStockProducts ?? 0),
+      totalMovements: Number(movementAgg?.totalMovements ?? 0),
+      movementsThisMonth: Number(movementAgg?.movementsThisMonth ?? 0),
       totalCategories,
-      totalMovements,
-      usersThisMonth,
-      productsThisMonth,
-      movementsThisMonth,
-      lowStockProducts,
       recentUsers,
       topUsersByProducts,
     };
@@ -298,33 +316,6 @@ export class AdminService {
       meta: { total, page, perPage, lastPage: Math.ceil(total / perPage) },
     };
   }
-  async getStats(period: 'total' | 'monthly' = 'total') {
-    if (period === 'monthly') {
-      const now = new Date();
-      const startOfMonth = new Date(now.getFullYear(), now.getMonth(), 1);
-      const startOfNextMonth = new Date(
-        now.getFullYear(),
-        now.getMonth() + 1,
-        1,
-      );
-      const dateFilter = { createdAt: Between(startOfMonth, startOfNextMonth) };
-
-      const [totalUsers, totalProducts] = await Promise.all([
-        this.usersRepository.count({ where: dateFilter }),
-        this.productsRepository.count({ where: dateFilter }),
-      ]);
-
-      return { totalUsers, totalProducts };
-    }
-
-    const [totalUsers, totalProducts] = await Promise.all([
-      this.usersRepository.count(),
-      this.productsRepository.count(),
-    ]);
-
-    return { totalUsers, totalProducts };
-  }
-
   private async createAdminLog(
     actorId: string,
     actorName: string,

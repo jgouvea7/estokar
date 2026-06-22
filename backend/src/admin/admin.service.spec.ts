@@ -54,6 +54,7 @@ describe('AdminService', () => {
       count: jest.fn(),
       findAndCount: jest.fn(),
       find: jest.fn(),
+      createQueryBuilder: jest.fn(),
     };
 
     const module: TestingModule = await Test.createTestingModule({
@@ -167,44 +168,42 @@ describe('AdminService', () => {
     });
   });
 
-  describe('getStats', () => {
-    it('should return total stats', async () => {
-      usersRepository.count.mockResolvedValue(10);
-      productsRepository.count.mockResolvedValue(50);
-      const result = await service.getStats('total');
-      expect(result).toEqual({ totalUsers: 10, totalProducts: 50 });
-    });
-
-    it('should return monthly stats', async () => {
-      usersRepository.count.mockResolvedValue(2);
-      productsRepository.count.mockResolvedValue(5);
-      const result = await service.getStats('monthly');
-      expect(result).toEqual({ totalUsers: 2, totalProducts: 5 });
-    });
-  });
-
   describe('getDashboard', () => {
     it('should return dashboard summary', async () => {
-      usersRepository.count.mockResolvedValue(10);
-      productsRepository.count.mockResolvedValue(50);
       categoriesRepository.count.mockResolvedValue(5);
-      stockMovementsRepository.count.mockResolvedValue(200);
       usersRepository.find.mockResolvedValue([mockUser]);
 
-      const queryBuilderMock = {
-        getCount: jest.fn().mockResolvedValue(3),
-        select: jest.fn().mockReturnThis(),
-        addSelect: jest.fn().mockReturnThis(),
-        leftJoin: jest.fn().mockReturnThis(),
-        groupBy: jest.fn().mockReturnThis(),
-        addGroupBy: jest.fn().mockReturnThis(),
-        orderBy: jest.fn().mockReturnThis(),
-        limit: jest.fn().mockReturnThis(),
-        getRawMany: jest.fn().mockResolvedValue([]),
-        where: jest.fn().mockReturnThis(),
-      };
+      function makeQBMock(returnValue: unknown) {
+        return {
+          select: jest.fn().mockReturnThis(),
+          addSelect: jest.fn().mockReturnThis(),
+          setParameter: jest.fn().mockReturnThis(),
+          leftJoin: jest.fn().mockReturnThis(),
+          groupBy: jest.fn().mockReturnThis(),
+          addGroupBy: jest.fn().mockReturnThis(),
+          orderBy: jest.fn().mockReturnThis(),
+          limit: jest.fn().mockReturnThis(),
+          where: jest.fn().mockReturnThis(),
+          getRawOne: jest.fn().mockResolvedValue(returnValue),
+          getRawMany: jest.fn().mockResolvedValue(returnValue),
+        };
+      }
 
-      productsRepository.createQueryBuilder.mockReturnValue(queryBuilderMock);
+      usersRepository.createQueryBuilder.mockReturnValue(
+        makeQBMock({ totalUsers: '10', usersThisMonth: '2' }),
+      );
+      productsRepository.createQueryBuilder
+        .mockReturnValueOnce(
+          makeQBMock({
+            totalProducts: '50',
+            productsThisMonth: '5',
+            lowStockProducts: '3',
+          }),
+        )
+        .mockReturnValueOnce(makeQBMock([]));
+      stockMovementsRepository.createQueryBuilder.mockReturnValue(
+        makeQBMock({ totalMovements: '200', movementsThisMonth: '10' }),
+      );
 
       const result = await service.getDashboard();
 

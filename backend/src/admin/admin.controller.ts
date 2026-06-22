@@ -60,12 +60,6 @@ export class AdminController {
     return this.adminService.removeUser(actorId, id);
   }
 
-  @Get('stats')
-  getStats(@Query('period') period?: 'total' | 'monthly') {
-    const normalizedPeriod = period === 'monthly' ? 'monthly' : 'total';
-    return this.adminService.getStats(normalizedPeriod);
-  }
-
   @Get('logs')
   getLogs(@Query('page') page = 1, @Query('perPage') perPage = 10) {
     const safePage = Math.max(Number(page), 1);

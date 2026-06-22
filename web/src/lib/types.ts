@@ -184,13 +184,6 @@ export type AdminUser = {
   createdAt: string;
 };
 
-export type AdminStats = {
-  totalUsers: number;
-  totalProducts: number;
-};
-
-export type AdminStatsPeriod = 'total' | 'monthly';
-
 export type PaginatedResponse<T> = {
   data: T[];
   meta: {

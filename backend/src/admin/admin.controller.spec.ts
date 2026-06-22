@@ -97,22 +97,6 @@ describe('AdminController', () => {
     });
   });
 
-  describe('getStats', () => {
-    it('should normalize period to total by default', async () => {
-      adminService.getStats.mockResolvedValue({
-        totalUsers: 10,
-        totalProducts: 50,
-      });
-      await controller.getStats();
-      expect(adminService.getStats).toHaveBeenCalledWith('total');
-    });
-
-    it('should pass monthly period', async () => {
-      await controller.getStats('monthly');
-      expect(adminService.getStats).toHaveBeenCalledWith('monthly');
-    });
-  });
-
   describe('getDashboard', () => {
     it('should call getDashboard', async () => {
       adminService.getDashboard.mockResolvedValue({

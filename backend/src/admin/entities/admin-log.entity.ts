@@ -2,6 +2,7 @@ import {
   Column,
   CreateDateColumn,
   Entity,
+  Index,
   PrimaryGeneratedColumn,
 } from 'typeorm';
 
@@ -30,6 +31,7 @@ export class AdminLog {
   @Column()
   targetUserName: string;
 
+  @Index()
   @CreateDateColumn()
   createdAt: Date;
 }
