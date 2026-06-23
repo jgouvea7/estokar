@@ -7,7 +7,6 @@ import { memo, useEffect, useRef, useState } from 'react';
 import { BrandIcon } from '@/components/ui/brand-icon';
 import {
   ArrowUpDown,
-  BarChart3,
   FolderOpen,
   Grid2x2,
   History,
@@ -37,7 +36,6 @@ const adminItems = [
   { href: '/admin/products', icon: Package2, label: 'Todos Produtos' },
   { href: '/admin/movements', icon: ArrowUpDown, label: 'Movimentações' },
   { href: '/admin/logs', icon: ScrollText, label: 'Atividades' },
-  { href: '/admin/monitoring', icon: BarChart3, label: 'Monitoramento' },
 ];
 
 function isNavItemActive(pathname: string, href: string) {
