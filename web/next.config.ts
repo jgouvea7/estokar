@@ -31,7 +31,8 @@ const cspValue = [
 	"img-src 'self' data: blob: https://grlnxjoydczvzjupcobe.supabase.co",
 	"font-src 'self' data:",
 	`connect-src ${cspConnectSrc}`,
-	"frame-ancestors 'none'",
+  "frame-src 'self' http://localhost:3002",
+  "frame-ancestors 'none'",
 	"base-uri 'self'",
 	"form-action 'self'",
 ].join('; ');

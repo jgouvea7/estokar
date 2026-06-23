@@ -21,6 +21,7 @@ function getHeaderTitle(pathname: string) {
   if (pathname.startsWith('/products')) return 'Produtos';
   if (pathname.startsWith('/history')) return 'Historico';
   if (pathname.startsWith('/profile')) return 'Perfil';
+  if (pathname.startsWith('/admin/monitoring')) return 'Monitoramento';
   if (pathname.startsWith('/admin')) return 'Admin';
   return 'Dashboard';
 }
