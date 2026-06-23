@@ -13,7 +13,6 @@ import { DashboardModule } from './dashboard/dashboard.module';
 import { StockMovementsModule } from './stock-movements/stock-movements.module';
 import { AdminModule } from './admin/admin.module';
 import { ExportModule } from './export/export.module';
-import { MetricsModule } from './metrics/metrics.module';
 
 @Module({
   imports: [
@@ -75,7 +74,6 @@ import { MetricsModule } from './metrics/metrics.module';
     StockMovementsModule,
     AdminModule,
     ExportModule,
-    MetricsModule,
   ],
   controllers: [AppController],
   providers: [
