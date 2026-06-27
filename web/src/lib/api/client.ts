@@ -3,21 +3,14 @@ type RequestOptions = RequestInit & {
   skipRefresh?: boolean;
 };
 
-const API_PREFIX = '/api';
 const API_URL = process.env.NEXT_PUBLIC_API_URL;
 
 function getApiBaseUrl() {
   if (!API_URL) {
-    return API_PREFIX;
+    return "";
   }
 
-  const baseUrl = API_URL.replace(/\/$/, '');
-
-  if (baseUrl.startsWith('/')) {
-    return baseUrl.endsWith(API_PREFIX) ? baseUrl : `${baseUrl}${API_PREFIX}`;
-  }
-
-  return baseUrl.endsWith(API_PREFIX) ? baseUrl : `${baseUrl}${API_PREFIX}`;
+  return API_URL.replace(/\/$/, '');
 }
 
 export function buildApiUrl(path: string) {
@@ -60,7 +53,6 @@ export async function apiRequest<T>(path: string, options: RequestOptions = {}):
         skipRefresh: true,
       });
     } else {
-      // Refresh failed, clear session and redirect
       if (typeof window !== 'undefined') {
         const { useAuthStore } = await import('@/store/auth-store');
         useAuthStore.getState().clearSession();
@@ -79,7 +71,6 @@ export async function apiRequest<T>(path: string, options: RequestOptions = {}):
         message = detail;
       }
     } catch {
-      // ignore parse errors, use default message
     }
 
     throw new ApiError(message, response.status);

@@ -13,8 +13,7 @@ import { DashboardModule } from './dashboard/dashboard.module';
 import { StockMovementsModule } from './stock-movements/stock-movements.module';
 import { AdminModule } from './admin/admin.module';
 import { ExportModule } from './export/export.module';
-import { PrometheusModule } from "@willsoto/nestjs-prometheus"
-
+import { PrometheusModule } from '@willsoto/nestjs-prometheus';
 
 @Module({
   imports: [

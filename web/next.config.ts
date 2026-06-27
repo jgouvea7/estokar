@@ -4,7 +4,7 @@ import type { NextConfig } from "next";
 const supabaseHost = 'grlnxjoydczvzjupcobe.supabase.co';
 
 function getBackendApiUrl() {
-	return process.env.NEXT_PUBLIC_API_URL ?? 'http://localhost:3000/api';
+	return process.env.NEXT_PUBLIC_API_URL ?? 'http://localhost:3000/';
 }
 
 function getBackendOrigin() {
