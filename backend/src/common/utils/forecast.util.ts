@@ -1,29 +1,49 @@
-export function calculateForecast(
-  currentStock: number,
-  recentSoldQuantity: number,
-  windowDays: number,
-): { averageDailySales: number; estimatedDaysLeft: number | null } {
-  if (
-    !Number.isFinite(currentStock) ||
-    !Number.isFinite(recentSoldQuantity) ||
-    !Number.isFinite(windowDays)
-  ) {
+export function calculateForecast(params: {
+  currentStock: number;
+  soldLast7Days: number;
+  soldLast14Days?: number;
+  soldLast30Days?: number;
+  leadTimeDays?: number;
+}): { averageDailySales: number; estimatedDaysLeft: number | null } {
+  const {
+    currentStock,
+    soldLast7Days,
+    soldLast14Days,
+    soldLast30Days,
+    leadTimeDays = 0,
+  } = params;
+
+  if (!Number.isFinite(currentStock) || currentStock < 0 || !Number.isFinite(soldLast7Days)) {
     return { averageDailySales: 0, estimatedDaysLeft: null };
   }
 
-  if (recentSoldQuantity <= 0 || windowDays <= 0) {
+  let windowDays: number;
+  let totalSold: number;
+
+  if (soldLast7Days > 0) {
+    windowDays = 7;
+    totalSold = soldLast7Days;
+  } else if (soldLast14Days && soldLast14Days > 0) {
+    windowDays = 14;
+    totalSold = soldLast14Days;
+  } else if (soldLast30Days && soldLast30Days > 0) {
+    windowDays = 30;
+    totalSold = soldLast30Days;
+  } else {
     return { averageDailySales: 0, estimatedDaysLeft: null };
   }
 
-  const averageDailySales = recentSoldQuantity / windowDays;
+  const averageDailySales = totalSold / windowDays;
+  const safetyStock = averageDailySales * leadTimeDays;
+  const effectiveStock = Math.max(currentStock - safetyStock, 0);
 
-  if (averageDailySales <= 0) {
-    return { averageDailySales: 0, estimatedDaysLeft: null };
+  if (effectiveStock <= 0) {
+    return { averageDailySales, estimatedDaysLeft: 0 };
   }
 
   return {
     averageDailySales,
-    estimatedDaysLeft: currentStock / averageDailySales,
+    estimatedDaysLeft: effectiveStock / averageDailySales,
   };
 }
 

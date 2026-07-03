@@ -112,6 +112,9 @@ function ProductsPageContent() {
 
   const sortedProducts = useMemo(() => {
     return [...products].sort((a, b) => {
+      const aQty = a.quantity ?? 0;
+      const bQty = b.quantity ?? 0;
+      if (aQty !== bQty) return aQty - bQty;
       const aTime = new Date(a.updatedAt ?? a.createdAt ?? 0).getTime();
       const bTime = new Date(b.updatedAt ?? b.createdAt ?? 0).getTime();
       return bTime - aTime;
@@ -493,7 +496,9 @@ function ProductsPageContent() {
   }
 
   function handleDeleteProduct(product: Product) {
-    const confirmed = window.confirm('Deseja excluir este produto?');
+    const confirmed = window.confirm(
+      `Excluir "${product.name}" (${product.quantity} un.)? Todo o histórico de movimentação deste produto será perdido.`
+    );
     if (!confirmed) return;
 
     deleteProductMutation.mutate(product.id);

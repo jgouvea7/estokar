@@ -10,6 +10,7 @@ import dynamic from 'next/dynamic';
 import { useAuthStore } from '@/store/auth-store';
 import { useHistoryStore } from '@/store/history-store';
 import { useUIStore } from '@/store/ui-store';
+import { useOnboardingStore } from '@/store/onboarding-store';
 import { deleteMyAccount, updateUser } from '@/lib/api/users';
 import { BUILD_STRING } from '@/lib/version';
 import Sidebar from '@/components/sidebar';
@@ -87,6 +88,13 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
     if (session && pathname.startsWith('/admin') && session.user.role !== 'ADMIN') {
       toast.error('Acesso negado. Apenas administradores podem acessar esta área.');
       router.replace('/');
+    }
+
+    if (session) {
+      const hasCompleted = useOnboardingStore.getState().hasCompletedOnboarding;
+      if (!hasCompleted && pathname !== '/onboarding') {
+        router.replace('/onboarding');
+      }
     }
   }, [router, session, pathname]);
 
@@ -175,7 +183,9 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
   const clearSession = useAuthStore((state) => state.clearSession);
 
   async function handleDeleteAccount() {
-    const confirmed = window.confirm('Tem certeza que deseja excluir sua conta? Essa acao nao pode ser desfeita.');
+    const confirmed = window.confirm(
+      'Tem certeza que deseja excluir sua conta? Voce perdera permanentemente o acesso a todos os seus produtos, historico de movimentacoes, alertas e configuracoes. Essa acao nao pode ser desfeita.'
+    );
     if (!confirmed) return;
 
     if (!session) {

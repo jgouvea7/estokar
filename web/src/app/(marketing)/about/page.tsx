@@ -30,52 +30,55 @@ export default function PublicAboutPage() {
           </div>
           <h1 className="text-3xl font-bold tracking-tight text-(--ink) sm:text-4xl">Sobre o Estokar</h1>
           <p className="text-sm text-(--muted)">
-            Um projeto acadêmico focado em aprendizado e experimentação
+            Controle de estoque simples e gratuito para o pequeno negócio
           </p>
         </div>
 
         <section className="rounded-xl border-2 border-(--stroke) bg-(--card) p-6 sm:p-8 space-y-8 text-sm leading-relaxed text-(--muted)">
           <div className="space-y-4 pb-8 border-b-2 border-(--stroke)">
-            <h2 className="text-xl font-bold text-(--ink)">Sobre o projeto</h2>
+            <h2 className="text-xl font-bold text-(--ink)">O que é</h2>
             <p>
-              O Estokar é um projeto desenvolvido no contexto acadêmico, com o objetivo de aplicar na prática
-              conceitos de desenvolvimento de software, arquitetura, segurança e integração de sistemas.
+              O Estokar é uma plataforma gratuita de controle de estoque feita para o pequeno negócio.
+              Cadastre seus produtos, registre entradas e saídas, e receba alertas quando o estoque estiver perto do fim.
             </p>
             <p>
-              A plataforma serve como um ambiente de aprendizado e experimentação, evoluindo continuamente
-              conforme novas tecnologias e ideias são exploradas.
-            </p>
-          </div>
-
-          <div className="space-y-4 pb-8 border-b-2 border-(--stroke)">
-            <h2 className="text-xl font-bold text-(--ink)">Objetivo</h2>
-            <p>
-              O principal objetivo do Estokar é simular uma aplicação real de gestão de estoque,
-              permitindo a prática de funcionalidades como controle de produtos, movimentações
-              e organização de dados.
+              Tudo em uma interface simples, direta e sem custo.
             </p>
           </div>
 
           <div className="space-y-4 pb-8 border-b-2 border-(--stroke)">
-            <h2 className="text-xl font-bold text-(--ink)">Uso e custos</h2>
+            <h2 className="text-xl font-bold text-(--ink)">Funcionalidades</h2>
+            <ul className="space-y-3">
+              <li className="flex items-start gap-3">
+                <span className="mt-0.5 h-2 w-2 shrink-0 rounded-full bg-(--ok)" />
+                <span><strong className="text-(--ink)">Cadastro de produtos:</strong> nome, categoria, imagem e quantidade.</span>
+              </li>
+              <li className="flex items-start gap-3">
+                <span className="mt-0.5 h-2 w-2 shrink-0 rounded-full bg-(--ok)" />
+                <span><strong className="text-(--ink)">Movimentações:</strong> registre entradas e saídas com um clique.</span>
+              </li>
+              <li className="flex items-start gap-3">
+                <span className="mt-0.5 h-2 w-2 shrink-0 rounded-full bg-(--ok)" />
+                <span><strong className="text-(--ink)">Alertas de reposição:</strong> saiba antes de ficar sem estoque.</span>
+              </li>
+              <li className="flex items-start gap-3">
+                <span className="mt-0.5 h-2 w-2 shrink-0 rounded-full bg-(--ok)" />
+                <span><strong className="text-(--ink)">Dashboard:</strong> métricas, previsão de dias restantes e tendências.</span>
+              </li>
+            </ul>
+          </div>
+
+          <div className="space-y-4 pb-8 border-b-2 border-(--stroke)">
+            <h2 className="text-xl font-bold text-(--ink)">Custo</h2>
             <p>
-              O Estokar é totalmente gratuito e não possui fins comerciais no momento.
-              Nenhuma cobrança é realizada pelo uso da plataforma.
-            </p>
-            <p>
-              Por se tratar de um projeto em desenvolvimento, algumas funcionalidades podem mudar,
-              apresentar instabilidades ou ser descontinuadas sem aviso prévio.
+              O Estokar é totalmente gratuito. Não há cobrança pelo uso da plataforma.
             </p>
           </div>
 
           <div className="space-y-4">
-            <h2 className="text-xl font-bold text-(--ink)">Responsabilidade</h2>
+            <h2 className="text-xl font-bold text-(--ink)">Projeto em desenvolvimento</h2>
             <p>
-              O sistema é fornecido como está, sem garantias de disponibilidade contínua ou adequação
-              para uso em ambientes críticos ou comerciais.
-            </p>
-            <p>
-              Recomenda-se não utilizar o Estokar como única fonte de controle para operações importantes.
+              O Estokar está em evolução constante. Funcionalidades podem mudar, serem ajustadas ou expandidas ao longo do tempo.
             </p>
           </div>
         </section>

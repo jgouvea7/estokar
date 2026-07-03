@@ -4,10 +4,10 @@ import {
   ArrowRight,
   BarChart3,
   Bell,
-  History,
-  Layers3,
   Package2,
+  ShoppingCart,
   TrendingUp,
+  AlertTriangle,
 } from 'lucide-react';
 
 export default function Home() {
@@ -17,7 +17,7 @@ export default function Home() {
 function LandingPage() {
   return (
     <main className="mx-auto flex min-h-screen w-full max-w-6xl flex-col px-6 py-6 sm:px-8 lg:py-8">
-      <header className="mb-20 flex items-center justify-between rounded-xl border-2 border-(--stroke) bg-(--card) px-5 py-3.5">
+      <header className="mb-16 flex items-center justify-between rounded-xl border-2 border-(--stroke) bg-(--card) px-5 py-3.5">
         <div className="flex items-center gap-3">
           <div className="grid h-10 w-10 place-items-center rounded-lg bg-(--brand-bg) text-(--accent)">
             <BrandIcon size={20} />
@@ -32,44 +32,45 @@ function LandingPage() {
             Entrar
           </Link>
           <Link href="/register" className="rounded-lg bg-(--button) px-4 py-2 text-xs font-bold text-white transition-all hover:brightness-125">
-            Criar conta
+            Criar conta gratuita
           </Link>
         </div>
       </header>
 
-      <section className="grid gap-6 lg:grid-cols-[1.3fr_1fr] lg:items-center">
+      <section className="grid gap-8 lg:grid-cols-[1.2fr_1fr] lg:items-center">
         <div className="reveal-up">
-          <p className="inline-flex items-center gap-1.5 rounded-full border-2 border-(--accent-soft) bg-(--accent-soft) px-3 py-1 text-[10px] font-bold uppercase tracking-wider text-(--accent)">
+          <p className="inline-flex items-center gap-1.5 rounded-full border-2 border-(--ok-soft) bg-(--ok-soft) px-3 py-1 text-[10px] font-bold uppercase tracking-wider text-(--ok)">
             <Bell size={12} />
-            Nova versão disponível
+            Grátis para MEIs
           </p>
-          <h2 className="mt-6 text-4xl font-bold leading-[1.1] tracking-tight text-(--ink) sm:text-5xl lg:text-6xl">
-            Gerencie seu estoque com{' '}
-            <span className="text-(--accent)">precisão operacional</span>
+          <h2 className="mt-6 text-4xl font-bold leading-[1.1] tracking-tight text-(--ink) sm:text-5xl lg:text-[3.5rem]">
+            Nunca mais perca tempo{' '}
+            <span className="text-(--accent)">procurando produto no estoque</span>
           </h2>
           <p className="mt-5 max-w-lg text-base leading-relaxed text-(--muted)">
-            Controle de inventário em tempo real, alertas inteligentes de reposição e dashboard completo para tomar decisões mais rápidas — tudo em uma plataforma única.
+            Controle de estoque simples: cadastre seus produtos, registre entradas e saídas, e receba alerta quando estiver perto de acabar. Tudo gratuito.
           </p>
-          <div className="mt-8 flex flex-wrap gap-3">
+          <div className="mt-8 flex flex-col gap-3 sm:flex-row">
             <Link
               href="/register"
-              className="inline-flex items-center gap-2 rounded-lg bg-(--button) px-6 py-3 text-sm font-bold text-white transition-all hover:brightness-125"
+              className="inline-flex items-center justify-center gap-2 rounded-lg bg-(--button) px-6 py-3.5 text-sm font-bold text-white transition-all hover:brightness-125"
             >
-              Criar conta gratuitamente
+              Ver meu painel em 30 segundos
               <ArrowRight size={16} />
             </Link>
             <Link
               href="/about"
-              className="inline-flex items-center gap-2 rounded-lg border-2 border-(--stroke) bg-(--card) px-6 py-3 text-sm font-bold text-(--ink) transition-all hover:bg-(--soft)"
+              className="inline-flex items-center justify-center gap-2 rounded-lg border-2 border-(--stroke) bg-(--card) px-6 py-3.5 text-sm font-bold text-(--ink) transition-all hover:bg-(--soft)"
             >
-              Sobre o produto
+              Como funciona
             </Link>
           </div>
+          <p className="mt-3 text-xs font-medium text-(--muted)">Sem cartão de crédito. Sem compromisso.</p>
         </div>
 
         <div className="reveal-up rounded-xl border-2 border-(--stroke) bg-(--card) p-5" style={{ animationDelay: '100ms' }}>
           <div className="mb-4 flex items-center justify-between">
-            <span className="text-[10px] font-bold uppercase tracking-wider text-(--muted)">Painel em tempo real</span>
+            <span className="text-[10px] font-bold uppercase tracking-wider text-(--muted)">Seu painel em tempo real</span>
             <span className="flex items-center gap-1.5 rounded-full bg-(--ok-soft) px-2.5 py-0.5 text-[9px] font-bold text-(--ok)">
               <span className="h-1.5 w-1.5 rounded-full bg-(--ok)" />
               Ativo
@@ -78,47 +79,47 @@ function LandingPage() {
           <div className="space-y-2">
             <DemoRow label="Arroz 5kg" quantity={42} trend="up" />
             <DemoRow label="Óleo de soja" quantity={18} trend="up" />
-            <DemoRow label="Café em pó" quantity={6} trend="down" />
-            <DemoRow label="Leite integral" quantity={3} trend="down" />
+            <DemoRow label="Café em pó" quantity={6} trend="down" status="low" />
+            <DemoRow label="Leite integral" quantity={2} trend="down" status="critical" />
           </div>
-          <div className="mt-4 flex items-center gap-2 rounded-lg bg-(--soft) px-3 py-2">
-            <TrendingUp size={14} className="text-(--ok)" />
-            <span className="text-[10px] font-bold text-(--muted)">Média de reposição: <span className="text-(--ok)">12 dias</span></span>
+          <div className="mt-4 flex items-center gap-2 rounded-lg bg-(--low-soft) px-3 py-2.5">
+            <AlertTriangle size={14} className="text-(--low)" />
+            <span className="text-[10px] font-bold text-(--muted)">Alerta: <span className="text-(--low)">Leite integral acaba em 2 dias</span></span>
           </div>
         </div>
       </section>
 
       <section className="mt-24">
         <div className="text-center">
-          <p className="text-[10px] font-bold uppercase tracking-wider text-(--accent)">Funcionalidades</p>
+          <p className="text-[10px] font-bold uppercase tracking-wider text-(--accent)">Para quem é</p>
           <h3 className="mt-3 text-3xl font-bold tracking-tight text-(--ink) sm:text-4xl">
-            Tudo que você precisa para operar
+            Feito para o pequeno negócio
           </h3>
           <p className="mx-auto mt-3 max-w-xl text-sm text-(--muted)">
-            Do cadastro ao relatório, cada funcionalidade foi pensada para reduzir o atrito na gestão do dia a dia.
+            Se você tem uma loja física, mercadinho, oficina ou qualquer negócio que precisa controlar estoque, o Estokar é para você.
           </p>
         </div>
 
         <div className="mt-10 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
           <FeatureCard
             icon={Package2}
-            title="Produtos"
-            text="Cadastro completo com imagem, categoria e controle de quantidade."
+            title="Cadastro rápido"
+            text="Adicione produtos em segundos. Nome, quantidade e pronto."
           />
           <FeatureCard
-            icon={Layers3}
-            title="Categorias"
-            text="Organize seu inventário por grupos com filtragem rápida."
+            icon={ShoppingCart}
+            title="Entrada e saída"
+            text="Registre movimentações com um clique. Histórico automático."
           />
           <FeatureCard
-            icon={History}
-            title="Movimentações"
-            text="Registro detalhado de entradas e saídas com timeline completa."
+            icon={AlertTriangle}
+            title="Alertas de reposição"
+            text="Saiba antes de ficar sem estoque. Nunca mais perca uma venda."
           />
           <FeatureCard
             icon={BarChart3}
-            title="Dashboard"
-            text="Métricas, alertas e previsão de estoque em uma tela única."
+            title="Previsão inteligente"
+            text="Descubra quantos dias seu estoque ainda vai durar."
           />
         </div>
       </section>
@@ -127,30 +128,30 @@ function LandingPage() {
         <div className="text-center">
           <p className="text-[10px] font-bold uppercase tracking-wider text-(--accent)">Como funciona</p>
           <h3 className="mt-3 text-3xl font-bold tracking-tight text-(--ink) sm:text-4xl">
-            Três passos para começar
+            Comece em 3 passos
           </h3>
         </div>
 
         <div className="mt-10 grid gap-6 sm:grid-cols-3">
-          <StepCard number="01" title="Cadastre seus produtos" text="Adicione nome, descrição, quantidade e imagem em segundos." />
-          <StepCard number="02" title="Movimente o estoque" text="Registre entradas e saídas com um clique, com histórico automático." />
-          <StepCard number="03" title="Acompanhe em tempo real" text="Dashboard atualizado com alertas, métricas e previsão de reposição." />
+          <StepCard number="01" title="Crie sua conta" text="Informe apenas nome, email e senha. Leva 15 segundos e não pedimos cartão." />
+          <StepCard number="02" title="Cadastre seus produtos" text="Adicione o nome e a quantidade de cada item. Simples como uma planilha." />
+          <StepCard number="03" title="Acompanhe o painel" text="Veja alertas, previsão de reposição e histórico em uma tela só." />
         </div>
       </section>
 
-      <section className="mt-24 rounded-xl border-2 border-(--stroke) bg-(--card) px-6 py-10 text-center sm:px-10">
-        <p className="text-[10px] font-bold uppercase tracking-wider text-(--accent)">Pronto para evoluir</p>
+      <section className="mt-24 rounded-xl border-2 border-(--stroke) bg-(--card) px-6 py-12 text-center sm:px-10">
+        <p className="text-[10px] font-bold uppercase tracking-wider text-(--accent)">Pronto para organizar</p>
         <h3 className="mt-3 text-3xl font-bold tracking-tight text-(--ink) sm:text-4xl">
-          Leve sua gestão para o próximo nível
+          Menos planilha, mais controle
         </h3>
         <p className="mx-auto mt-3 max-w-lg text-sm text-(--muted)">
-          Experimente grátis. Cadastre seus primeiros produtos em menos de 2 minutos e descubra o que um controle de estoque profissional pode fazer pela sua operação.
+          Cadastre seus primeiros produtos em menos de 2 minutos. Sem custo, sem burocracia.
         </p>
         <Link
           href="/register"
-          className="mt-6 inline-flex items-center gap-2 rounded-lg bg-(--button) px-6 py-3 text-sm font-bold text-white transition-all hover:brightness-125"
+          className="mt-6 inline-flex items-center gap-2 rounded-lg bg-(--button) px-6 py-3.5 text-sm font-bold text-white transition-all hover:brightness-125"
         >
-          Criar conta gratuitamente
+          Criar conta gratuita
           <ArrowRight size={16} />
         </Link>
       </section>
@@ -168,7 +169,7 @@ function LandingPage() {
               </div>
             </div>
             <p className="mt-3 text-xs text-(--muted) leading-relaxed">
-              Plataforma de gestão de inventário.
+              Plataforma gratuita de gestão de inventário.
             </p>
           </div>
           <div>
@@ -252,18 +253,35 @@ function DemoRow({
   label,
   quantity,
   trend,
+  status,
 }: {
   label: string;
   quantity: number;
   trend: 'up' | 'down';
+  status?: 'low' | 'critical';
 }) {
+  const isWarning = status === 'low' || status === 'critical';
   return (
-    <div className="flex items-center justify-between rounded-lg border-2 border-(--stroke) bg-(--surface-2) px-3 py-2">
+    <div className={`flex items-center justify-between rounded-lg border-2 px-3 py-2 ${
+      isWarning
+        ? status === 'critical'
+          ? 'border-(--critical-soft) bg-(--critical-soft)'
+          : 'border-(--low-soft) bg-(--low-soft)'
+        : 'border-(--stroke) bg-(--surface-2)'
+    }`}>
       <div className="flex items-center gap-2">
-        <div className={`flex h-5 w-5 items-center justify-center rounded ${trend === 'up' ? 'bg-(--ok-soft) text-(--ok)' : 'bg-(--critical-soft) text-(--critical)'}`}>
+        <div className={`flex h-5 w-5 items-center justify-center rounded ${
+          isWarning
+            ? status === 'critical'
+              ? 'bg-(--critical) text-white'
+              : 'bg-(--low) text-white'
+            : trend === 'up'
+              ? 'bg-(--ok-soft) text-(--ok)'
+              : 'bg-(--soft) text-(--muted)'
+        }`}>
           <TrendingUp size={10} />
         </div>
-        <span className="text-xs font-semibold text-(--ink)">{label}</span>
+        <span className={`text-xs font-semibold ${isWarning ? 'text-(--ink)' : 'text-(--ink)'}`}>{label}</span>
       </div>
       <span className="text-xs font-bold tabular-nums text-(--ink)">
         {quantity} <span className="text-[9px] font-medium text-(--muted)">un.</span>

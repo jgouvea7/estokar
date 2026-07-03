@@ -12,6 +12,7 @@ import {
   Download,
   TrendingDown,
   TrendingUp,
+  Package2,
 } from 'lucide-react';
 import type { DashboardOverviewData } from '@/lib/dashboard/dashboard-data';
 import type {
@@ -30,17 +31,19 @@ type DashboardOverviewProps = {
 };
 
 export function DashboardOverview({ data, accessToken }: DashboardOverviewProps) {
+  const hasData = data.totalStock > 0;
+
   const metrics = [
     { icon: Boxes, label: 'Estoque total', value: formatNumber(data.totalStock), tone: 'accent' as const },
     { icon: data.dailyBalance >= 0 ? TrendingUp : TrendingDown, label: 'Balanço diário', value: (data.dailyBalance > 0 ? '+' : '') + formatNumber(data.dailyBalance), tone: data.dailyBalance > 0 ? 'ok' as const : data.dailyBalance < 0 ? 'critical' as const : 'muted' as const },
-    { icon: data.weeklySales.direction === 'up' ? TrendingUp : TrendingDown, label: 'Vendas semanais', value: data.weeklySales.valueLabel, tone: data.weeklySales.direction === 'up' ? 'ok' as const : data.weeklySales.direction === 'down' ? 'critical' as const : 'muted' as const },
-    { icon: BarChart3, label: 'Catálogo disponível', value: `${data.catalogAvailability.toFixed(0)}%`, tone: 'accent' as const },
+    { icon: data.weeklySales.direction === 'up' ? TrendingUp : TrendingDown, label: 'Vendas na semana', value: data.weeklySales.valueLabel, tone: data.weeklySales.direction === 'up' ? 'ok' as const : data.weeklySales.direction === 'down' ? 'critical' as const : 'muted' as const },
+    { icon: BarChart3, label: 'Catálogo ativo', value: `${data.catalogAvailability.toFixed(0)}%`, tone: 'accent' as const },
   ];
 
   return (
     <div className="space-y-6 reveal-up">
       <section className="flex items-center justify-between gap-4">
-        <p className="text-sm font-medium text-(--muted)">Resumo operacional do inventário.</p>
+        <p className="text-sm font-medium text-(--muted)">Acompanhe seu estoque em tempo real.</p>
         <button
           type="button"
           onClick={() => exportDashboardCsv(accessToken)}
@@ -57,66 +60,94 @@ export function DashboardOverview({ data, accessToken }: DashboardOverviewProps)
         ))}
       </section>
 
-      <section className="grid gap-6 lg:grid-cols-[1.6fr_1fr]">
-        <div className="surface-card p-5 sm:p-6">
-          <div className="mb-5 flex items-center justify-between gap-4">
-            <div>
-              <p className="text-[10px] font-bold uppercase tracking-[0.18em] text-(--muted)">Tempo real</p>
-              <h3 className="mt-1 text-lg font-bold text-(--ink)">Movimentações recentes</h3>
-            </div>
-            <Link
-              href="/history"
-              className="rounded-lg border-2 border-(--stroke) px-3 py-1.5 text-[10px] font-bold uppercase tracking-wider text-(--muted) transition-all hover:bg-(--soft)"
-            >
-              Ver todos
-            </Link>
+      {!hasData ? (
+        <section className="surface-card p-8 text-center">
+          <div className="mx-auto mb-4 flex h-14 w-14 items-center justify-center rounded-2xl bg-(--accent-soft) text-(--accent)">
+            <Package2 size={28} strokeWidth={2} />
           </div>
-          <RecentMovementsTimeline items={data.recentMovements} />
-        </div>
-
-        <div className="space-y-5">
-          <section className="surface-card p-5 sm:p-6">
-            <div className="mb-4 flex items-center justify-between gap-4">
-              <div>
-                <p className="text-[10px] font-bold uppercase tracking-[0.18em] text-(--muted)">Ranking</p>
-                <h3 className="mt-1 text-lg font-bold text-(--ink)">Mais vendidos</h3>
-              </div>
-            </div>
-            <TopSellingChart items={data.topSellingProducts} />
-          </section>
-
-          {data.lowStockProducts.length > 0 ? (
-            <section className="surface-card p-5 sm:p-6">
+          <h3 className="text-xl font-bold text-(--ink)">Seu estoque está vazio</h3>
+          <p className="mt-2 text-sm text-(--muted) max-w-md mx-auto">
+            Cadastre seu primeiro produto para começar a usar alertas, previsão de reposição e muito mais.
+          </p>
+          <Link
+            href="/products"
+            className="mt-6 inline-flex items-center gap-2 rounded-lg bg-(--button) px-5 py-3 text-sm font-bold text-white transition-all hover:brightness-125"
+          >
+            <Package2 size={16} />
+            Cadastrar primeiro produto
+          </Link>
+        </section>
+      ) : (
+        <>
+          {data.lowStockProducts.length > 0 && (
+            <section className="surface-card border-2 border-(--low-soft) p-5 sm:p-6">
               <div className="mb-4 flex items-center justify-between gap-4">
                 <div>
-                  <p className="text-[10px] font-bold uppercase tracking-[0.18em] text-(--muted)">Atenção</p>
-                  <h3 className="mt-1 text-lg font-bold text-(--ink)">Alertas de reposição</h3>
+                  <p className="text-[10px] font-bold uppercase tracking-[0.18em] text-(--low)">Atenção</p>
+                  <h3 className="mt-1 text-lg font-bold text-(--ink)">Estoque perto do fim</h3>
                 </div>
-                <AlertCircle size={16} className="text-(--low)" />
+                <AlertCircle size={18} className="text-(--low)" />
               </div>
+              <p className="mb-4 text-sm text-(--muted)">
+                Esses produtos precisam de reposição em breve. Quanto antes comprar, menos vendas você perde.
+              </p>
               <ProductAlertList items={data.lowStockProducts} />
+              <div className="mt-4">
+                <Link
+                  href="/products"
+                  className="inline-flex items-center gap-1.5 rounded-lg bg-(--button) px-4 py-2 text-xs font-bold text-white transition-all hover:brightness-125"
+                >
+                  Ver todos os produtos
+                </Link>
+              </div>
             </section>
-          ) : null}
-        </div>
-      </section>
+          )}
 
-      {data.topCategories.length > 0 ? (
-        <section className="surface-card p-5 sm:p-6">
-          <div className="mb-5 flex items-center justify-between gap-4">
-            <div>
-              <p className="text-[10px] font-bold uppercase tracking-[0.18em] text-(--muted)">Distribuição</p>
-              <h3 className="mt-1 text-lg font-bold text-(--ink)">Categorias populares</h3>
+          <ForecastSection
+            forecastedProducts={data.forecastedProducts}
+            alerts={data.alerts}
+            lowStockProducts={data.lowStockProducts}
+          />
+
+          <section className="grid gap-6 lg:grid-cols-[1.6fr_1fr]">
+            <div className="surface-card p-5 sm:p-6">
+              <div className="mb-5 flex items-center justify-between gap-4">
+                <div>
+                  <p className="text-[10px] font-bold uppercase tracking-[0.18em] text-(--muted)">Tempo real</p>
+                  <h3 className="mt-1 text-lg font-bold text-(--ink)">Movimentações recentes</h3>
+                </div>
+                <Link
+                  href="/history"
+                  className="rounded-lg border-2 border-(--stroke) px-3 py-1.5 text-[10px] font-bold uppercase tracking-wider text-(--muted) transition-all hover:bg-(--soft)"
+                >
+                  Ver tudo
+                </Link>
+              </div>
+              <RecentMovementsTimeline items={data.recentMovements} />
             </div>
-          </div>
-          <TopCategoryList items={data.topCategories} />
-        </section>
-      ) : null}
 
-      <ForecastSection
-        forecastedProducts={data.forecastedProducts}
-        alerts={data.alerts}
-        lowStockProducts={data.lowStockProducts}
-      />
+            <div className="space-y-5">
+              <section className="surface-card p-5 sm:p-6">
+                <div className="mb-4">
+                  <p className="text-[10px] font-bold uppercase tracking-[0.18em] text-(--muted)">Ranking</p>
+                  <h3 className="mt-1 text-lg font-bold text-(--ink)">Mais vendidos</h3>
+                </div>
+                <TopSellingChart items={data.topSellingProducts} />
+              </section>
+
+              {data.topCategories.length > 0 ? (
+                <section className="surface-card p-5 sm:p-6">
+                  <div className="mb-4">
+                    <p className="text-[10px] font-bold uppercase tracking-[0.18em] text-(--muted)">Distribuição</p>
+                    <h3 className="mt-1 text-lg font-bold text-(--ink)">Categorias</h3>
+                  </div>
+                  <TopCategoryList items={data.topCategories} />
+                </section>
+              ) : null}
+            </div>
+          </section>
+        </>
+      )}
     </div>
   );
 }
@@ -154,7 +185,7 @@ const CompactStat = memo(function CompactStat({
 
 function TopSellingChart({ items }: { items: DashboardTopSellingProduct[] }) {
   if (!items.length) {
-    return <EmptyState icon={BarChart3} title="Sem vendas registradas" description="Assim que houver saídas, o ranking aparecerá aqui." />;
+    return <EmptyState icon={BarChart3} title="Sem movimentações ainda" description="Registre saídas de produtos para ver o ranking dos mais vendidos." actionLabel="Cadastrar produto" actionHref="/products" />;
   }
 
   const maxSold = Math.max(...items.map((item) => item.soldQuantity), 1);
@@ -219,7 +250,7 @@ function ProductAlertList({ items }: { items: DashboardLowStockProduct[] }) {
 
 function TopCategoryList({ items }: { items: DashboardOverviewData['topCategories'] }) {
   if (!items.length) {
-    return <EmptyState icon={BarChart3} title="Sem categorias vendidas" description="Ainda não há saídas suficientes para montar o ranking por categoria." />;
+    return <EmptyState icon={BarChart3} title="Sem categorias" description="Ainda não há saídas suficientes para montar o ranking." />;
   }
 
   const maxSold = Math.max(...items.map((item) => item.soldQuantity), 1);
@@ -257,7 +288,7 @@ function TopCategoryList({ items }: { items: DashboardOverviewData['topCategorie
 
 function RecentMovementsTimeline({ items }: { items: DashboardRecentMovement[] }) {
   if (!items.length) {
-    return <EmptyState icon={Clock3} title="Sem movimentações" description="As últimas entradas e saídas aparecerão aqui." />;
+    return <EmptyState icon={Clock3} title="Nenhuma movimentação" description="Registre entradas e saídas para ver o histórico aqui." actionLabel="Ir para Produtos" actionHref="/products" />;
   }
 
   return (
@@ -320,6 +351,14 @@ function ForecastSection({
         <h3 className="mt-1 text-lg font-bold text-(--ink)">Estimativa de dias restantes</h3>
       </div>
 
+      {sorted.length >= 5 && (
+        <p className="mb-4 text-sm text-(--muted)">
+          {sorted.filter((p) => criticalIds.has(p.productId)).length > 0
+            ? `${sorted.filter((p) => criticalIds.has(p.productId)).length} produtos precisam de reposição urgente.`
+            : `${sorted.length} produtos monitorados. Nenhum em estado crítico.`}
+        </p>
+      )}
+
       <div className="overflow-x-auto">
         <table className="w-full text-left">
           <thead>
@@ -346,6 +385,9 @@ function ForecastSection({
                     <Link href={`/products/${item.productId}`} className="text-sm font-bold text-(--ink) transition-colors hover:text-(--accent)">
                       {item.productName}
                     </Link>
+                    {isCritical && (
+                      <span className="ml-2 inline-block text-[10px] font-bold text-(--critical)">⚠ Perde vendas</span>
+                    )}
                   </td>
                   <td className="py-3 pr-4 text-right text-sm font-bold text-(--ink)">{formatNumber(item.currentQuantity)}</td>
                   <td className="py-3 pr-4 text-right text-sm font-medium text-(--muted)">{formatMetric(item.averageDailySales)}</td>
@@ -371,10 +413,14 @@ function EmptyState({
   icon: Icon,
   title,
   description,
+  actionLabel,
+  actionHref,
 }: {
   icon: ComponentType<{ size?: number; strokeWidth?: number }>;
   title: string;
   description: string;
+  actionLabel?: string;
+  actionHref?: string;
 }) {
   return (
     <div className="flex flex-col items-center justify-center rounded-xl border-2 border-dashed border-(--stroke) bg-(--surface-2) px-6 py-8 text-center">
@@ -383,8 +429,14 @@ function EmptyState({
       </div>
       <p className="text-sm font-bold text-(--ink)">{title}</p>
       <p className="mt-1 text-xs font-medium text-(--muted)">{description}</p>
+      {actionLabel && actionHref && (
+        <Link
+          href={actionHref}
+          className="mt-4 inline-flex items-center gap-1.5 rounded-lg bg-(--button) px-4 py-2 text-xs font-bold text-white transition-all hover:brightness-125"
+        >
+          {actionLabel}
+        </Link>
+      )}
     </div>
   );
 }
-
-

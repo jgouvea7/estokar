@@ -79,8 +79,6 @@ export class AuthController {
 
     if (redirectUri && this.isAllowedRedirectUri(redirectUri)) {
       const url = new URL(redirectUri);
-      url.searchParams.set('accessToken', tokens.accessToken);
-      url.searchParams.set('refreshToken', tokens.refreshToken);
       url.searchParams.set('id', String(tokens.user.id ?? ''));
       url.searchParams.set('name', String(tokens.user.name ?? ''));
       url.searchParams.set('email', String(tokens.user.email ?? ''));
@@ -89,6 +87,7 @@ export class AuthController {
         'alertDaysBefore',
         String(tokens.user.alertDaysBefore ?? ''),
       );
+      url.hash = `accessToken=${encodeURIComponent(tokens.accessToken)}&refreshToken=${encodeURIComponent(tokens.refreshToken)}`;
       res.redirect(url.toString());
       return;
     }

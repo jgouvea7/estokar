@@ -34,9 +34,14 @@ export class ProductsService {
   ): Promise<
     (Product & { estimatedDaysLeft: number | null; alertDaysBefore: number })[]
   > {
-    const windowDays = 7;
-    const windowStart = new Date();
-    windowStart.setDate(windowStart.getDate() - windowDays);
+    const windowStart7 = new Date();
+    windowStart7.setDate(windowStart7.getDate() - 7);
+
+    const windowStart14 = new Date();
+    windowStart14.setDate(windowStart14.getDate() - 14);
+
+    const windowStart30 = new Date();
+    windowStart30.setDate(windowStart30.getDate() - 30);
 
     const [user, products, movementSummaries] = await Promise.all([
       this.usersRepository.findOne({
@@ -52,18 +57,30 @@ export class ProductsService {
         .createQueryBuilder('movement')
         .select('movement.productId', 'productId')
         .addSelect(
-          'COALESCE(SUM(CASE WHEN movement.type = :outType AND movement.createdAt >= :windowStart THEN movement.quantity ELSE 0 END), 0)',
-          'recentSoldQuantity',
+          'COALESCE(SUM(CASE WHEN movement.type = :outType AND movement.createdAt >= :windowStart7 THEN movement.quantity ELSE 0 END), 0)',
+          'recentSoldQuantity7',
+        )
+        .addSelect(
+          'COALESCE(SUM(CASE WHEN movement.type = :outType AND movement.createdAt >= :windowStart14 THEN movement.quantity ELSE 0 END), 0)',
+          'recentSoldQuantity14',
+        )
+        .addSelect(
+          'COALESCE(SUM(CASE WHEN movement.type = :outType AND movement.createdAt >= :windowStart30 THEN movement.quantity ELSE 0 END), 0)',
+          'recentSoldQuantity30',
         )
         .where('movement.userId = :userId', { userId: requesterId })
         .setParameters({
           outType: StockMovementType.OUT,
-          windowStart,
+          windowStart7,
+          windowStart14,
+          windowStart30,
         })
         .groupBy('movement.productId')
         .getRawMany<{
           productId: string;
-          recentSoldQuantity: string | number;
+          recentSoldQuantity7: string | number;
+          recentSoldQuantity14: string | number;
+          recentSoldQuantity30: string | number;
         }>(),
     ]);
 
@@ -71,17 +88,22 @@ export class ProductsService {
     const soldByProduct = new Map(
       movementSummaries.map((row) => [
         row.productId,
-        toNumber(row.recentSoldQuantity),
+        {
+          sold7: toNumber(row.recentSoldQuantity7),
+          sold14: toNumber(row.recentSoldQuantity14),
+          sold30: toNumber(row.recentSoldQuantity30),
+        },
       ]),
     );
 
     return products.map((product) => {
-      const recentSoldQuantity = soldByProduct.get(product.id) ?? 0;
-      const forecast = calculateForecast(
-        product.quantity,
-        recentSoldQuantity,
-        windowDays,
-      );
+      const sales = soldByProduct.get(product.id);
+      const forecast = calculateForecast({
+        currentStock: product.quantity,
+        soldLast7Days: sales?.sold7 ?? 0,
+        soldLast14Days: sales?.sold14,
+        soldLast30Days: sales?.sold30,
+      });
 
       return {
         ...product,
@@ -144,7 +166,6 @@ export class ProductsService {
   }
 
   async getDetails(id: string, requesterId: string) {
-    const windowDays = 7;
     const recentMovementsLimit = 10;
 
     const [user, product, movementSummary, recentMovements] = await Promise.all(
@@ -157,7 +178,7 @@ export class ProductsService {
           where: { id, userId: requesterId },
           relations: ['category'],
         }),
-        this.getMovementSummary(id, requesterId, windowDays),
+        this.getMovementSummary(id, requesterId),
         this.getRecentMovements(id, requesterId, recentMovementsLimit),
       ],
     );
@@ -168,12 +189,12 @@ export class ProductsService {
 
     const totalEntries = toNumber(movementSummary?.totalEntries);
     const totalOutputs = toNumber(movementSummary?.totalOutputs);
-    const recentSoldQuantity = toNumber(movementSummary?.recentSoldQuantity);
-    const forecast = calculateForecast(
-      product.quantity,
-      recentSoldQuantity,
-      windowDays,
-    );
+    const forecast = calculateForecast({
+      currentStock: product.quantity,
+      soldLast7Days: toNumber(movementSummary?.recentSoldQuantity),
+      soldLast14Days: toNumber(movementSummary?.recentSoldQuantity14),
+      soldLast30Days: toNumber(movementSummary?.recentSoldQuantity30),
+    });
 
     return {
       product: {
@@ -204,7 +225,6 @@ export class ProductsService {
     id: string,
     requesterId: string,
   ): Promise<ProductDashboardResponseDto> {
-    const windowDays = 7;
     const recentMovementsLimit = 10;
 
     const [user, product, movementSummary, recentMovements] = await Promise.all(
@@ -217,7 +237,7 @@ export class ProductsService {
           where: { id, userId: requesterId },
           select: ['id', 'name', 'quantity', 'image'],
         }),
-        this.getMovementSummary(id, requesterId, windowDays),
+        this.getMovementSummary(id, requesterId),
         this.getRecentMovements(id, requesterId, recentMovementsLimit),
       ],
     );
@@ -228,12 +248,12 @@ export class ProductsService {
 
     const totalEntries = toNumber(movementSummary?.totalEntries);
     const totalOutputs = toNumber(movementSummary?.totalOutputs);
-    const recentSoldQuantity = toNumber(movementSummary?.recentSoldQuantity);
-    const forecast = calculateForecast(
-      product.quantity,
-      recentSoldQuantity,
-      windowDays,
-    );
+    const forecast = calculateForecast({
+      currentStock: product.quantity,
+      soldLast7Days: toNumber(movementSummary?.recentSoldQuantity),
+      soldLast14Days: toNumber(movementSummary?.recentSoldQuantity14),
+      soldLast30Days: toNumber(movementSummary?.recentSoldQuantity30),
+    });
 
     return {
       forecast: {
@@ -333,10 +353,15 @@ export class ProductsService {
   private async getMovementSummary(
     id: string,
     requesterId: string,
-    windowDays: number,
   ) {
-    const windowStart = new Date();
-    windowStart.setDate(windowStart.getDate() - windowDays);
+    const windowStart7 = new Date();
+    windowStart7.setDate(windowStart7.getDate() - 7);
+
+    const windowStart14 = new Date();
+    windowStart14.setDate(windowStart14.getDate() - 14);
+
+    const windowStart30 = new Date();
+    windowStart30.setDate(windowStart30.getDate() - 30);
 
     return this.stockMovementsRepository
       .createQueryBuilder('movement')
@@ -349,20 +374,32 @@ export class ProductsService {
         'totalOutputs',
       )
       .addSelect(
-        'COALESCE(SUM(CASE WHEN movement.type = :outType AND movement.createdAt >= :windowStart THEN movement.quantity ELSE 0 END), 0)',
+        'COALESCE(SUM(CASE WHEN movement.type = :outType AND movement.createdAt >= :windowStart7 THEN movement.quantity ELSE 0 END), 0)',
         'recentSoldQuantity',
+      )
+      .addSelect(
+        'COALESCE(SUM(CASE WHEN movement.type = :outType AND movement.createdAt >= :windowStart14 THEN movement.quantity ELSE 0 END), 0)',
+        'recentSoldQuantity14',
+      )
+      .addSelect(
+        'COALESCE(SUM(CASE WHEN movement.type = :outType AND movement.createdAt >= :windowStart30 THEN movement.quantity ELSE 0 END), 0)',
+        'recentSoldQuantity30',
       )
       .where('movement.userId = :userId', { userId: requesterId })
       .andWhere('movement.productId = :productId', { productId: id })
       .setParameters({
         inType: StockMovementType.IN,
         outType: StockMovementType.OUT,
-        windowStart,
+        windowStart7,
+        windowStart14,
+        windowStart30,
       })
       .getRawOne<{
         totalEntries: string;
         totalOutputs: string;
         recentSoldQuantity: string;
+        recentSoldQuantity14: string;
+        recentSoldQuantity30: string;
       }>();
   }
 

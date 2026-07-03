@@ -26,6 +26,12 @@ export class DashboardService {
     const sevenDaysAgo = new Date();
     sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 7);
 
+    const fourteenDaysAgo = new Date();
+    fourteenDaysAgo.setDate(fourteenDaysAgo.getDate() - 14);
+
+    const thirtyDaysAgo = new Date();
+    thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
+
     const startOfToday = new Date();
     startOfToday.setHours(0, 0, 0, 0);
 
@@ -74,16 +80,31 @@ export class DashboardService {
         .addSelect('COALESCE(SUM(m.quantity), 0)', 'soldQuantity')
         .addSelect(
           `COALESCE(SUM(CASE WHEN m.createdAt >= :sevenDaysAgo THEN m.quantity ELSE 0 END), 0)`,
-          'recentSoldQuantity',
+          'recentSoldQuantity7',
+        )
+        .addSelect(
+          `COALESCE(SUM(CASE WHEN m.createdAt >= :fourteenDaysAgo THEN m.quantity ELSE 0 END), 0)`,
+          'recentSoldQuantity14',
+        )
+        .addSelect(
+          `COALESCE(SUM(CASE WHEN m.createdAt >= :thirtyDaysAgo THEN m.quantity ELSE 0 END), 0)`,
+          'recentSoldQuantity30',
         )
         .where('m.userId = :userId', { userId })
         .andWhere('m.type = :outType', { outType: StockMovementType.OUT })
-        .setParameter('sevenDaysAgo', sevenDaysAgo)
+        .setParameters({
+          sevenDaysAgo,
+          fourteenDaysAgo,
+          thirtyDaysAgo,
+          outType: StockMovementType.OUT,
+        })
         .groupBy('m.productId')
         .getRawMany<{
           productId: string;
           soldQuantity: string;
-          recentSoldQuantity: string;
+          recentSoldQuantity7: string;
+          recentSoldQuantity14: string;
+          recentSoldQuantity30: string;
         }>(),
       this.stockMovementsRepository
         .createQueryBuilder('m')
@@ -139,7 +160,9 @@ export class DashboardService {
         row.productId,
         {
           soldQuantity: toNumber(row.soldQuantity),
-          recentSoldQuantity: toNumber(row.recentSoldQuantity),
+          recentSoldQuantity7: toNumber(row.recentSoldQuantity7),
+          recentSoldQuantity14: toNumber(row.recentSoldQuantity14),
+          recentSoldQuantity30: toNumber(row.recentSoldQuantity30),
         },
       ]),
     );
@@ -162,14 +185,15 @@ export class DashboardService {
     const forecastedProducts = products
       .map((product) => {
         const sales = salesMap.get(product.id);
-        if (!sales || sales.recentSoldQuantity <= 0) {
+        if (!sales || (sales.recentSoldQuantity7 <= 0 && sales.recentSoldQuantity14 <= 0 && sales.recentSoldQuantity30 <= 0)) {
           return null;
         }
-        const forecast = calculateForecast(
-          product.quantity,
-          sales.recentSoldQuantity,
-          7,
-        );
+        const forecast = calculateForecast({
+          currentStock: product.quantity,
+          soldLast7Days: sales.recentSoldQuantity7,
+          soldLast14Days: sales.recentSoldQuantity14,
+          soldLast30Days: sales.recentSoldQuantity30,
+        });
         if (forecast.averageDailySales <= 0) {
           return null;
         }
@@ -177,7 +201,7 @@ export class DashboardService {
           productId: product.id,
           productName: product.name,
           currentQuantity: product.quantity,
-          recentSoldQuantity: sales.recentSoldQuantity,
+          recentSoldQuantity: sales.recentSoldQuantity7,
           averageDailySales: forecast.averageDailySales,
           estimatedDaysLeft: forecast.estimatedDaysLeft!,
         };
@@ -233,6 +257,12 @@ export class DashboardService {
     const sevenDaysAgo = new Date();
     sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 7);
 
+    const fourteenDaysAgo = new Date();
+    fourteenDaysAgo.setDate(fourteenDaysAgo.getDate() - 14);
+
+    const thirtyDaysAgo = new Date();
+    thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
+
     const [user, products, salesData] = await Promise.all([
       this.usersRepository.findOne({
         where: { id: userId },
@@ -248,15 +278,30 @@ export class DashboardService {
         .select('m.productId', 'productId')
         .addSelect(
           `COALESCE(SUM(CASE WHEN m.createdAt >= :sevenDaysAgo THEN m.quantity ELSE 0 END), 0)`,
-          'recentSoldQuantity',
+          'recentSoldQuantity7',
+        )
+        .addSelect(
+          `COALESCE(SUM(CASE WHEN m.createdAt >= :fourteenDaysAgo THEN m.quantity ELSE 0 END), 0)`,
+          'recentSoldQuantity14',
+        )
+        .addSelect(
+          `COALESCE(SUM(CASE WHEN m.createdAt >= :thirtyDaysAgo THEN m.quantity ELSE 0 END), 0)`,
+          'recentSoldQuantity30',
         )
         .where('m.userId = :userId', { userId })
         .andWhere('m.type = :outType', { outType: StockMovementType.OUT })
-        .setParameter('sevenDaysAgo', sevenDaysAgo)
+        .setParameters({
+          sevenDaysAgo,
+          fourteenDaysAgo,
+          thirtyDaysAgo,
+          outType: StockMovementType.OUT,
+        })
         .groupBy('m.productId')
         .getRawMany<{
           productId: string;
-          recentSoldQuantity: string;
+          recentSoldQuantity7: string;
+          recentSoldQuantity14: string;
+          recentSoldQuantity30: string;
         }>(),
     ]);
 
@@ -265,20 +310,25 @@ export class DashboardService {
     const salesMap = new Map(
       salesData.map((row) => [
         row.productId,
-        { recentSoldQuantity: toNumber(row.recentSoldQuantity) },
+        {
+          recentSoldQuantity7: toNumber(row.recentSoldQuantity7),
+          recentSoldQuantity14: toNumber(row.recentSoldQuantity14),
+          recentSoldQuantity30: toNumber(row.recentSoldQuantity30),
+        },
       ]),
     );
 
     return products
       .map((product) => {
         const sales = salesMap.get(product.id);
-        if (!sales || sales.recentSoldQuantity <= 0) return null;
+        if (!sales) return null;
 
-        const forecast = calculateForecast(
-          product.quantity,
-          sales.recentSoldQuantity,
-          7,
-        );
+        const forecast = calculateForecast({
+          currentStock: product.quantity,
+          soldLast7Days: sales.recentSoldQuantity7,
+          soldLast14Days: sales.recentSoldQuantity14,
+          soldLast30Days: sales.recentSoldQuantity30,
+        });
         if (
           forecast.averageDailySales <= 0 ||
           forecast.estimatedDaysLeft == null

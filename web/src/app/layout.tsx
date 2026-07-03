@@ -6,6 +6,7 @@ import { QueryProvider } from '@/providers/query-provider';
 import "./globals.css";
 import { AuthProvider } from "@/providers/auth-provider";
 import { ThemeProvider } from "@/providers/theme-provider";
+import { AnalyticsProvider } from "@/providers/analytics-provider";
 import { Analytics } from "@vercel/analytics/next";
 import { SpeedInsights } from "@vercel/speed-insights/next"
 
@@ -28,7 +29,7 @@ const jetbrainsMono = JetBrains_Mono({
 
 export const metadata: Metadata = {
   title: "Estokar",
-  description: "Controle de estoque inteligente com dashboard operacional.",
+  description: "Controle de estoque gratuito para MEI. Cadastre produtos, receba alertas de reposição e acompanhe seu estoque em tempo real.",
   icons: {
     icon: '/favicon.svg',
   },
@@ -57,7 +58,9 @@ export default function RootLayout({
         <QueryProvider>
           <AuthProvider>
             <ThemeProvider>
-              {children}
+              <AnalyticsProvider>
+                {children}
+              </AnalyticsProvider>
             </ThemeProvider>
           </AuthProvider>
           <Toaster position="top-right" toastOptions={{ duration: 3200 }} />

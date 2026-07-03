@@ -7,9 +7,11 @@ import { BrandIcon } from '@/components/ui/brand-icon';
 import { ChevronLeft, UserPlus } from 'lucide-react';
 import toast from 'react-hot-toast';
 import { register, handleGoogleLogin } from '@/lib/api/auth';
+import { useOnboardingStore } from '@/store/onboarding-store';
 
 export default function RegisterPage() {
   const router = useRouter();
+  const resetOnboarding = useOnboardingStore((state) => state.resetOnboarding);
   const [loading, setLoading] = useState(false);
   const [googleLoading, setGoogleLoading] = useState(false);
 
@@ -24,6 +26,7 @@ export default function RegisterPage() {
 
     try {
       await register({ name, email, password });
+      resetOnboarding();
       toast.success('Conta criada. Agora faça login.');
       router.replace('/login');
     } catch (error) {

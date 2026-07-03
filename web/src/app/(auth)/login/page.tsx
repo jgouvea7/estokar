@@ -8,12 +8,18 @@ import { ChevronLeft, LogIn } from 'lucide-react';
 import toast from 'react-hot-toast';
 import { login, handleGoogleLogin } from '@/lib/api/auth';
 import { useAuthStore } from '@/store/auth-store';
+import { useOnboardingStore } from '@/store/onboarding-store';
 
 export default function LoginPage() {
   const router = useRouter();
   const setSession = useAuthStore((state) => state.setSession);
+  const hasCompletedOnboarding = useOnboardingStore((state) => state.hasCompletedOnboarding);
   const [loading, setLoading] = useState(false);
   const [googleLoading, setGoogleLoading] = useState(false);
+
+  function getRedirectPath() {
+    return hasCompletedOnboarding ? '/dashboard' : '/onboarding';
+  }
 
   async function handleSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
@@ -29,7 +35,7 @@ export default function LoginPage() {
       localStorage.setItem('refreshToken', session.refreshToken);
       setSession(session);
       toast.success('Login realizado com sucesso.');
-      router.replace('/dashboard');
+      router.replace(getRedirectPath());
     } catch (error) {
       toast.error(error instanceof Error ? error.message : 'Não foi possível entrar.');
     } finally {
