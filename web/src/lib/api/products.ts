@@ -64,3 +64,12 @@ export async function getProductDetails(id: string, accessToken: string): Promis
     accessToken,
   });
 }
+
+export type TimelinePoint = { date: string; balance: number };
+
+export async function getProductTimeline(id: string, accessToken: string): Promise<{ points: TimelinePoint[] }> {
+  return apiRequest<{ points: TimelinePoint[] }>(`/products/${id}/timeline`, {
+    method: 'GET',
+    accessToken,
+  });
+}

@@ -350,10 +350,55 @@ export class ProductsService {
     return category;
   }
 
-  private async getMovementSummary(
-    id: string,
-    requesterId: string,
-  ) {
+  async getProductTimeline(id: string, requesterId: string) {
+    const product = await this.productsRepository.findOne({
+      where: { id, userId: requesterId },
+      select: ['id', 'createdAt'],
+    });
+
+    if (!product) {
+      throw new NotFoundException(`Produto com ID "${id}" não encontrado`);
+    }
+
+    const movements = await this.stockMovementsRepository
+      .createQueryBuilder('m')
+      .select('m.createdAt', 'createdAt')
+      .addSelect(
+        `CASE WHEN m.type = :inType THEN m.quantity ELSE -m.quantity END`,
+        'netChange',
+      )
+      .where('m.userId = :userId', { userId: requesterId })
+      .andWhere('m.productId = :productId', { productId: id })
+      .setParameter('inType', StockMovementType.IN)
+      .orderBy('m.createdAt', 'ASC')
+      .getRawMany<{ createdAt: Date; netChange: string }>();
+
+    if (!movements.length) return { points: [] };
+
+    const creationDay = product.createdAt.toISOString().slice(0, 10);
+    const dailyMap = new Map<string, number>();
+
+    for (const m of movements) {
+      const day = m.createdAt.toISOString().slice(0, 10);
+      dailyMap.set(day, (dailyMap.get(day) ?? 0) + Number(m.netChange));
+    }
+
+    const allDays = new Set([creationDay, ...dailyMap.keys()]);
+    const sortedDays = [...allDays].sort();
+    let cumulative = 0;
+    const points: { date: string; balance: number }[] = [];
+
+    for (const day of sortedDays) {
+      if (dailyMap.has(day)) {
+        cumulative += dailyMap.get(day)!;
+      }
+      points.push({ date: day, balance: cumulative });
+    }
+
+    return { points };
+  }
+
+  private async getMovementSummary(id: string, requesterId: string) {
     const windowStart7 = new Date();
     windowStart7.setDate(windowStart7.getDate() - 7);
 

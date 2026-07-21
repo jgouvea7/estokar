@@ -17,4 +17,9 @@ export class DashboardController {
   getAlerts(@CurrentUser('id') userId: string) {
     return this.dashboardService.getAlerts(userId);
   }
+
+  @Get('timeline')
+  getTimeline(@CurrentUser('id') userId: string) {
+    return this.dashboardService.getTimeline(userId);
+  }
 }

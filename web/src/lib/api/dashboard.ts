@@ -7,3 +7,12 @@ export async function getDashboard(accessToken: string): Promise<DashboardSummar
     accessToken,
   });
 }
+
+export type TimelinePoint = { date: string; balance: number };
+
+export async function getDashboardTimeline(accessToken: string): Promise<{ points: TimelinePoint[] }> {
+  return apiRequest<{ points: TimelinePoint[] }>('/dashboard/timeline', {
+    method: 'GET',
+    accessToken,
+  });
+}

@@ -185,7 +185,12 @@ export class DashboardService {
     const forecastedProducts = products
       .map((product) => {
         const sales = salesMap.get(product.id);
-        if (!sales || (sales.recentSoldQuantity7 <= 0 && sales.recentSoldQuantity14 <= 0 && sales.recentSoldQuantity30 <= 0)) {
+        if (
+          !sales ||
+          (sales.recentSoldQuantity7 <= 0 &&
+            sales.recentSoldQuantity14 <= 0 &&
+            sales.recentSoldQuantity30 <= 0)
+        ) {
           return null;
         }
         const forecast = calculateForecast({
@@ -347,6 +352,38 @@ export class DashboardService {
       })
       .filter(Boolean)
       .sort((a, b) => a!.estimatedDaysLeft - b!.estimatedDaysLeft);
+  }
+
+  async getTimeline(userId: string) {
+    const movements = await this.stockMovementsRepository
+      .createQueryBuilder('m')
+      .select('m.createdAt', 'createdAt')
+      .addSelect(
+        `CASE WHEN m.type = :inType THEN m.quantity ELSE -m.quantity END`,
+        'netChange',
+      )
+      .where('m.userId = :userId', { userId })
+      .setParameter('inType', StockMovementType.IN)
+      .orderBy('m.createdAt', 'ASC')
+      .getRawMany<{ createdAt: Date; netChange: string }>();
+
+    if (!movements.length) return { points: [] };
+
+    const dailyMap = new Map<string, number>();
+    for (const m of movements) {
+      const day = m.createdAt.toISOString().slice(0, 10);
+      dailyMap.set(day, (dailyMap.get(day) ?? 0) + Number(m.netChange));
+    }
+
+    const sortedDays = [...dailyMap.keys()].sort();
+    let cumulative = 0;
+    const points: { date: string; balance: number }[] = [];
+    for (const day of sortedDays) {
+      cumulative += dailyMap.get(day)!;
+      points.push({ date: day, balance: cumulative });
+    }
+
+    return { points };
   }
 
   private formatWeeklySales(

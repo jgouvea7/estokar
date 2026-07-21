@@ -14,6 +14,7 @@ import {
   TrendingUp,
   Package2,
 } from 'lucide-react';
+import { StockTimelineChart } from '@/components/dashboard/stock-timeline-chart';
 import type { DashboardOverviewData } from '@/lib/dashboard/dashboard-data';
 import type {
   DashboardLowStockProduct,
@@ -102,6 +103,8 @@ export function DashboardOverview({ data, accessToken }: DashboardOverviewProps)
               </div>
             </section>
           )}
+
+          <StockTimelineChart data={data.timelinePoints} title="Movimentação do Estoque" />
 
           <ForecastSection
             forecastedProducts={data.forecastedProducts}

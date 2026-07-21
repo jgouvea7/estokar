@@ -7,6 +7,7 @@ import type {
   DashboardWeeklySales,
   StockHistoryItem,
 } from '@/lib/types';
+import type { TimelinePoint } from '@/lib/api/dashboard';
 
 export type DashboardOverviewData = {
   alerts: DashboardAlertProduct[];
@@ -19,12 +20,15 @@ export type DashboardOverviewData = {
   totalStock: number;
   catalogAvailability: number;
   dailyBalance: number;
+  timelinePoints: TimelinePoint[];
 };
 
 export function buildDashboardOverviewData({
   dashboard,
+  timeline = [],
 }: {
   dashboard: DashboardSummary;
+  timeline?: TimelinePoint[];
 }): DashboardOverviewData {
   const topSellingProducts = dashboard.topSellingProducts;
   const lowStockProducts = dashboard.lowStockProducts;
@@ -46,5 +50,6 @@ export function buildDashboardOverviewData({
     totalStock,
     catalogAvailability,
     dailyBalance,
+    timelinePoints: timeline,
   };
 }

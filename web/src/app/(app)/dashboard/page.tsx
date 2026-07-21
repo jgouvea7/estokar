@@ -1,8 +1,8 @@
 "use client";
 
 import dynamic from 'next/dynamic';
-import { useQuery } from '@tanstack/react-query';
-import { getDashboard } from '@/lib/api/dashboard';
+import { useQueries } from '@tanstack/react-query';
+import { getDashboard, getDashboardTimeline } from '@/lib/api/dashboard';
 
 const DashboardOverview = dynamic(
   () => import('@/components/dashboard/dashboard-overview').then((m) => m.DashboardOverview),
@@ -15,27 +15,47 @@ export default function DashboardPage() {
   const isDev = process.env.NODE_ENV === 'development';
   const session = useAuthStore((state) => state.session);
 
-  const dashboardQuery = useQuery({
-    queryKey: ['dashboard', session?.user.id],
-    queryFn: async () => buildDashboardOverviewData({
-      dashboard: await getDashboard(session!.accessToken),
-    }),
-    enabled: Boolean(session?.accessToken),
-    staleTime: 30_000,
-    placeholderData: (previousData) => previousData,
-    refetchOnWindowFocus: !isDev,
-    retry: false,
+  const results = useQueries({
+    queries: [
+      {
+        queryKey: ['dashboard', session?.user.id],
+        queryFn: async () => getDashboard(session!.accessToken),
+        enabled: Boolean(session?.accessToken),
+        staleTime: 30_000,
+        refetchOnWindowFocus: !isDev,
+        retry: false,
+      },
+      {
+        queryKey: ['dashboard-timeline', session?.user.id],
+        queryFn: async () => getDashboardTimeline(session!.accessToken),
+        enabled: Boolean(session?.accessToken),
+        staleTime: 30_000,
+        refetchOnWindowFocus: !isDev,
+        retry: false,
+      },
+    ],
   });
+
+  const dashboardQuery = results[0];
+  const timelineQuery = results[1];
+
+  const data = (() => {
+    if (!dashboardQuery.data || !timelineQuery.data) return null;
+    return buildDashboardOverviewData({
+      dashboard: dashboardQuery.data,
+      timeline: timelineQuery.data.points,
+    });
+  })();
 
   if (!session) {
     return null;
   }
 
-  if (dashboardQuery.isLoading) {
+  if (results.some((r) => r.isLoading)) {
     return <DashboardLoadingState />;
   }
 
-  if (dashboardQuery.isError || !dashboardQuery.data) {
+  if (!data) {
     return (
       <div className="surface-card p-8 text-center">
         <p className="text-lg font-bold text-(--ink)">Não foi possível carregar o dashboard</p>
@@ -45,7 +65,7 @@ export default function DashboardPage() {
   }
 
   return (
-    <DashboardOverview data={dashboardQuery.data} accessToken={session.accessToken} />
+    <DashboardOverview data={data} accessToken={session.accessToken} />
   );
 }
 

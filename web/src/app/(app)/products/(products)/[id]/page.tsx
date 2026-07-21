@@ -4,7 +4,7 @@ import Link from 'next/link';
 import Image from 'next/image';
 import { useParams } from 'next/navigation';
 import { useMemo, type ComponentType } from 'react';
-import { useQuery } from '@tanstack/react-query';
+import { useQueries } from '@tanstack/react-query';
 import {
   ArrowDownLeft,
   ArrowUpRight,
@@ -17,7 +17,8 @@ import {
   TrendingDown,
   TrendingUp,
 } from 'lucide-react';
-import { getProductDetails } from '@/lib/api/products';
+import { getProductDetails, getProductTimeline } from '@/lib/api/products';
+import { StockTimelineChart } from '@/components/dashboard/stock-timeline-chart';
 import type { ProductDashboardMovement } from '@/lib/types';
 import { useAuthStore } from '@/store/auth-store';
 import { formatMetric, formatDays } from '@/lib/utils';
@@ -36,11 +37,6 @@ type DashboardLoadState = {
   averageDailySales: number;
   estimatedDaysLeft: number | null;
   recentMovements: ProductDashboardMovement[];
-};
-
-type StockPoint = {
-  date: string;
-  stock: number;
 };
 
 export default function ProductDetailsPage() {
@@ -62,92 +58,48 @@ export default function ProductDetailsPage() {
     return undefined;
   }, [params]);
 
-  const productQuery = useQuery({
-    queryKey: ['product-dashboard', productId, session?.user.id],
-    queryFn: async (): Promise<DashboardLoadState> => {
-      const details = await getProductDetails(productId!, session!.accessToken);
+  const results = useQueries({
+    queries: [
+      {
+        queryKey: ['product-dashboard', productId, session?.user.id],
+        queryFn: async (): Promise<DashboardLoadState> => {
+          const details = await getProductDetails(productId!, session!.accessToken);
 
-      return {
-        productCategory: details.product.category?.name ?? 'Sem categoria',
-        productDescription: details.product.description,
-        productImage: details.product.image,
-        productName: details.product.name,
-        currentStock: details.dashboard.currentStock,
-        alertDaysBefore: details.dashboard.alertDaysBefore,
-        averageDailySales: details.dashboard.averageDailySales,
-        estimatedDaysLeft: details.dashboard.estimatedDaysLeft,
-        recentMovements: details.dashboard.recentMovements,
-        totalEntries: details.dashboard.summary.totalEntries,
-        totalOutputs: details.dashboard.summary.totalOutputs,
-      };
-    },
-    enabled: Boolean(session?.accessToken && productId),
-    staleTime: 30_000,
-    placeholderData: (previousData) => previousData,
-    refetchOnWindowFocus: !isDev,
-    refetchOnMount: isDev ? false : 'always',
-    retry: false,
+          return {
+            productCategory: details.product.category?.name ?? 'Sem categoria',
+            productDescription: details.product.description,
+            productImage: details.product.image,
+            productName: details.product.name,
+            currentStock: details.dashboard.currentStock,
+            alertDaysBefore: details.dashboard.alertDaysBefore,
+            averageDailySales: details.dashboard.averageDailySales,
+            estimatedDaysLeft: details.dashboard.estimatedDaysLeft,
+            recentMovements: details.dashboard.recentMovements,
+            totalEntries: details.dashboard.summary.totalEntries,
+            totalOutputs: details.dashboard.summary.totalOutputs,
+          };
+        },
+        enabled: Boolean(session?.accessToken && productId),
+        staleTime: 30_000,
+        placeholderData: (previousData: DashboardLoadState | undefined) => previousData,
+        refetchOnWindowFocus: !isDev,
+        refetchOnMount: isDev ? false : 'always',
+        retry: false,
+      },
+      {
+        queryKey: ['product-timeline', productId, session?.user.id],
+        queryFn: () => getProductTimeline(productId!, session!.accessToken),
+        enabled: Boolean(session?.accessToken && productId),
+        staleTime: 30_000,
+        refetchOnWindowFocus: !isDev,
+        retry: false,
+      },
+    ],
   });
 
+  const productQuery = results[0];
+  const timelineQuery = results[1];
   const dashboard = productQuery.data;
-
-  const stockSeries = useMemo<StockPoint[]>(() => {
-    if (!dashboard) {
-      return [];
-    }
-
-    const movements = [...dashboard.recentMovements].sort(
-      (a, b) =>
-        new Date(a.createdAt).getTime() -
-        new Date(b.createdAt).getTime(),
-    );
-
-    if (!movements.length) {
-      return [
-        {
-          date: new Date().toLocaleDateString('pt-BR'),
-          stock: dashboard.currentStock,
-        },
-      ];
-    }
-
-    let runningStock = dashboard.currentStock;
-
-    const calculated = [...movements]
-      .reverse()
-      .map((movement) => {
-        const stockAfter = runningStock;
-
-        runningStock =
-          movement.type === 'in'
-            ? Math.max(runningStock - movement.quantity, 0)
-            : runningStock + movement.quantity;
-
-        return {
-          createdAt: movement.createdAt,
-          stockAfter,
-        };
-      })
-      .reverse();
-
-    const groupedByDay = new Map<
-      string,
-      { date: string; stock: number }
-    >();
-
-    calculated.forEach((item) => {
-      const date = new Date(item.createdAt).toLocaleDateString(
-        'pt-BR',
-      );
-
-      groupedByDay.set(date, {
-        date,
-        stock: item.stockAfter,
-      });
-    });
-
-    return Array.from(groupedByDay.values());
-  }, [dashboard]);
 
   const groupedMovements = useMemo(() => {
     if (!dashboard) {
@@ -167,21 +119,6 @@ export default function ProductDetailsPage() {
 
     return Object.entries(grouped).reverse();
   }, [dashboard]);
-
-  const chartStats = useMemo(() => {
-    if (!dashboard) {
-      return null;
-    }
-
-    const values = stockSeries.length
-      ? stockSeries.map((movement) => movement.stock).concat(dashboard.currentStock)
-      : [dashboard.currentStock];
-
-    const max = Math.max(...values, 1);
-    const min = Math.max(Math.min(...values), 0);
-
-    return { max, min };
-  }, [dashboard, stockSeries]);
 
   if (!session) {
     return <PageShell loading />;
@@ -286,24 +223,10 @@ export default function ProductDetailsPage() {
 
         <section className="grid gap-5 xl:grid-cols-[1.55fr_1fr]">
           <article className="surface-card p-5 sm:p-6">
-            <div className="flex items-center justify-between gap-4">
-              <div>
-                <p className="text-[10px] font-bold uppercase tracking-[0.18em] text-(--muted)">Gráfico de estoque</p>
-                <h2 className="mt-1 text-lg font-bold tracking-tight text-(--ink)">Últimas movimentações</h2>
-              </div>
-              <div className="rounded-lg bg-(--soft) px-3 py-2">
-                <p className="text-[9px] font-bold uppercase tracking-[0.18em] text-(--muted)">Média diária</p>
-                <p className="mt-0.5 text-base font-bold text-(--ink)">{formatMetric(dashboard.averageDailySales)}</p>
-              </div>
-            </div>
-
-            <div className="mt-4">
-              {stockSeries.length && chartStats ? (
-                <StockChart points={stockSeries} max={chartStats.max} min={chartStats.min} currentStock={dashboard.currentStock} />
-              ) : (
-                <EmptyChart currentStock={dashboard.currentStock} />
-              )}
-            </div>
+            <StockTimelineChart
+              data={timelineQuery.data?.points ?? []}
+              title="Últimas movimentações"
+            />
           </article>
 
           <div className="space-y-4">
@@ -429,103 +352,6 @@ function PageShell({
         </div>
       </section>
     </main>
-  );
-}
-
-function StockChart({
-  currentStock,
-  max,
-  min,
-  points,
-}: {
-  currentStock: number;
-  max: number;
-  min: number;
-  points: StockPoint[];
-}) {
-  const chartPadding = 5;
-  const width = 100 - chartPadding * 2;
-  const height = 40;
-  const range = Math.max(max - min, 1);
-  const step = points.length > 1 ? width / (points.length - 1) : 0;
-
-  const coordinates = points.map((point, index) => {
-    const x = chartPadding + index * step;
-    const normalized = (point.stock - min) / range;
-    const y = height - chartPadding - normalized * (height - chartPadding * 2);
-
-    return { ...point, x, y };
-  });
-
-  const linePoints = coordinates.map((point) => `${point.x},${point.y}`).join(' ');
-  const areaPath = coordinates.length
-    ? `${coordinates.map((point, index) => `${index === 0 ? 'M' : 'L'} ${point.x} ${point.y}`).join(' ')} L ${coordinates.at(-1)?.x ?? 95} ${height - chartPadding} L ${coordinates[0].x} ${height - chartPadding} Z`
-    : '';
-
-  return (
-    <div className="rounded-lg border-2 border-(--stroke) bg-(--card) p-3 sm:p-4">
-      <div className="mb-3 flex items-center justify-between gap-4 text-[9px] font-bold uppercase tracking-[0.18em] text-(--muted)">
-        <span>Evolução do estoque</span>
-        <span className="rounded-lg border-2 border-(--stroke) bg-(--card) px-2.5 py-0.5">Atual: {currentStock}</span>
-      </div>
-
-      <div className="overflow-hidden rounded-lg border-2 border-(--stroke) bg-(--card) p-2">
-        <svg viewBox="0 0 100 40" className="h-32 w-full">
-          <defs>
-            <linearGradient id="stockArea" x1="0" y1="0" x2="0" y2="1">
-              <stop offset="0%" stopColor="rgba(217,119,6,0.28)" />
-              <stop offset="100%" stopColor="rgba(217,119,6,0.03)" />
-            </linearGradient>
-          </defs>
-
-          {[0, 1, 2, 3].map((line) => (
-            <line
-              key={line}
-              x1="5"
-              x2="95"
-              y1={5 + line * 10}
-              y2={5 + line * 10}
-              stroke="rgba(139,140,154,0.18)"
-              strokeDasharray="2 3"
-            />
-          ))}
-
-          {coordinates.length ? <path d={areaPath} fill="url(#stockArea)" /> : null}
-          {coordinates.length ? <polyline points={linePoints} fill="none" stroke="rgba(217,119,6,0.92)" strokeWidth="0.8" strokeLinecap="round" strokeLinejoin="round" /> : null}
-
-          {coordinates.map((point) => (
-            <g key={point.date}>
-              <circle cx={point.x} cy={point.y} r="1.8" fill="white" stroke="rgba(217,119,6,0.98)" strokeWidth="0.7" />
-            </g>
-          ))}
-        </svg>
-      </div>
-
-      <div className="mt-3 flex flex-wrap items-center gap-2 text-[10px] font-medium text-(--muted)">
-        {coordinates.length ? (
-          <>
-            <span className="rounded-lg bg-(--soft) px-2.5 py-0.5">Menor: {Math.floor(min)}</span>
-            <span className="rounded-lg bg-(--soft) px-2.5 py-0.5">Maior: {Math.ceil(max)}</span>
-          </>
-        ) : (
-          <span className="rounded-lg bg-(--soft) px-2.5 py-0.5">Sem movimentações para desenhar a curva</span>
-        )}
-      </div>
-    </div>
-  );
-}
-
-function EmptyChart({ currentStock }: { currentStock: number }) {
-  return (
-    <div className="rounded-lg border-2 border-dashed border-(--stroke) bg-(--surface-2) p-6 text-center">
-      <div className="mx-auto flex h-12 w-12 items-center justify-center rounded-full bg-(--card) text-(--muted)">
-        <BarChart3 size={22} strokeWidth={1.5} />
-      </div>
-      <h3 className="mt-4 text-base font-bold tracking-tight text-(--ink)">Curva de estoque indisponível</h3>
-      <p className="mx-auto mt-1.5 max-w-md text-xs leading-6 text-(--muted)">
-        Ainda não existem movimentações suficientes para desenhar o gráfico. O estoque atual permanece em {currentStock} unidades.
-      </p>
-    </div>
   );
 }
 

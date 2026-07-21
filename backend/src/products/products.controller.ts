@@ -44,6 +44,15 @@ export class ProductsController {
     return this.productsService.findOne(id, requesterId);
   }
 
+  // GET /products/:id/timeline — autenticado
+  @Get(':id/timeline')
+  getTimeline(
+    @Param('id', ParseUUIDPipe) id: string,
+    @CurrentUser('id') requesterId: string,
+  ) {
+    return this.productsService.getProductTimeline(id, requesterId);
+  }
+
   // GET /products/:id/dashboard — autenticado
   @Get(':id/dashboard')
   getDashboard(

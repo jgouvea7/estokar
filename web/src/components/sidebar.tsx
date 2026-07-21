@@ -19,8 +19,7 @@ import {
   Users,
   X,
 } from 'lucide-react';
-import { getDashboard } from '@/lib/api/dashboard';
-import { buildDashboardOverviewData } from '@/lib/dashboard/dashboard-data';
+import { getDashboard, getDashboardTimeline } from '@/lib/api/dashboard';
 import toast from 'react-hot-toast';
 import { useAuthStore } from '@/store/auth-store';
 
@@ -66,19 +65,19 @@ const NavItem = memo(function NavItem({
       href={href}
       onMouseEnter={onHover}
       data-active={active}
-      className="group relative flex items-center rounded-xl py-3 text-[15px] font-semibold transition-all duration-200
+      className="group relative flex items-center rounded-xl py-2.5 text-sm font-semibold transition-all duration-200
         data-[active=true]:bg-(--accent-soft) data-[active=true]:text-(--accent)
         data-[active=false]:text-white/50 data-[active=false]:hover:bg-white/8 data-[active=false]:hover:text-white/85"
     >
-      <div className="flex w-[60px] shrink-0 items-center justify-center"
-        style={{ width: sidebarOpen ? '60px' : '100%' }}
+      <div className="flex w-[56px] shrink-0 items-center justify-center"
+        style={{ width: sidebarOpen ? '56px' : '100%' }}
       >
-        <Icon size={18} strokeWidth={active ? 2.5 : 2} />
+        <Icon size={16} strokeWidth={active ? 2.5 : 2} />
       </div>
       <span
-        className="overflow-hidden whitespace-nowrap text-[15px] transition-all duration-300 ease-out"
+        className="overflow-hidden whitespace-nowrap text-sm transition-all duration-300 ease-out"
         style={{
-          maxWidth: sidebarOpen ? '160px' : '0px',
+          maxWidth: sidebarOpen ? '140px' : '0px',
           opacity: sidebarOpen ? 1 : 0,
           marginLeft: sidebarOpen ? '0' : '-8px',
           transitionDelay: sidebarOpen ? '60ms' : '0ms',
@@ -118,13 +117,18 @@ export default function Sidebar({
   function handlePrefetchDashboard() {
     const s = useAuthStore.getState().session;
     if (!s?.accessToken) return;
-    queryClient.prefetchQuery({
-      queryKey: ['dashboard', s.user.id],
-      queryFn: async () => buildDashboardOverviewData({
-        dashboard: await getDashboard(s.accessToken),
+    Promise.all([
+      queryClient.prefetchQuery({
+        queryKey: ['dashboard', s.user.id],
+        queryFn: () => getDashboard(s.accessToken),
+        staleTime: 30_000,
       }),
-      staleTime: 30_000,
-    });
+      queryClient.prefetchQuery({
+        queryKey: ['dashboard-timeline', s.user.id],
+        queryFn: () => getDashboardTimeline(s.accessToken),
+        staleTime: 30_000,
+      }),
+    ]);
   }
 
   useEffect(() => {
@@ -170,24 +174,24 @@ export default function Sidebar({
           data-[desktop-collapsed=false]:w-[280px]"
       >
         <div
-          className="flex shrink-0 items-center px-4 pt-5 pb-4"
+          className="flex shrink-0 items-center px-4 pt-4 pb-3"
           style={{ justifyContent: sidebarOpen ? 'space-between' : 'center' }}
         >
           <div
             className="overflow-hidden whitespace-nowrap transition-all duration-300 ease-out"
             style={{
-              maxWidth: sidebarOpen ? '180px' : '0px',
+              maxWidth: sidebarOpen ? '160px' : '0px',
               opacity: sidebarOpen ? 1 : 0,
               transitionDelay: sidebarOpen ? '60ms' : '0ms',
             }}
           >
             <Link href="/dashboard" className="flex items-center gap-3">
-              <div className="grid h-11 w-11 shrink-0 place-items-center rounded-xl bg-(--accent-soft) text-(--accent)">
-                <BrandIcon size={20} strokeWidth={2.5} />
+              <div className="grid h-10 w-10 shrink-0 place-items-center rounded-xl bg-(--accent-soft) text-(--accent)">
+                <BrandIcon size={18} strokeWidth={2.5} />
               </div>
               <div>
-                <p className="text-lg font-bold leading-tight tracking-tight text-white">Estokar</p>
-                <p className="text-[11px] font-bold uppercase tracking-[0.16em] text-(--accent)">Inventory OS</p>
+                <p className="text-base font-bold leading-tight tracking-tight text-white">Estokar</p>
+                <p className="text-[10px] font-bold uppercase tracking-[0.16em] text-(--accent)">Inventory OS</p>
               </div>
             </Link>
           </div>
@@ -195,14 +199,14 @@ export default function Sidebar({
           <button
             type="button"
             onClick={onToggleCollapse}
-            className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl border-2 border-white/10 text-white/50 transition-all hover:bg-white/8 hover:text-white/85"
+            className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl border-2 border-white/10 text-white/50 transition-all hover:bg-white/8 hover:text-white/85"
             aria-label={sidebarOpen ? 'Recolher sidebar' : 'Expandir sidebar'}
           >
-            {sidebarOpen ? <X size={18} /> : <Menu size={18} />}
+            {sidebarOpen ? <X size={16} /> : <Menu size={16} />}
           </button>
         </div>
 
-        <nav className="mt-6 flex-1 space-y-0.5 px-3">
+        <nav className="mt-4 flex-1 space-y-0.5 px-3">
           {navItems.map((item) => (
             <NavItem
               key={item.href}
@@ -215,11 +219,11 @@ export default function Sidebar({
         </nav>
 
         {session?.user?.role === 'ADMIN' && (
-          <div className="mt-4 px-3">
+          <div className="mt-3 px-3">
             <p
-              className="overflow-hidden whitespace-nowrap px-3.5 pb-1.5 text-[11px] font-bold uppercase tracking-[0.16em] text-white/30 transition-all duration-300 ease-out"
+              className="overflow-hidden whitespace-nowrap px-3 pb-1 text-[10px] font-bold uppercase tracking-[0.16em] text-white/30 transition-all duration-300 ease-out"
               style={{
-                maxHeight: sidebarOpen ? '24px' : '0px',
+                maxHeight: sidebarOpen ? '20px' : '0px',
                 opacity: sidebarOpen ? 1 : 0,
                 transitionDelay: sidebarOpen ? '60ms' : '0ms',
               }}
@@ -239,39 +243,39 @@ export default function Sidebar({
           </div>
         )}
 
-        <div className="mt-auto shrink-0 border-t border-white/8 px-3 pt-3 pb-4">
+        <div className="mt-auto shrink-0 border-t border-white/8 px-3 pt-2 pb-3">
           <div className="relative" ref={accountRef}>
             <button
               type="button"
               onClick={() => setIsAccountOpen((prev) => !prev)}
-              className="flex w-full items-center rounded-xl py-2.5 text-left text-[15px] font-semibold text-white/50 transition-all hover:bg-white/8 hover:text-white/85"
+              className="flex w-full items-center rounded-xl py-2 text-left text-sm font-semibold text-white/50 transition-all hover:bg-white/8 hover:text-white/85"
               style={{ justifyContent: sidebarOpen ? 'flex-start' : 'center' }}
               aria-haspopup="menu"
               aria-expanded={isAccountOpen}
             >
               <div className="flex shrink-0 items-center justify-center"
-                style={{ width: sidebarOpen ? '60px' : '100%' }}
+                style={{ width: sidebarOpen ? '56px' : '100%' }}
               >
-                <div className="grid h-10 w-10 place-items-center rounded-xl bg-(--accent-soft) text-base font-bold text-(--accent)">
+                <div className="grid h-9 w-9 place-items-center rounded-xl bg-(--accent-soft) text-sm font-bold text-(--accent)">
                   {userInitial}
                 </div>
               </div>
               <div
                 className="overflow-hidden whitespace-nowrap transition-all duration-300 ease-out"
                 style={{
-                  maxWidth: sidebarOpen ? '160px' : '0px',
+                  maxWidth: sidebarOpen ? '140px' : '0px',
                   opacity: sidebarOpen ? 1 : 0,
                   transitionDelay: sidebarOpen ? '60ms' : '0ms',
                 }}
               >
-                <p className="truncate text-[15px] font-semibold text-white">{userFirstName}</p>
-                <p className="text-sm font-medium text-(--accent)">Conta</p>
+                <p className="truncate text-sm font-semibold text-white">{userFirstName}</p>
+                <p className="text-xs font-medium text-(--accent)">Conta</p>
               </div>
             </button>
 
             {isAccountOpen && (
               <div
-                className="absolute z-[75] w-64 rounded-xl border-2 border-(--stroke) bg-(--card) p-3 shadow-none"
+                className="absolute z-[75] w-56 rounded-xl border-2 border-(--stroke) bg-(--card) p-2.5 shadow-none"
                 style={
                   sidebarOpen
                     ? isMobile
@@ -291,9 +295,9 @@ export default function Sidebar({
                       setIsAccountOpen(false);
                       onOpenSettings();
                     }}
-                    className="flex w-full items-center gap-3 rounded-lg px-3.5 py-2.5 text-sm font-semibold text-(--ink) transition-colors hover:bg-(--soft)"
+                    className="flex w-full items-center gap-3 rounded-lg px-3 py-2 text-sm font-semibold text-(--ink) transition-colors hover:bg-(--soft)"
                   >
-                    <Settings size={18} />
+                    <Settings size={16} />
                     Configuracoes
                   </button>
                 </div>
@@ -304,9 +308,9 @@ export default function Sidebar({
                       setIsAccountOpen(false);
                       handleLogout();
                     }}
-                    className="flex w-full items-center gap-3 rounded-lg px-3.5 py-2.5 text-sm font-semibold text-(--critical) transition-colors hover:bg-(--critical-soft)"
+                    className="flex w-full items-center gap-3 rounded-lg px-3 py-2 text-sm font-semibold text-(--critical) transition-colors hover:bg-(--critical-soft)"
                   >
-                    <LogOut size={18} />
+                    <LogOut size={16} />
                     Sair
                   </button>
                 </div>

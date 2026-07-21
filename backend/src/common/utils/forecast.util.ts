@@ -13,7 +13,11 @@ export function calculateForecast(params: {
     leadTimeDays = 0,
   } = params;
 
-  if (!Number.isFinite(currentStock) || currentStock < 0 || !Number.isFinite(soldLast7Days)) {
+  if (
+    !Number.isFinite(currentStock) ||
+    currentStock < 0 ||
+    !Number.isFinite(soldLast7Days)
+  ) {
     return { averageDailySales: 0, estimatedDaysLeft: null };
   }
 
