@@ -5,7 +5,7 @@ import { createPortal } from 'react-dom';
 import Image from 'next/image';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
-import { Download, Edit2, Image as ImageIcon, PackageSearch, Plus, Search, TrendingDown } from 'lucide-react';
+import { Download, Edit2, Image as ImageIcon, MoreVertical, PackageSearch, Plus, Search, Trash2, TrendingDown } from 'lucide-react';
 import toast from 'react-hot-toast';
 import {
   createCategory,
@@ -83,6 +83,8 @@ function ProductsPageContent() {
     categoryId: '',
     image: '',
   });
+  const [openMenuProductId, setOpenMenuProductId] = useState<string | null>(null);
+  const [productToDelete, setProductToDelete] = useState<Product | null>(null);
   const [stockAdjustments, setStockAdjustments] = useState<Record<string, { in: string; out: string }>>({});
   const [imageFile, setImageFile] = useState<File | null>(null);
   const [imagePreviewUrl, setImagePreviewUrl] = useState('');
@@ -506,8 +508,10 @@ function ProductsPageContent() {
 
   return (
     <div className="space-y-8 reveal-up">
-      <section className="flex items-center justify-between gap-4">
-        <p className="text-sm font-medium text-(--muted)">Visualize, edite e acompanhe o volume total do seu estoque.</p>
+      <section className="flex flex-wrap items-center justify-between gap-4">
+        <div className="flex flex-wrap items-center gap-x-4 gap-y-1">
+          <p className="text-sm font-medium text-(--muted)">Visualize, edite e acompanhe o volume total do seu estoque.</p>
+        </div>
         <button
           type="button"
           onClick={() => exportProductsCsv(session!.accessToken)}
@@ -643,16 +647,50 @@ function ProductsPageContent() {
                       {status.label}
                     </span>
                   </div>
-                  <button
-                    type="button"
-                    onClick={(event) => {
-                      event.stopPropagation();
-                      openEditProduct(product);
-                    }}
-                    className="shrink-0 rounded-md p-1 text-(--muted) transition-colors hover:bg-(--soft) hover:text-(--ink)"
-                  >
-                    <Edit2 size={14} />
-                  </button>
+                  <div className="relative">
+                    <button
+                      type="button"
+                      onClick={(event) => {
+                        event.stopPropagation();
+                        setOpenMenuProductId(openMenuProductId === product.id ? null : product.id);
+                      }}
+                      className="shrink-0 rounded-md p-1 text-(--muted) transition-colors hover:bg-(--soft) hover:text-(--ink)"
+                    >
+                      <MoreVertical size={14} />
+                    </button>
+
+                    {openMenuProductId === product.id && (
+                      <>
+                        <div className="fixed inset-0 z-40" onClick={() => setOpenMenuProductId(null)} />
+                        <div className="absolute right-0 top-full z-50 mt-1 w-36 rounded-lg border-2 border-(--stroke) bg-(--card) py-1 shadow-lg">
+                          <button
+                            type="button"
+                            onClick={(event) => {
+                              event.stopPropagation();
+                              setOpenMenuProductId(null);
+                              openEditProduct(product);
+                            }}
+                            className="flex w-full items-center gap-2 px-3 py-2 text-xs font-bold text-(--ink) transition-colors hover:bg-(--soft)"
+                          >
+                            <Edit2 size={14} />
+                            Editar
+                          </button>
+                          <button
+                            type="button"
+                            onClick={(event) => {
+                              event.stopPropagation();
+                              setOpenMenuProductId(null);
+                              setProductToDelete(product);
+                            }}
+                            className="flex w-full items-center gap-2 px-3 py-2 text-xs font-bold text-(--critical) transition-colors hover:bg-(--critical-soft)"
+                          >
+                            <Trash2 size={14} />
+                            Excluir
+                          </button>
+                        </div>
+                      </>
+                    )}
+                  </div>
                 </div>
 
                 <h5 className="truncate text-[15px] font-bold text-(--ink)">{product.name}</h5>
@@ -918,17 +956,38 @@ function ProductsPageContent() {
               {isImageUploading ? 'Enviando imagem...' : 'Salvar alterações'}
             </button>
 
-            {productEditing && (
-              <button
-                type="button"
-                onClick={() => handleDeleteProduct(productEditing)}
-                className="w-full rounded-lg py-2 text-xs font-bold text-(--muted) transition-colors hover:text-(--critical)">
-                Apagar produto permanentemente
-              </button>
-            )}
           </div>
         </Modal>
       ) : null}
+
+      {productToDelete && (
+        <Modal title="Excluir produto" onClose={() => setProductToDelete(null)}>
+          <div className="space-y-5">
+            <p className="text-sm leading-relaxed text-(--muted)">
+              Tem certeza que deseja excluir <strong className="text-(--ink)">{productToDelete.name}</strong> ({productToDelete.quantity} un.)? Todo o histórico de movimentação deste produto será perdido.
+            </p>
+            <div className="flex gap-3">
+              <button
+                type="button"
+                onClick={() => setProductToDelete(null)}
+                className="flex-1 rounded-lg border-2 border-(--stroke) py-3 text-sm font-bold text-(--ink) transition-colors hover:bg-(--soft)"
+              >
+                Cancelar
+              </button>
+              <button
+                type="button"
+                onClick={() => {
+                  deleteProductMutation.mutate(productToDelete.id);
+                  setProductToDelete(null);
+                }}
+                className="flex-1 rounded-lg bg-(--critical) py-3 text-sm font-bold text-white transition-all hover:brightness-125"
+              >
+                Excluir
+              </button>
+            </div>
+          </div>
+        </Modal>
+      )}
 
       {showCategoryModal ? (
         <Modal

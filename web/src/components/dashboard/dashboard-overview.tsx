@@ -30,9 +30,10 @@ import { formatNumber, formatMetric, formatDays, formatDateTime } from '@/lib/ut
 type DashboardOverviewProps = {
   data: DashboardOverviewData;
   accessToken: string;
+  lastUpdatedAt: number;
 };
 
-export function DashboardOverview({ data, accessToken }: DashboardOverviewProps) {
+export function DashboardOverview({ data, accessToken, lastUpdatedAt }: DashboardOverviewProps) {
   const hasData = data.totalStock > 0;
 
   const metrics = [
@@ -45,7 +46,13 @@ export function DashboardOverview({ data, accessToken }: DashboardOverviewProps)
   return (
     <div className="space-y-6 reveal-up">
       <section className="flex items-center justify-between gap-4">
-        <p className="text-sm font-medium text-(--muted)">Acompanhe seu estoque em tempo real.</p>
+        <div className="flex flex-wrap items-center gap-x-4 gap-y-1">
+          <p className="text-sm font-medium text-(--muted)">Acompanhe seu estoque em tempo real.</p>
+          <span className="hidden sm:flex items-center gap-1.5 text-[11px] font-medium text-(--muted) opacity-60">
+            <Clock3 size={12} strokeWidth={2} />
+            Última atualização {formatDateTime(new Date(lastUpdatedAt))}
+          </span>
+        </div>
         <button
           type="button"
           onClick={() => exportDashboardCsv(accessToken)}
@@ -132,11 +139,11 @@ export function DashboardOverview({ data, accessToken }: DashboardOverviewProps)
               </div>
             </div>
 
-            <div className="flex flex-col gap-5 min-h-0">
-              <div className="flex-[4] min-h-0">
+            <div className="flex flex-col gap-5">
+              <div className="min-h-0">
                 <CategoryPieChart data={data.categoryStockPoints} />
               </div>
-              <section className="surface-card p-5 sm:p-6 flex-[1]">
+              <section className="surface-card p-5 sm:p-6 sm:flex-[1]">
                 <div className="mb-4">
                   <p className="text-[10px] font-bold uppercase tracking-[0.18em] text-(--muted)">Ranking</p>
                   <h3 className="mt-1 text-lg font-bold text-(--ink)">Mais vendidos</h3>
@@ -304,6 +311,28 @@ function ForecastSection({
   });
 
   if (!sorted.length) return null;
+
+  const hasUrgentProducts = sorted.some(
+    (p) =>
+      criticalIds.has(p.productId) ||
+      (p.estimatedDaysLeft !== null && p.estimatedDaysLeft <= (p.alertDaysBefore ?? 7)),
+  );
+
+  if (!hasUrgentProducts) {
+    return (
+      <section className="surface-card p-5 sm:p-6">
+        <div className="mb-4">
+          <p className="text-[10px] font-bold uppercase tracking-[0.18em] text-(--muted)">Previsão</p>
+          <h3 className="mt-1 text-lg font-bold text-(--ink)">Estimativa de dias restantes</h3>
+        </div>
+        <EmptyState
+          icon={BarChart3}
+          title="Nenhum produto próximo do fim"
+          description="Todos os produtos estão com estoque adequado dentro do período configurado."
+        />
+      </section>
+    );
+  }
 
   return (
     <section className="surface-card p-5 sm:p-6">

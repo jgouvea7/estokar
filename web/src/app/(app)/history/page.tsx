@@ -1,8 +1,8 @@
 "use client";
 
+import { useState, useEffect, useMemo } from 'react';
 import { ArrowDownLeft, ArrowUpRight, Download, History } from 'lucide-react';
 import { useHistoryStore } from '@/store/history-store';
-import { useEffect } from 'react';
 import { getStockMovements } from '@/lib/api/stock-movements';
 import { exportStockMovementsCsv } from '@/lib/api/export';
 import { useAuthStore } from '@/store/auth-store';
@@ -11,6 +11,7 @@ export default function HistoryPage() {
   const items = useHistoryStore((state) => state.items);
   const setItems = useHistoryStore((state) => state.setItems);
   const session = useAuthStore((state) => state.session);
+  const [period, setPeriod] = useState<'weekly' | 'monthly' | 'yearly'>('monthly');
 
   useEffect(() => {
     if (!session?.accessToken) return;
@@ -33,7 +34,19 @@ export default function HistoryPage() {
       controller.abort();
     };
   }, [session, setItems]);
-  const groupedByDate = items.reduce<Record<string, typeof items>>((acc, item) => {
+
+  const filteredItems = useMemo(() => {
+    const now = new Date();
+    const cutoff = new Date(now);
+    switch (period) {
+      case 'weekly': cutoff.setDate(cutoff.getDate() - 7); break;
+      case 'monthly': cutoff.setMonth(cutoff.getMonth() - 1); break;
+      case 'yearly': cutoff.setFullYear(cutoff.getFullYear() - 1); break;
+    }
+    return items.filter((item) => new Date(item.createdAt) >= cutoff);
+  }, [items, period]);
+
+  const groupedByDate = filteredItems.reduce<Record<string, typeof items>>((acc, item) => {
     const key = new Date(item.createdAt).toLocaleDateString('pt-BR', {
       weekday: 'long',
       day: '2-digit',
@@ -52,8 +65,24 @@ export default function HistoryPage() {
 
   return (
     <div className="space-y-8 reveal-up">
-      <section className="flex items-center justify-between gap-4">
+      <section className="flex flex-wrap items-center justify-between gap-4">
         <p className="text-sm font-medium text-(--muted)">Acompanhe cada entrada e saída do seu estoque em tempo real.</p>
+        <div className="flex gap-1 rounded-lg border-2 border-(--stroke) p-0.5">
+          {(['weekly', 'monthly', 'yearly'] as const).map((p) => (
+            <button
+              key={p}
+              type="button"
+              onClick={() => setPeriod(p)}
+              className={`rounded-md px-2 py-1 text-[10px] sm:px-3 sm:py-1.5 sm:text-[11px] font-bold uppercase tracking-wider transition-all ${
+                period === p
+                  ? 'bg-(--button) text-white'
+                  : 'text-(--muted) hover:text-(--ink)'
+              }`}
+            >
+              {p === 'weekly' ? 'Semanal' : p === 'monthly' ? 'Mensal' : 'Anual'}
+            </button>
+          ))}
+        </div>
         <button
           type="button"
           onClick={() => exportStockMovementsCsv(session!.accessToken)}
@@ -116,7 +145,7 @@ export default function HistoryPage() {
               <History size={26} strokeWidth={1.5} />
             </div>
             <p className="text-base font-bold text-(--ink)">Sem movimentações</p>
-            <p className="mt-1 text-sm font-medium text-(--muted)">As operações realizadas aparecerão nesta timeline.</p>
+            <p className="mt-1 text-sm font-medium text-(--muted)">Nenhuma movimentação encontrada no período selecionado.</p>
           </div>
         )}
       </section>

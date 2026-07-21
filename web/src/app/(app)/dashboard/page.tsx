@@ -74,8 +74,14 @@ export default function DashboardPage() {
     );
   }
 
+  const lastUpdatedAt = Math.max(
+    dashboardQuery.dataUpdatedAt,
+    timelineQuery.dataUpdatedAt,
+    categoriesQuery.dataUpdatedAt,
+  );
+
   return (
-    <DashboardOverview data={data} accessToken={session.accessToken} />
+    <DashboardOverview data={data} accessToken={session.accessToken} lastUpdatedAt={lastUpdatedAt} />
   );
 }
 

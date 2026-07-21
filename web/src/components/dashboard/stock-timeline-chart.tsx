@@ -83,13 +83,13 @@ export const StockTimelineChart = memo(function StockTimelineChart({ data, title
           <p className="text-[10px] font-bold uppercase tracking-[0.18em] text-(--muted)">Gráfico</p>
           {title && <h3 className="mt-1 text-lg font-bold text-(--ink)">{title}</h3>}
         </div>
-        <div className="flex gap-1 rounded-lg border-2 border-(--stroke) p-0.5">
+        <div className="flex flex-wrap gap-1 rounded-lg border-2 border-(--stroke) p-0.5">
           {(Object.keys(periodLabels) as Period[]).map((p) => (
             <button
               key={p}
               type="button"
               onClick={() => setPeriod(p)}
-              className={`rounded-md px-3 py-1.5 text-[11px] font-bold uppercase tracking-wider transition-all ${
+              className={`rounded-md px-2 py-1 text-[10px] sm:px-3 sm:py-1.5 sm:text-[11px] font-bold uppercase tracking-wider transition-all ${
                 period === p
                   ? 'bg-(--button) text-white'
                   : 'text-(--muted) hover:text-(--ink)'
@@ -101,7 +101,7 @@ export const StockTimelineChart = memo(function StockTimelineChart({ data, title
         </div>
       </div>
 
-      <div className="h-72 w-full">
+      <div className="h-56 sm:h-72 w-full">
         <ResponsiveContainer width="100%" height="100%">
           <LineChart data={chartData} margin={{ top: 8, right: 8, bottom: 8, left: -16 }}>
             <CartesianGrid strokeDasharray="3 3" stroke="var(--stroke)" />

@@ -28,13 +28,12 @@ export default function AdminMovementsPage() {
   }
 
   return (
-    <div className="space-y-6">
-        <header>
-          <h1 className="text-2xl font-black text-(--ink)">Movimentações</h1>
-          <p className="text-xs font-bold text-(--muted) uppercase tracking-wider">
-            Todas as movimentações de estoque do sistema
-          </p>
-        </header>
+    <div className="space-y-6 reveal-up">
+      <section className="flex flex-wrap items-start justify-between gap-4">
+        <div className="flex flex-wrap items-center gap-x-4 gap-y-1">
+          <p className="text-sm font-medium text-(--muted)">Todas as movimentações de estoque do sistema.</p>
+        </div>
+      </section>
 
       <div className="surface-card overflow-hidden rounded-xl border-2 border-(--stroke)">
         <div className="overflow-x-auto">

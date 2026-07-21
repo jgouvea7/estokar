@@ -218,7 +218,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
   }
 
   return (
-    <main className="flex min-h-screen bg-(--bg)">
+    <main className="flex h-screen overflow-hidden bg-(--bg)">
       <Sidebar
         isDesktopCollapsed={isDesktopCollapsed}
         onToggleCollapse={toggleDesktopCollapsed}
@@ -226,18 +226,18 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
       />
 
       <div
-        className="flex flex-1 flex-col transition-all duration-300 ease-in-out"
+        className="flex h-screen flex-1 flex-col overflow-y-auto transition-all duration-300 ease-in-out"
         style={{
-          paddingLeft: isMobile ? '96px' : (isDesktopCollapsed ? '96px' : '304px'),
+          paddingLeft: isMobile ? '72px' : (isDesktopCollapsed ? '96px' : '304px'),
         }}
       >
-        <header className="sticky top-0 z-50 flex h-16 items-center justify-between border-b-2 border-(--stroke) bg-(--card) px-6">
+        <header className="sticky top-0 z-50 flex min-h-[72px] items-center justify-between border-b-2 border-(--stroke) bg-(--card) px-4 sm:px-6">
           <div className="flex items-center gap-3">
-            <h2 className="text-2xl font-bold tracking-tight text-(--ink)">{getHeaderTitle(pathname)}</h2>
+            <h2 className="text-[1.75rem] font-bold leading-tight tracking-tight text-(--ink) sm:text-2xl">{getHeaderTitle(pathname)}</h2>
           </div>
         </header>
 
-        <section className="p-6">
+        <section className="px-4 pb-6 pt-5 sm:p-6 sm:pt-7">
           <div className="mx-auto max-w-7xl">
             {children}
           </div>
