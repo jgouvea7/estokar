@@ -589,7 +589,7 @@ function ProductsPageContent() {
           <p className="mt-1 text-sm font-medium text-(--muted)">Tente ajustar sua busca ou filtros.</p>
         </div>
       ) : (
-        <div className="grid gap-4 md:grid-cols-2">
+        <div className="grid gap-4 md:grid-cols-3">
           {filteredProducts.map((product) => {
           const categoryName = product.category?.name ?? categoryMap.get(product.categoryId ?? '')?.name ?? 'Sem Categoria';
           const status = getStatusBadge(

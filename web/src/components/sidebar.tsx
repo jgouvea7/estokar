@@ -19,7 +19,7 @@ import {
   Users,
   X,
 } from 'lucide-react';
-import { getDashboard, getDashboardTimeline } from '@/lib/api/dashboard';
+import { getDashboard, getDashboardTimeline, getCategoryStockDistribution } from '@/lib/api/dashboard';
 import toast from 'react-hot-toast';
 import { useAuthStore } from '@/store/auth-store';
 
@@ -126,6 +126,11 @@ export default function Sidebar({
       queryClient.prefetchQuery({
         queryKey: ['dashboard-timeline', s.user.id],
         queryFn: () => getDashboardTimeline(s.accessToken),
+        staleTime: 30_000,
+      }),
+      queryClient.prefetchQuery({
+        queryKey: ['dashboard-categories-stock', s.user.id],
+        queryFn: () => getCategoryStockDistribution(s.accessToken),
         staleTime: 30_000,
       }),
     ]);

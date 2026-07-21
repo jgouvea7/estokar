@@ -2,7 +2,7 @@
 
 import dynamic from 'next/dynamic';
 import { useQueries } from '@tanstack/react-query';
-import { getDashboard, getDashboardTimeline } from '@/lib/api/dashboard';
+import { getDashboard, getDashboardTimeline, getCategoryStockDistribution } from '@/lib/api/dashboard';
 
 const DashboardOverview = dynamic(
   () => import('@/components/dashboard/dashboard-overview').then((m) => m.DashboardOverview),
@@ -33,17 +33,27 @@ export default function DashboardPage() {
         refetchOnWindowFocus: !isDev,
         retry: false,
       },
+      {
+        queryKey: ['dashboard-categories-stock', session?.user.id],
+        queryFn: async () => getCategoryStockDistribution(session!.accessToken),
+        enabled: Boolean(session?.accessToken),
+        staleTime: 30_000,
+        refetchOnWindowFocus: !isDev,
+        retry: false,
+      },
     ],
   });
 
   const dashboardQuery = results[0];
   const timelineQuery = results[1];
+  const categoriesQuery = results[2];
 
   const data = (() => {
     if (!dashboardQuery.data || !timelineQuery.data) return null;
     return buildDashboardOverviewData({
       dashboard: dashboardQuery.data,
       timeline: timelineQuery.data.points,
+      categoryStock: categoriesQuery.data?.points ?? [],
     });
   })();
 

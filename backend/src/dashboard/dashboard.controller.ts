@@ -22,4 +22,9 @@ export class DashboardController {
   getTimeline(@CurrentUser('id') userId: string) {
     return this.dashboardService.getTimeline(userId);
   }
+
+  @Get('categories-stock')
+  getCategoriesStock(@CurrentUser('id') userId: string) {
+    return this.dashboardService.getCategoriesStock(userId);
+  }
 }

@@ -15,6 +15,7 @@ import {
   Package2,
 } from 'lucide-react';
 import { StockTimelineChart } from '@/components/dashboard/stock-timeline-chart';
+import { CategoryPieChart } from '@/components/dashboard/category-pie-chart';
 import type { DashboardOverviewData } from '@/lib/dashboard/dashboard-data';
 import type {
   DashboardLowStockProduct,
@@ -106,47 +107,42 @@ export function DashboardOverview({ data, accessToken }: DashboardOverviewProps)
 
           <StockTimelineChart data={data.timelinePoints} title="Movimentação do Estoque" />
 
-          <ForecastSection
-            forecastedProducts={data.forecastedProducts}
-            alerts={data.alerts}
-            lowStockProducts={data.lowStockProducts}
-          />
-
           <section className="grid gap-6 lg:grid-cols-[1.6fr_1fr]">
-            <div className="surface-card p-5 sm:p-6">
-              <div className="mb-5 flex items-center justify-between gap-4">
-                <div>
-                  <p className="text-[10px] font-bold uppercase tracking-[0.18em] text-(--muted)">Tempo real</p>
-                  <h3 className="mt-1 text-lg font-bold text-(--ink)">Movimentações recentes</h3>
+            <div className="space-y-5">
+              <ForecastSection
+                forecastedProducts={data.forecastedProducts}
+                alerts={data.alerts}
+                lowStockProducts={data.lowStockProducts}
+              />
+
+              <div className="surface-card p-5 sm:p-6">
+                <div className="mb-5 flex items-center justify-between gap-4">
+                  <div>
+                    <p className="text-[10px] font-bold uppercase tracking-[0.18em] text-(--muted)">Tempo real</p>
+                    <h3 className="mt-1 text-lg font-bold text-(--ink)">Movimentações recentes</h3>
+                  </div>
+                  <Link
+                    href="/history"
+                    className="rounded-lg border-2 border-(--stroke) px-3 py-1.5 text-[10px] font-bold uppercase tracking-wider text-(--muted) transition-all hover:bg-(--soft)"
+                  >
+                    Ver tudo
+                  </Link>
                 </div>
-                <Link
-                  href="/history"
-                  className="rounded-lg border-2 border-(--stroke) px-3 py-1.5 text-[10px] font-bold uppercase tracking-wider text-(--muted) transition-all hover:bg-(--soft)"
-                >
-                  Ver tudo
-                </Link>
+                <RecentMovementsTimeline items={data.recentMovements} />
               </div>
-              <RecentMovementsTimeline items={data.recentMovements} />
             </div>
 
-            <div className="space-y-5">
-              <section className="surface-card p-5 sm:p-6">
+            <div className="flex flex-col gap-5 min-h-0">
+              <div className="flex-[4] min-h-0">
+                <CategoryPieChart data={data.categoryStockPoints} />
+              </div>
+              <section className="surface-card p-5 sm:p-6 flex-[1]">
                 <div className="mb-4">
                   <p className="text-[10px] font-bold uppercase tracking-[0.18em] text-(--muted)">Ranking</p>
                   <h3 className="mt-1 text-lg font-bold text-(--ink)">Mais vendidos</h3>
                 </div>
-                <TopSellingChart items={data.topSellingProducts} />
+                <TopSellingChart items={data.topSellingProducts.slice(0, 3)} />
               </section>
-
-              {data.topCategories.length > 0 ? (
-                <section className="surface-card p-5 sm:p-6">
-                  <div className="mb-4">
-                    <p className="text-[10px] font-bold uppercase tracking-[0.18em] text-(--muted)">Distribuição</p>
-                    <h3 className="mt-1 text-lg font-bold text-(--ink)">Categorias</h3>
-                  </div>
-                  <TopCategoryList items={data.topCategories} />
-                </section>
-              ) : null}
             </div>
           </section>
         </>
@@ -247,44 +243,6 @@ function ProductAlertList({ items }: { items: DashboardLowStockProduct[] }) {
           </div>
         </Link>
       ))}
-    </div>
-  );
-}
-
-function TopCategoryList({ items }: { items: DashboardOverviewData['topCategories'] }) {
-  if (!items.length) {
-    return <EmptyState icon={BarChart3} title="Sem categorias" description="Ainda não há saídas suficientes para montar o ranking." />;
-  }
-
-  const maxSold = Math.max(...items.map((item) => item.soldQuantity), 1);
-
-  return (
-    <div className="space-y-3">
-      {items.map((item) => {
-        const width = `${Math.max((item.soldQuantity / maxSold) * 100, 6)}%`;
-
-        return (
-          <Link
-            key={item.categoryName}
-            href={`/products?category=${encodeURIComponent(item.categoryName)}`}
-            className="group flex items-center gap-4 rounded-lg border-2 border-(--stroke) bg-(--surface-2) px-4 py-3 transition-all hover:bg-(--card)"
-          >
-            <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-md bg-(--soft) text-xs font-bold text-(--muted)">
-              {item.rank}
-            </div>
-            <div className="min-w-0 flex-1">
-              <div className="flex items-center justify-between gap-4">
-                <p className="truncate text-sm font-bold text-(--ink)">{item.categoryName}</p>
-                <p className="shrink-0 text-xs font-medium text-(--muted)">{item.percentage.toFixed(0)}%</p>
-              </div>
-              <div className="mt-1.5 h-2 overflow-hidden rounded-full bg-(--stroke)">
-                <div className="h-full rounded-full bg-(--accent) transition-all duration-700" style={{ width }} />
-              </div>
-            </div>
-            <p className="shrink-0 text-sm font-bold text-(--ink)">{formatNumber(item.soldQuantity)}</p>
-          </Link>
-        );
-      })}
     </div>
   );
 }

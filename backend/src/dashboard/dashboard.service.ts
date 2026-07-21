@@ -386,6 +386,32 @@ export class DashboardService {
     return { points };
   }
 
+  async getCategoriesStock(userId: string) {
+    const products = await this.productsRepository
+      .createQueryBuilder('p')
+      .select('COALESCE(c.name, :noCategory)', 'categoryName')
+      .addSelect('COALESCE(SUM(p.quantity), 0)', 'stock')
+      .leftJoin('category', 'c', 'c.id = p.categoryId')
+      .where('p.userId = :userId', { userId })
+      .setParameter('noCategory', 'Sem categoria')
+      .groupBy('c.name')
+      .orderBy('"stock"', 'DESC')
+      .getRawMany<{ categoryName: string; stock: string }>();
+
+    const totalStock = products.reduce(
+      (acc, row) => acc + Number(row.stock),
+      0,
+    );
+
+    const points = products.map((row) => ({
+      categoryName: row.categoryName,
+      stock: Number(row.stock),
+      percentage: totalStock > 0 ? (Number(row.stock) / totalStock) * 100 : 0,
+    }));
+
+    return { points };
+  }
+
   private formatWeeklySales(
     data: { currentWeekSales: string; previousWeekSales: string } | null,
   ) {

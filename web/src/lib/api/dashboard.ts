@@ -16,3 +16,16 @@ export async function getDashboardTimeline(accessToken: string): Promise<{ point
     accessToken,
   });
 }
+
+export type CategoryStockPoint = {
+  categoryName: string;
+  stock: number;
+  percentage: number;
+};
+
+export async function getCategoryStockDistribution(accessToken: string): Promise<{ points: CategoryStockPoint[] }> {
+  return apiRequest<{ points: CategoryStockPoint[] }>('/dashboard/categories-stock', {
+    method: 'GET',
+    accessToken,
+  });
+}
