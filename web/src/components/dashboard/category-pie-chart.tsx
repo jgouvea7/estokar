@@ -62,11 +62,11 @@ export const CategoryPieChart = memo(function CategoryPieChart({ data }: Categor
                 nameKey="categoryName"
                 cx="50%"
                 cy="50%"
-                innerRadius={isMobile ? 52 : 88}
+                innerRadius={isMobile ? 66 : 98}
                 outerRadius={isMobile ? 82 : 118}
                 cornerRadius={12}
-                paddingAngle={0}
-                strokeWidth={3}
+                paddingAngle={3}
+                strokeWidth={0}
               >
                 {aggregatedWithPercent.map((_, index) => (
                   <Cell
