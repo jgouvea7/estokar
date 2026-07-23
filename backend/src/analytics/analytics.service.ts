@@ -50,7 +50,7 @@ export class AnalyticsService {
       this.stockMovementsRepository
         .createQueryBuilder('m')
         .where('m.userId = :userId', { userId })
-        .andWhere('m.createdAt >= :startDate', { startDate })
+        .andWhere('m."createdAt" >= :startDate', { startDate })
         .getMany(),
       this.getTimelineMovements(userId),
       this.getDailyBalance(userId, startDate),
@@ -233,21 +233,21 @@ export class AnalyticsService {
   private getTimelineMovements(userId: string) {
     return this.stockMovementsRepository
       .createQueryBuilder('m')
-      .select('m.createdAt', 'createdAt')
+      .select('m."createdAt"', 'createdAt')
       .addSelect(
         `CASE WHEN m.type = :inType THEN m.quantity ELSE -m.quantity END`,
         'netChange',
       )
       .where('m.userId = :userId', { userId })
       .setParameter('inType', StockMovementType.IN)
-      .orderBy('m.createdAt', 'ASC')
+      .orderBy('m."createdAt"', 'ASC')
       .getRawMany<{ createdAt: Date; netChange: string }>();
   }
 
   private getDailyBalance(userId: string, startDate: Date) {
     return this.stockMovementsRepository
       .createQueryBuilder('m')
-      .select(`m.createdAt::date`, 'date')
+      .select(`m."createdAt"::date`, 'date')
       .addSelect(
         `COALESCE(SUM(CASE WHEN m.type = :inType THEN m.quantity ELSE 0 END), 0)`,
         'entries',
@@ -257,13 +257,13 @@ export class AnalyticsService {
         'outputs',
       )
       .where('m.userId = :userId', { userId })
-      .andWhere('m.createdAt >= :startDate', { startDate })
+      .andWhere('m."createdAt" >= :startDate', { startDate })
       .setParameters({
         inType: StockMovementType.IN,
         outType: StockMovementType.OUT,
       })
-      .groupBy('m.createdAt::date')
-      .orderBy('m.createdAt::date', 'ASC')
+      .groupBy('m."createdAt"::date')
+      .orderBy('m."createdAt"::date', 'ASC')
       .getRawMany<{ date: string; entries: string; outputs: string }>();
   }
 
@@ -276,7 +276,7 @@ export class AnalyticsService {
       .innerJoin('product', 'p', 'p.id = m.productId')
       .where('m.userId = :userId', { userId })
       .andWhere('m.type = :outType', { outType: StockMovementType.OUT })
-      .andWhere('m.createdAt >= :startDate', { startDate })
+      .andWhere('m."createdAt" >= :startDate', { startDate })
       .groupBy('m.productId')
       .addGroupBy('p.name')
       .orderBy('"quantity"', 'DESC')
@@ -297,7 +297,7 @@ export class AnalyticsService {
       .innerJoin('product', 'p', 'p.id = m.productId')
       .where('m.userId = :userId', { userId })
       .andWhere('m.type = :outType', { outType: StockMovementType.OUT })
-      .andWhere('m.createdAt >= :startDate', { startDate })
+      .andWhere('m."createdAt" >= :startDate', { startDate })
       .groupBy('m.productId')
       .addGroupBy('p.name')
       .orderBy('"quantity"', 'ASC')
@@ -318,7 +318,7 @@ export class AnalyticsService {
       .leftJoin('category', 'c', 'c.id = p.categoryId')
       .where('m.userId = :userId', { userId })
       .andWhere('m.type = :outType', { outType: StockMovementType.OUT })
-      .andWhere('m.createdAt >= :startDate', { startDate })
+      .andWhere('m."createdAt" >= :startDate', { startDate })
       .setParameter('noCategory', 'Sem categoria')
       .groupBy('c.name')
       .orderBy('"sales"', 'DESC')
@@ -341,7 +341,7 @@ export class AnalyticsService {
   private getWeekDayDistribution(userId: string, startDate: Date) {
     return this.stockMovementsRepository
       .createQueryBuilder('m')
-      .select(`EXTRACT(DOW FROM m.createdAt)`, 'dow')
+      .select(`EXTRACT(DOW FROM m."createdAt")`, 'dow')
       .addSelect(
         `COALESCE(SUM(CASE WHEN m.type = :inType THEN m.quantity ELSE 0 END), 0)`,
         'entries',
@@ -351,12 +351,12 @@ export class AnalyticsService {
         'outputs',
       )
       .where('m.userId = :userId', { userId })
-      .andWhere('m.createdAt >= :startDate', { startDate })
+      .andWhere('m."createdAt" >= :startDate', { startDate })
       .setParameters({
         inType: StockMovementType.IN,
         outType: StockMovementType.OUT,
       })
-      .groupBy('EXTRACT(DOW FROM m.createdAt)')
+      .groupBy('EXTRACT(DOW FROM m."createdAt")')
       .orderBy('"dow"', 'ASC')
       .getRawMany<{ dow: string; entries: string; outputs: string }>();
   }
@@ -391,15 +391,15 @@ export class AnalyticsService {
       .createQueryBuilder('m')
       .select('m.productId', 'productId')
       .addSelect(
-        `COALESCE(SUM(CASE WHEN m.createdAt >= :sevenDaysAgo THEN m.quantity ELSE 0 END), 0)`,
+        `COALESCE(SUM(CASE WHEN m."createdAt" >= :sevenDaysAgo THEN m.quantity ELSE 0 END), 0)`,
         'recentSoldQuantity7',
       )
       .addSelect(
-        `COALESCE(SUM(CASE WHEN m.createdAt >= :fourteenDaysAgo THEN m.quantity ELSE 0 END), 0)`,
+        `COALESCE(SUM(CASE WHEN m."createdAt" >= :fourteenDaysAgo THEN m.quantity ELSE 0 END), 0)`,
         'recentSoldQuantity14',
       )
       .addSelect(
-        `COALESCE(SUM(CASE WHEN m.createdAt >= :thirtyDaysAgo THEN m.quantity ELSE 0 END), 0)`,
+        `COALESCE(SUM(CASE WHEN m."createdAt" >= :thirtyDaysAgo THEN m.quantity ELSE 0 END), 0)`,
         'recentSoldQuantity30',
       )
       .where('m.userId = :userId', { userId })

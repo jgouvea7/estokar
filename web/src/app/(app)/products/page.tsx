@@ -497,15 +497,6 @@ function ProductsPageContent() {
     router.push(`products/${productId}`);
   }
 
-  function handleDeleteProduct(product: Product) {
-    const confirmed = window.confirm(
-      `Excluir "${product.name}" (${product.quantity} un.)? Todo o histórico de movimentação deste produto será perdido.`
-    );
-    if (!confirmed) return;
-
-    deleteProductMutation.mutate(product.id);
-  }
-
   return (
     <div className="space-y-8 reveal-up">
       <section className="flex flex-wrap items-center justify-between gap-4">
