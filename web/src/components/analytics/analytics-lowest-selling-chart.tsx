@@ -3,12 +3,23 @@
 import Link from 'next/link';
 import { TrendingDown } from 'lucide-react';
 import { formatNumber } from '@/lib/utils';
+import type { AnalyticsFilter } from '@/lib/types';
 
 type AnalyticsLowestSellingChartProps = {
   data: { productId: string; productName: string; quantity: number }[];
+  filter: AnalyticsFilter;
 };
 
-export function AnalyticsLowestSellingChart({ data }: AnalyticsLowestSellingChartProps) {
+const subtitleByFilter: Record<string, string> = {
+  daily: 'Menos vendidos hoje',
+  weekly: 'Menos vendidos esta semana',
+  monthly: 'Menos vendidos este mês',
+  yearly: 'Menos vendidos este ano',
+};
+
+export function AnalyticsLowestSellingChart({ data, filter }: AnalyticsLowestSellingChartProps) {
+  const subtitle = filter ? subtitleByFilter[filter] : 'Menos Vendidos';
+
   if (!data.length) return null;
 
   const maxQuantity = Math.max(...data.map((d) => d.quantity), 1);
@@ -17,7 +28,7 @@ export function AnalyticsLowestSellingChart({ data }: AnalyticsLowestSellingChar
     <section className="surface-card p-5 sm:p-6">
       <div className="mb-4">
         <p className="text-[10px] font-bold uppercase tracking-[0.18em] text-(--muted)">Ranking</p>
-        <h3 className="mt-1 text-lg font-bold text-(--ink)">Menos Vendidos</h3>
+        <h3 className="mt-1 text-lg font-bold text-(--ink)">{subtitle}</h3>
       </div>
       <div className="space-y-2">
         {data.map((item) => {

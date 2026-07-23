@@ -245,7 +245,9 @@ export type AdminProductItem = {
   updatedAt: string;
 };
 
-export type AnalyticsPeriod = 'weekly' | 'monthly' | 'annual';
+export type AnalyticsPeriod = 'daily' | 'weekly' | 'monthly' | 'yearly';
+
+export type AnalyticsFilter = AnalyticsPeriod | null;
 
 export type AnalyticsData = {
   summary: {
@@ -264,6 +266,7 @@ export type AnalyticsData = {
   categoryPerformance: { categoryName: string; sales: number; stock: number; percentage: number }[];
   weekDayDistribution: { day: string; entries: number; outputs: number }[];
   stockRanges: { range: string; count: number }[];
+  stockDistribution: { productId: string; productName: string; quantity: number }[];
   forecast: {
     productId: string;
     productName: string;

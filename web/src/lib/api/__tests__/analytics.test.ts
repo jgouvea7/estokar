@@ -46,9 +46,9 @@ describe('getAnalytics', () => {
 
     (apiRequest as jest.Mock).mockResolvedValue({});
 
-    await getAnalytics('test-token', 'annual');
+    await getAnalytics('test-token', 'yearly');
 
-    expect(apiRequest).toHaveBeenCalledWith('/analytics?period=annual', {
+    expect(apiRequest).toHaveBeenCalledWith('/analytics?period=yearly', {
       method: 'GET',
       accessToken: 'test-token',
     });

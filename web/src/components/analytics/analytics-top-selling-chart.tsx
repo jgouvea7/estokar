@@ -3,18 +3,29 @@
 import Link from 'next/link';
 import { BarChart3 } from 'lucide-react';
 import { formatNumber } from '@/lib/utils';
+import type { AnalyticsFilter } from '@/lib/types';
 
 type AnalyticsTopSellingChartProps = {
   data: { productId: string; productName: string; quantity: number }[];
+  filter: AnalyticsFilter;
 };
 
-export function AnalyticsTopSellingChart({ data }: AnalyticsTopSellingChartProps) {
+const subtitleByFilter: Record<string, string> = {
+  daily: 'Mais vendidos hoje',
+  weekly: 'Mais vendidos esta semana',
+  monthly: 'Mais vendidos este mês',
+  yearly: 'Mais vendidos este ano',
+};
+
+export function AnalyticsTopSellingChart({ data, filter }: AnalyticsTopSellingChartProps) {
+  const subtitle = filter ? subtitleByFilter[filter] : 'Mais Vendidos';
+
   if (!data.length) {
     return (
       <section className="surface-card p-5 sm:p-6">
         <div className="mb-4">
           <p className="text-[10px] font-bold uppercase tracking-[0.18em] text-(--muted)">Ranking</p>
-          <h3 className="mt-1 text-lg font-bold text-(--ink)">Mais Vendidos</h3>
+          <h3 className="mt-1 text-lg font-bold text-(--ink)">{subtitle}</h3>
         </div>
         <div className="flex flex-col items-center justify-center rounded-xl border-2 border-dashed border-(--stroke) bg-(--surface-2) px-6 py-8 text-center">
           <div className="mb-3 flex h-10 w-10 items-center justify-center rounded-full bg-(--card) text-(--muted)">
@@ -33,7 +44,7 @@ export function AnalyticsTopSellingChart({ data }: AnalyticsTopSellingChartProps
     <section className="surface-card p-5 sm:p-6">
       <div className="mb-4">
         <p className="text-[10px] font-bold uppercase tracking-[0.18em] text-(--muted)">Ranking</p>
-        <h3 className="mt-1 text-lg font-bold text-(--ink)">Mais Vendidos</h3>
+        <h3 className="mt-1 text-lg font-bold text-(--ink)">{subtitle}</h3>
       </div>
       <div className="space-y-2">
         {data.map((item, index) => {

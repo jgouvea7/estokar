@@ -8,7 +8,7 @@ import {
 } from '../stock-movements/entities/stock-movement.entity';
 import { calculateForecast, toNumber } from '../common/utils/forecast.util';
 
-type Period = 'weekly' | 'monthly' | 'annual';
+type Period = 'daily' | 'weekly' | 'monthly' | 'yearly';
 
 @Injectable()
 export class AnalyticsService {
@@ -42,10 +42,12 @@ export class AnalyticsService {
       weekDayData,
       stockRangesData,
       salesData,
+      stockDistributionData,
     ] = await Promise.all([
       this.productsRepository.find({
         where: { userId },
         relations: ['category'],
+        order: { quantity: 'DESC' },
       }),
       this.stockMovementsRepository
         .createQueryBuilder('m')
@@ -59,6 +61,7 @@ export class AnalyticsService {
       this.getWeekDayDistribution(userId, startDate),
       this.getStockRanges(userId),
       this.getSalesData(userId, sevenDaysAgo, fourteenDaysAgo, thirtyDaysAgo),
+      this.getStockDistribution(userId),
     ]);
 
     const totalProducts = products.length;
@@ -183,6 +186,12 @@ export class AnalyticsService {
       count: toNumber(row.count),
     }));
 
+    const stockDistribution = stockDistributionData.map((p) => ({
+      productId: p.id,
+      productName: p.name,
+      quantity: p.quantity,
+    }));
+
     return {
       summary: {
         totalStock,
@@ -204,12 +213,12 @@ export class AnalyticsService {
       categoryPerformance,
       weekDayDistribution,
       stockRanges,
+      stockDistribution,
       forecast,
     };
-  }
 
   private resolvePeriod(period?: string): Period {
-    const valid: Period[] = ['weekly', 'monthly', 'annual'];
+    const valid: Period[] = ['daily', 'weekly', 'monthly', 'yearly'];
     return valid.includes(period as Period) ? (period as Period) : 'monthly';
   }
 
@@ -217,13 +226,16 @@ export class AnalyticsService {
     const now = new Date();
     const d = new Date(now);
     switch (period) {
+      case 'daily':
+        d.setDate(d.getDate() - 1);
+        break;
       case 'weekly':
         d.setDate(d.getDate() - 7);
         break;
       case 'monthly':
         d.setMonth(d.getMonth() - 1);
         break;
-      case 'annual':
+      case 'yearly':
         d.setFullYear(d.getFullYear() - 1);
         break;
     }
@@ -432,6 +444,14 @@ export class AnalyticsService {
     }
 
     return points;
+  }
+
+  private getStockDistribution(userId: string) {
+    return this.productsRepository.find({
+      where: { userId },
+      select: ['id', 'name', 'quantity'],
+      order: { quantity: 'DESC' },
+    });
   }
 
   private getWeekDayName(dow: number): string {

@@ -11,12 +11,23 @@ import {
   ResponsiveContainer,
   Legend,
 } from 'recharts';
+import type { AnalyticsFilter } from '@/lib/types';
 
 type AnalyticsDailyBalanceChartProps = {
   data: { date: string; entries: number; outputs: number; balance: number }[];
+  filter: AnalyticsFilter;
 };
 
-export function AnalyticsDailyBalanceChart({ data }: AnalyticsDailyBalanceChartProps) {
+const titleByFilter: Record<string, string> = {
+  daily: 'Entradas vs Saídas por Dia',
+  weekly: 'Entradas vs Saídas por Semana',
+  monthly: 'Entradas vs Saídas por Mês',
+  yearly: 'Entradas vs Saídas por Ano',
+};
+
+export function AnalyticsDailyBalanceChart({ data, filter }: AnalyticsDailyBalanceChartProps) {
+  const title = filter ? titleByFilter[filter] : 'Entradas vs Saídas';
+
   const chartData = useMemo(
     () =>
       data.map((d) => ({
@@ -32,10 +43,10 @@ export function AnalyticsDailyBalanceChart({ data }: AnalyticsDailyBalanceChartP
   if (!data.length) return null;
 
   return (
-    <section className="surface-card p-5 sm:p-6">
+    <section className="surface-card p-5 sm:p-6 h-full">
       <div className="mb-4">
         <p className="text-[10px] font-bold uppercase tracking-[0.18em] text-(--muted)">Balanço</p>
-        <h3 className="mt-1 text-lg font-bold text-(--ink)">Entradas vs Saídas por Dia</h3>
+        <h3 className="mt-1 text-lg font-bold text-(--ink)">{title}</h3>
       </div>
       <div className="h-56 sm:h-72 w-full">
         <ResponsiveContainer width="100%" height="100%">
