@@ -14,12 +14,14 @@ import {
   LogOut,
   Menu,
   Package2,
+  PieChart,
   ScrollText,
   Settings,
   Users,
   X,
 } from 'lucide-react';
 import { getDashboard, getDashboardTimeline, getCategoryStockDistribution } from '@/lib/api/dashboard';
+import { getAnalytics } from '@/lib/api/analytics';
 import toast from 'react-hot-toast';
 import { useAuthStore } from '@/store/auth-store';
 
@@ -27,6 +29,7 @@ const navItems = [
   { href: '/dashboard', icon: Grid2x2, label: 'Dashboard' },
   { href: '/products', icon: FolderOpen, label: 'Meus Produtos' },
   { href: '/history', icon: History, label: 'Historico' },
+  { href: '/analytics', icon: PieChart, label: 'Analytics' },
 ];
 
 const adminItems = [
@@ -136,6 +139,16 @@ export default function Sidebar({
     ]);
   }
 
+  function handlePrefetchAnalytics() {
+    const s = useAuthStore.getState().session;
+    if (!s?.accessToken) return;
+    queryClient.prefetchQuery({
+      queryKey: ['analytics', s.user.id, 'monthly'],
+      queryFn: () => getAnalytics(s.accessToken, 'monthly'),
+      staleTime: 30_000,
+    });
+  }
+
   useEffect(() => {
     function check() {
       setIsMobile(window.innerWidth < 1024);
@@ -204,7 +217,7 @@ export default function Sidebar({
           <button
             type="button"
             onClick={onToggleCollapse}
-            className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl border-2 border-white/10 text-white/50 transition-all hover:bg-white/8 hover:text-white/85"
+            className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl text-white/50 transition-all hover:bg-white/8 hover:text-white/85"
             aria-label={sidebarOpen ? 'Recolher sidebar' : 'Expandir sidebar'}
           >
             {sidebarOpen ? <X size={16} /> : <Menu size={16} />}
@@ -218,7 +231,7 @@ export default function Sidebar({
               {...item}
               pathname={pathname}
               sidebarOpen={sidebarOpen}
-              onHover={item.href === '/dashboard' ? handlePrefetchDashboard : undefined}
+              onHover={item.href === '/dashboard' ? handlePrefetchDashboard : item.href === '/analytics' ? handlePrefetchAnalytics : undefined}
             />
           ))}
         </nav>

@@ -23,6 +23,7 @@ function getHeaderTitle(pathname: string) {
   if (pathname.startsWith('/history')) return 'Historico';
   if (pathname.startsWith('/profile')) return 'Perfil';
   if (pathname.startsWith('/admin')) return 'Admin';
+  if (pathname.startsWith('/analytics')) return 'Analytics';
   return 'Dashboard';
 }
 

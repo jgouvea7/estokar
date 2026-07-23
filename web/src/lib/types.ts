@@ -245,6 +245,35 @@ export type AdminProductItem = {
   updatedAt: string;
 };
 
+export type AnalyticsPeriod = 'weekly' | 'monthly' | 'annual';
+
+export type AnalyticsData = {
+  summary: {
+    totalStock: number;
+    totalProducts: number;
+    totalMovements: number;
+    totalEntries: number;
+    totalOutputs: number;
+    catalogAvailability: number;
+    avgOutputPerMovement: number;
+  };
+  timeline: { date: string; balance: number }[];
+  dailyBalance: { date: string; entries: number; outputs: number; balance: number }[];
+  topSelling: { productId: string; productName: string; quantity: number }[];
+  lowestSelling: { productId: string; productName: string; quantity: number }[];
+  categoryPerformance: { categoryName: string; sales: number; stock: number; percentage: number }[];
+  weekDayDistribution: { day: string; entries: number; outputs: number }[];
+  stockRanges: { range: string; count: number }[];
+  forecast: {
+    productId: string;
+    productName: string;
+    currentStock: number;
+    averageDailySales: number;
+    estimatedDaysLeft: number | null;
+    status: 'critical' | 'warning' | 'ok';
+  }[];
+};
+
 export type AdminMovementItem = {
   id: string;
   productId: string;

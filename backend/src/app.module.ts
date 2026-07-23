@@ -13,6 +13,7 @@ import { DashboardModule } from './dashboard/dashboard.module';
 import { StockMovementsModule } from './stock-movements/stock-movements.module';
 import { AdminModule } from './admin/admin.module';
 import { ExportModule } from './export/export.module';
+import { AnalyticsModule } from './analytics/analytics.module';
 import { PrometheusModule } from '@willsoto/nestjs-prometheus';
 
 @Module({
@@ -76,6 +77,7 @@ import { PrometheusModule } from '@willsoto/nestjs-prometheus';
     StockMovementsModule,
     AdminModule,
     ExportModule,
+    AnalyticsModule,
   ],
   controllers: [AppController],
   providers: [
