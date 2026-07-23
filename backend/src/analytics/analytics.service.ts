@@ -216,6 +216,7 @@ export class AnalyticsService {
       stockDistribution,
       forecast,
     };
+  }
 
   private resolvePeriod(period?: string): Period {
     const valid: Period[] = ['daily', 'weekly', 'monthly', 'yearly'];
