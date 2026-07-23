@@ -38,6 +38,7 @@ export class AnalyticsService {
       timelineMovements,
       dailyBalanceData,
       topSellingData,
+      lowestSellingData,
       categorySalesData,
       weekDayData,
       stockRangesData,
@@ -46,17 +47,19 @@ export class AnalyticsService {
     ] = await Promise.all([
       this.productsRepository.find({
         where: { userId },
-        relations: ['category'],
+        select: ['id', 'name', 'quantity'],
         order: { quantity: 'DESC' },
       }),
       this.stockMovementsRepository
         .createQueryBuilder('m')
+        .select(['m.type', 'm.quantity'])
         .where('m.userId = :userId', { userId })
         .andWhere('m."createdAt" >= :startDate', { startDate })
         .getMany(),
-      this.getTimelineMovements(userId),
+      this.getTimelineMovements(userId, startDate),
       this.getDailyBalance(userId, startDate),
       this.getTopSelling(userId, startDate),
+      this.getLowestSelling(userId, startDate),
       this.getCategorySales(userId, startDate),
       this.getWeekDayDistribution(userId, startDate),
       this.getStockRanges(userId),
@@ -94,8 +97,6 @@ export class AnalyticsService {
       productName: row.productName,
       quantity: toNumber(row.quantity),
     }));
-
-    const lowestSellingData = await this.getLowestSelling(userId, startDate);
 
     const categoryStockData = await this.getCategoryStock(userId);
 
@@ -244,8 +245,8 @@ export class AnalyticsService {
     return d;
   }
 
-  private getTimelineMovements(userId: string) {
-    return this.stockMovementsRepository
+  private getTimelineMovements(userId: string, startDate?: Date) {
+    const query = this.stockMovementsRepository
       .createQueryBuilder('m')
       .select('m."createdAt"', 'createdAt')
       .addSelect(
@@ -254,8 +255,13 @@ export class AnalyticsService {
       )
       .where('m.userId = :userId', { userId })
       .setParameter('inType', StockMovementType.IN)
-      .orderBy('m."createdAt"', 'ASC')
-      .getRawMany<{ createdAt: Date; netChange: string }>();
+      .orderBy('m."createdAt"', 'ASC');
+
+    if (startDate) {
+      query.andWhere('m."createdAt" >= :startDate', { startDate });
+    }
+
+    return query.getRawMany<{ createdAt: Date; netChange: string }>();
   }
 
   private getDailyBalance(userId: string, startDate: Date) {
@@ -449,6 +455,7 @@ export class AnalyticsService {
       where: { userId },
       select: ['id', 'name', 'quantity'],
       order: { quantity: 'DESC' },
+      take: 20,
     });
   }
 

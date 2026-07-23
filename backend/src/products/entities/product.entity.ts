@@ -3,12 +3,14 @@ import { User } from '../../users/entities/user.entity';
 import {
   Column,
   Entity,
+  Index,
   JoinColumn,
   ManyToOne,
   PrimaryGeneratedColumn,
 } from 'typeorm';
 
 @Entity()
+@Index(['userId'])
 export class Product {
   @PrimaryGeneratedColumn('uuid')
   id: string;

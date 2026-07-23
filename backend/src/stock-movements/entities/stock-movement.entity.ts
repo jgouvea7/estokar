@@ -4,6 +4,7 @@ import {
   Column,
   ManyToOne,
   JoinColumn,
+  Index,
 } from 'typeorm';
 import { Product } from '../../products/entities/product.entity';
 import { User } from '../../users/entities/user.entity';
@@ -14,6 +15,9 @@ export enum StockMovementType {
 }
 
 @Entity('stock_movements')
+@Index(['userId', 'createdAt'])
+@Index(['userId', 'type', 'createdAt'])
+@Index(['userId', 'productId', 'type', 'createdAt'])
 export class StockMovement {
   @PrimaryGeneratedColumn('uuid')
   id: string;
