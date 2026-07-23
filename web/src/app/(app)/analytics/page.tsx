@@ -12,35 +12,37 @@ import { AnalyticsTopSellingChart } from '@/components/analytics/analytics-top-s
 import { AnalyticsLowestSellingChart } from '@/components/analytics/analytics-lowest-selling-chart';
 import { AnalyticsCategoryPerformanceChart } from '@/components/analytics/analytics-category-performance-chart';
 import { AnalyticsForecastTable } from '@/components/analytics/analytics-forecast-table';
-import { AnalyticsStockDistributionChart } from '@/components/analytics/analytics-stock-distribution-chart';
 import { AnalyticsTopStockChart } from '@/components/analytics/analytics-top-stock-chart';
+import { AnalyticsSummaryCards } from '@/components/analytics/analytics-summary-cards';
 
 function aggregateByPeriod<T extends { date: string }>(
-  data: T[],
+  data: T[] | undefined,
   filter: AnalyticsFilter,
 ): T[] {
+  if (!data || !data.length) return [];
   if (!filter || filter === 'daily') return data;
-
-  const groupKey = (date: string): string => {
-    const d = new Date(date + 'T00:00:00');
-    switch (filter) {
-      case 'weekly': {
-        const start = new Date(d);
-        start.setDate(d.getDate() - d.getDay());
-        return start.toISOString().slice(0, 10);
-      }
-      case 'monthly':
-        return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}`;
-      case 'yearly':
-        return `${d.getFullYear()}`;
-      default:
-        return date;
-    }
-  };
 
   const groups = new Map<string, T & { entries: number; outputs: number }>();
   for (const item of data) {
-    const key = groupKey((item as { date: string }).date);
+    const rawDate = (item as { date: string }).date;
+    if (!rawDate) continue;
+    const d = new Date(rawDate + 'T00:00:00');
+    if (isNaN(d.getTime())) continue;
+    const key = (() => {
+      switch (filter) {
+        case 'weekly': {
+          const start = new Date(d);
+          start.setDate(d.getDate() - d.getDay());
+          return start.toISOString().slice(0, 10);
+        }
+        case 'monthly':
+          return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}`;
+        case 'yearly':
+          return `${d.getFullYear()}`;
+        default:
+          return rawDate;
+      }
+    })();
     const existing = groups.get(key);
     const entry = item as T & { entries: number; outputs: number };
     if (existing) {
@@ -70,6 +72,19 @@ export default function AnalyticsPage() {
     [data, filter],
   );
 
+  const filteredTimeline = useMemo(() => {
+    if (!data || !data.timeline.length) return [];
+    const startDate = new Date();
+    startDate.setHours(0, 0, 0, 0);
+    if (filter === 'daily') startDate.setDate(startDate.getDate() - 1);
+    else if (filter === 'weekly') startDate.setDate(startDate.getDate() - 7);
+    else if (filter === 'monthly') startDate.setMonth(startDate.getMonth() - 1);
+    else if (filter === 'yearly') startDate.setFullYear(startDate.getFullYear() - 1);
+    else return data.timeline;
+    const cutoff = startDate.toISOString().slice(0, 10);
+    return data.timeline.filter((p) => p.date >= cutoff);
+  }, [data, filter]);
+
   if (!session) return null;
 
   if (isLoading) {
@@ -79,8 +94,13 @@ export default function AnalyticsPage() {
           <div className="h-8 w-48 animate-pulse rounded-lg bg-(--soft)" />
           <div className="h-8 w-48 animate-pulse rounded-lg bg-(--soft)" />
         </div>
-        <div className="grid gap-4 lg:grid-cols-3">
-          <div className="h-56 animate-pulse rounded-xl bg-(--soft) lg:col-span-2" />
+        <div className="grid grid-cols-2 gap-3 sm:grid-cols-4 lg:grid-cols-7">
+          {Array.from({ length: 7 }).map((_, i) => (
+            <div key={i} className="surface-card h-[4.5rem] animate-pulse rounded-xl bg-(--soft)" />
+          ))}
+        </div>
+        <div className="grid gap-4 lg:grid-cols-2">
+          <div className="h-56 animate-pulse rounded-xl bg-(--soft)" />
           <div className="h-56 animate-pulse rounded-xl bg-(--soft)" />
         </div>
         <div className="grid gap-4 lg:grid-cols-2">
@@ -117,13 +137,11 @@ export default function AnalyticsPage() {
         <AnalyticsFilterToggle selected={filter} onChange={setFilter} />
       </section>
 
-      <section className="grid gap-4 lg:grid-cols-3">
-        <div className="lg:col-span-2">
-          <AnalyticsTimelineChart data={data.timeline} />
-        </div>
-        <div>
-          <AnalyticsDailyBalanceChart data={aggregatedDailyBalance} filter={filter} />
-        </div>
+      <AnalyticsSummaryCards summary={data.summary} />
+
+      <section className="grid gap-4 lg:grid-cols-2">
+        <AnalyticsTimelineChart data={filteredTimeline} filter={filter} />
+        <AnalyticsDailyBalanceChart data={aggregatedDailyBalance} filter={filter} />
       </section>
 
       <section className="grid gap-4 lg:grid-cols-2">
@@ -132,13 +150,8 @@ export default function AnalyticsPage() {
       </section>
 
       <section className="grid gap-4 lg:grid-cols-2">
-        <AnalyticsCategoryPerformanceChart data={data.categoryPerformance} />
         <AnalyticsTopStockChart data={data.stockDistribution} />
-      </section>
-
-      <section className="grid gap-4 lg:grid-cols-2">
-        <AnalyticsStockDistributionChart data={data.stockDistribution} />
-        <div />
+        <AnalyticsCategoryPerformanceChart data={data.categoryPerformance} />
       </section>
 
       <AnalyticsForecastTable data={data.forecast} />

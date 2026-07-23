@@ -240,6 +240,7 @@ export class AnalyticsService {
         d.setFullYear(d.getFullYear() - 1);
         break;
     }
+    d.setHours(0, 0, 0, 0);
     return d;
   }
 
@@ -262,19 +263,15 @@ export class AnalyticsService {
       .createQueryBuilder('m')
       .select(`m."createdAt"::date`, 'date')
       .addSelect(
-        `COALESCE(SUM(CASE WHEN m.type = :inType THEN m.quantity ELSE 0 END), 0)`,
+        `COALESCE(SUM(CASE WHEN m.type = 'in' THEN m.quantity ELSE 0 END), 0)`,
         'entries',
       )
       .addSelect(
-        `COALESCE(SUM(CASE WHEN m.type = :outType THEN m.quantity ELSE 0 END), 0)`,
+        `COALESCE(SUM(CASE WHEN m.type = 'out' THEN m.quantity ELSE 0 END), 0)`,
         'outputs',
       )
       .where('m.userId = :userId', { userId })
       .andWhere('m."createdAt" >= :startDate', { startDate })
-      .setParameters({
-        inType: StockMovementType.IN,
-        outType: StockMovementType.OUT,
-      })
       .groupBy('m."createdAt"::date')
       .orderBy('m."createdAt"::date', 'ASC')
       .getRawMany<{ date: string; entries: string; outputs: string }>();

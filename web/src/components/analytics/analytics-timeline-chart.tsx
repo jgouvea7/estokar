@@ -10,26 +10,58 @@ import {
   Tooltip,
   ResponsiveContainer,
 } from 'recharts';
+import { BarChart3 } from 'lucide-react';
+import type { AnalyticsFilter } from '@/lib/types';
 
 type AnalyticsTimelineChartProps = {
   data: { date: string; balance: number }[];
+  filter?: AnalyticsFilter;
 };
 
-export function AnalyticsTimelineChart({ data }: AnalyticsTimelineChartProps) {
-  const chartData = useMemo(
-    () =>
-      data.map((p) => ({
-        date: p.date,
-        balance: p.balance,
-        label: new Date(p.date + 'T00:00:00').toLocaleDateString('pt-BR', {
-          day: 'numeric',
-          month: 'short',
-        }),
-      })),
-    [data],
-  );
+const titleByFilter: Record<string, string> = {
+  daily: 'Movimentação Diária',
+  weekly: 'Movimentação Semanal',
+  monthly: 'Movimentação Mensal',
+  yearly: 'Movimentação Anual',
+};
 
-  if (!data.length) return null;
+export function AnalyticsTimelineChart({ data, filter }: AnalyticsTimelineChartProps) {
+  const title = filter ? titleByFilter[filter] : 'Movimentação do Estoque';
+
+  const chartData = useMemo(() => {
+    if (!data || !data.length) return [];
+    return data
+      .filter((p) => p.date)
+      .map((p) => {
+        const date = new Date(p.date + 'T00:00:00');
+        return {
+          date: p.date,
+          balance: p.balance,
+          label: isNaN(date.getTime()) ? p.date : date.toLocaleDateString('pt-BR', {
+            day: 'numeric',
+            month: 'short',
+          }),
+        };
+      });
+  }, [data]);
+
+  if (!chartData.length) {
+    return (
+      <section className="surface-card p-5 sm:p-6 h-full">
+        <div className="mb-4">
+          <p className="text-[10px] font-bold uppercase tracking-[0.18em] text-(--muted)">Gráfico</p>
+          <h3 className="mt-1 text-lg font-bold text-(--ink)">{title}</h3>
+        </div>
+        <div className="flex flex-col items-center justify-center rounded-xl border-2 border-dashed border-(--stroke) bg-(--surface-2) px-6 py-8 text-center">
+          <div className="mb-3 flex h-10 w-10 items-center justify-center rounded-full bg-(--card) text-(--muted)">
+            <BarChart3 size={18} strokeWidth={2.2} />
+          </div>
+          <p className="text-sm font-bold text-(--ink)">Nenhuma movimentação no período</p>
+          <p className="mt-1 text-xs font-medium text-(--muted)">Registre entradas e saídas para ver o histórico.</p>
+        </div>
+      </section>
+    );
+  }
 
   const minBalance = Math.min(...chartData.map((d) => d.balance));
   const maxBalance = Math.max(...chartData.map((d) => d.balance));
@@ -37,10 +69,10 @@ export function AnalyticsTimelineChart({ data }: AnalyticsTimelineChartProps) {
   const yDomain = [minBalance - padding, maxBalance + padding];
 
   return (
-    <section className="surface-card p-5 sm:p-6">
+    <section className="surface-card p-5 sm:p-6 h-full">
       <div className="mb-4">
         <p className="text-[10px] font-bold uppercase tracking-[0.18em] text-(--muted)">Gráfico</p>
-        <h3 className="mt-1 text-lg font-bold text-(--ink)">Movimentação do Estoque</h3>
+        <h3 className="mt-1 text-lg font-bold text-(--ink)">{title}</h3>
       </div>
       <div className="h-56 sm:h-72 w-full">
         <ResponsiveContainer width="100%" height="100%">
@@ -69,7 +101,11 @@ export function AnalyticsTimelineChart({ data }: AnalyticsTimelineChartProps) {
                 fontWeight: 600,
                 color: 'var(--ink)',
               }}
-              labelFormatter={(label) => String(label ?? '')}
+              labelFormatter={(label) => {
+                if (typeof label === 'string' && label.length <= 12) return label;
+                const d = new Date(String(label));
+                return isNaN(d.getTime()) ? String(label) : d.toLocaleDateString('pt-BR', { day: 'numeric', month: 'short' });
+              }}
               formatter={(value) => [Number(value ?? 0).toLocaleString('pt-BR'), 'Saldo']}
             />
             <Line

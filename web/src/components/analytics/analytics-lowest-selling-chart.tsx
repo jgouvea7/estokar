@@ -1,7 +1,7 @@
 "use client";
 
 import Link from 'next/link';
-import { TrendingDown } from 'lucide-react';
+import { TrendingDown, BarChart3 } from 'lucide-react';
 import { formatNumber } from '@/lib/utils';
 import type { AnalyticsFilter } from '@/lib/types';
 
@@ -20,7 +20,23 @@ const subtitleByFilter: Record<string, string> = {
 export function AnalyticsLowestSellingChart({ data, filter }: AnalyticsLowestSellingChartProps) {
   const subtitle = filter ? subtitleByFilter[filter] : 'Menos Vendidos';
 
-  if (!data.length) return null;
+  if (!data || !data.length) {
+    return (
+      <section className="surface-card p-5 sm:p-6">
+        <div className="mb-4">
+          <p className="text-[10px] font-bold uppercase tracking-[0.18em] text-(--muted)">Ranking</p>
+          <h3 className="mt-1 text-lg font-bold text-(--ink)">{subtitle}</h3>
+        </div>
+        <div className="flex flex-col items-center justify-center rounded-xl border-2 border-dashed border-(--stroke) bg-(--surface-2) px-6 py-8 text-center">
+          <div className="mb-3 flex h-10 w-10 items-center justify-center rounded-full bg-(--card) text-(--muted)">
+            <BarChart3 size={18} strokeWidth={2.2} />
+          </div>
+          <p className="text-sm font-bold text-(--ink)">Sem vendas no período</p>
+          <p className="mt-1 text-xs font-medium text-(--muted)">Registre saídas para ver o ranking.</p>
+        </div>
+      </section>
+    );
+  }
 
   const maxQuantity = Math.max(...data.map((d) => d.quantity), 1);
 
