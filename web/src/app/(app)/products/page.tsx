@@ -5,7 +5,8 @@ import { createPortal } from 'react-dom';
 import Image from 'next/image';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
-import { Download, Edit2, Image as ImageIcon, MoreVertical, PackageSearch, Plus, Search, Trash2, TrendingDown } from 'lucide-react';
+import { ChevronLeft, ChevronRight, Edit2, Image as ImageIcon, MoreVertical, PackageSearch, Pencil, Plus, Search, Trash2, TrendingDown } from 'lucide-react';
+import { ExportButton } from '@/components/ui/export-button';
 import toast from 'react-hot-toast';
 import {
   createCategory,
@@ -40,6 +41,8 @@ type ProductForm = {
   quantity: string;
   categoryId: string;
   image: string;
+  hasExpiration: boolean;
+  expirationDate: string;
 };
 
 export default function ProductsPage() {
@@ -58,17 +61,21 @@ function ProductsPageContent() {
   const searchParams = useSearchParams();
 
   const [query, setQuery] = useState('');
-  const [categoryFilter, setCategoryFilter] = useState('Todos');
+  const [categoryFilter, setCategoryFilter] = useState(() => searchParams.get('category') ?? 'Todos');
+  const [sortBy, setSortBy] = useState('stock_asc');
 
-  useEffect(() => {
-    const categoryParam = searchParams.get("category");
-
-    if (categoryParam) {
-      queueMicrotask(() => {
-        setCategoryFilter(categoryParam);
-      });
+  function updateCategoryInUrl(category: string) {
+    setCategoryFilter(category);
+    setCurrentPage(1);
+    const params = new URLSearchParams(searchParams.toString());
+    if (category === 'Todos') {
+      params.delete('category');
+    } else {
+      params.set('category', category);
     }
-  }, [searchParams]);
+    const newUrl = params.toString() ? `?${params.toString()}` : '/products';
+    router.replace(newUrl, { scroll: false });
+  }
 
   const [showCreateProductModal, setShowCreateProductModal] = useState(false);
   const [showEditProductModal, setShowEditProductModal] = useState(false);
@@ -82,6 +89,8 @@ function ProductsPageContent() {
     quantity: '0',
     categoryId: '',
     image: '',
+    hasExpiration: false,
+    expirationDate: '',
   });
   const [openMenuProductId, setOpenMenuProductId] = useState<string | null>(null);
   const [productToDelete, setProductToDelete] = useState<Product | null>(null);
@@ -89,6 +98,7 @@ function ProductsPageContent() {
   const [imageFile, setImageFile] = useState<File | null>(null);
   const [imagePreviewUrl, setImagePreviewUrl] = useState('');
   const [isImageUploading, setIsImageUploading] = useState(false);
+  const [currentPage, setCurrentPage] = useState(1);
   const imageInputRef = useRef<HTMLInputElement | null>(null);
   const imageObjectUrlRef = useRef<string | null>(null);
 
@@ -112,16 +122,26 @@ function ProductsPageContent() {
     return new Map(categories.map((item) => [item.id, item]));
   }, [categories]);
 
+  const ITEMS_PER_PAGE = 12;
+
   const sortedProducts = useMemo(() => {
     return [...products].sort((a, b) => {
-      const aQty = a.quantity ?? 0;
-      const bQty = b.quantity ?? 0;
-      if (aQty !== bQty) return aQty - bQty;
-      const aTime = new Date(a.updatedAt ?? a.createdAt ?? 0).getTime();
-      const bTime = new Date(b.updatedAt ?? b.createdAt ?? 0).getTime();
-      return bTime - aTime;
+      switch (sortBy) {
+        case 'stock_asc':
+          return (a.quantity ?? 0) - (b.quantity ?? 0);
+        case 'stock_desc':
+          return (b.quantity ?? 0) - (a.quantity ?? 0);
+        case 'name_asc':
+          return a.name.localeCompare(b.name, 'pt-BR');
+        case 'newest':
+          return new Date(b.updatedAt ?? b.createdAt ?? 0).getTime() - new Date(a.updatedAt ?? a.createdAt ?? 0).getTime();
+        case 'oldest':
+          return new Date(a.createdAt ?? 0).getTime() - new Date(b.createdAt ?? 0).getTime();
+        default:
+          return (a.quantity ?? 0) - (b.quantity ?? 0);
+      }
     });
-  }, [products]);
+  }, [products, sortBy]);
 
   const filteredProducts = useMemo(() => {
     const normalizedQuery = query.trim().toLowerCase();
@@ -132,11 +152,19 @@ function ProductsPageContent() {
       const matchesCategory = categoryFilter === 'Todos' || productCategory === categoryFilter;
       const matchesQuery =
         product.name.toLowerCase().includes(normalizedQuery) ||
-        product.description.toLowerCase().includes(normalizedQuery);
+        (product.description ?? '').toLowerCase().includes(normalizedQuery);
 
       return matchesCategory && matchesQuery;
     });
   }, [categoryFilter, categoryMap, sortedProducts, query]);
+
+  const totalProducts = products.length;
+  const filteredCount = filteredProducts.length;
+  const totalPages = Math.max(1, Math.ceil(filteredCount / ITEMS_PER_PAGE));
+  const paginatedProducts = useMemo(() => {
+    const start = (currentPage - 1) * ITEMS_PER_PAGE;
+    return filteredProducts.slice(start, start + ITEMS_PER_PAGE);
+  }, [filteredProducts, currentPage]);
 
   const categoryMutation = useMutation({
     mutationFn: async (payload: { id?: string; name: string }) => {
@@ -299,13 +327,13 @@ function ProductsPageContent() {
     setShowCreateProductModal(false);
     setShowEditProductModal(false);
     setProductEditing(null);
-    setForm({ name: '', description: '', quantity: '0', categoryId: '', image: '' });
+    setForm({ name: '', description: '', quantity: '0', categoryId: '', image: '', hasExpiration: false, expirationDate: '' });
     resetImageState();
   }
 
   function openCreateProduct() {
     setProductEditing(null);
-    setForm({ name: '', description: '', quantity: '0', categoryId: '', image: '' });
+    setForm({ name: '', description: '', quantity: '0', categoryId: '', image: '', hasExpiration: false, expirationDate: '' });
     resetImageState();
     setShowCreateProductModal(true);
   }
@@ -314,10 +342,12 @@ function ProductsPageContent() {
     setProductEditing(product);
     setForm({
       name: product.name,
-      description: product.description,
+      description: product.description ?? '',
       quantity: String(product.quantity),
       categoryId: product.categoryId ?? '',
       image: product.image === NO_PHOTO_IMAGE ? '' : product.image,
+      hasExpiration: Boolean(product.hasExpiration),
+      expirationDate: product.expirationDate ? new Date(product.expirationDate).toISOString().split('T')[0] : '',
     });
     resetImageState();
     if (product.image && product.image !== NO_PHOTO_IMAGE) {
@@ -395,23 +425,30 @@ function ProductsPageContent() {
 
     return {
       name: input.name.trim(),
-      description: input.description.trim(),
+      description: input.description.trim() || null,
       quantity: normalizedQuantity,
       categoryId: input.categoryId || null,
       image: input.image || NO_PHOTO_IMAGE,
+      hasExpiration: input.hasExpiration,
+      expirationDate: input.hasExpiration && input.expirationDate ? new Date(input.expirationDate).toISOString() : null,
     };
   }
 
   async function handleSaveProduct() {
     const quantity = Number(form.quantity);
 
-    if (!form.name.trim() || !form.description.trim()) {
-      toast.error('Preencha nome e descricao.');
+    if (!form.name.trim()) {
+      toast.error('Preencha o nome.');
+      return;
+    }
+
+    if (form.hasExpiration && !form.expirationDate) {
+      toast.error('Preencha a data de validade.');
       return;
     }
 
     if (!productEditing && (!Number.isFinite(quantity) || quantity < 0)) {
-      toast.error('Preencha nome, descricao e quantidade valida.');
+      toast.error('Preencha uma quantidade válida.');
       return;
     }
 
@@ -503,14 +540,7 @@ function ProductsPageContent() {
         <div className="flex flex-wrap items-center gap-x-4 gap-y-1">
           <p className="text-sm font-medium text-(--muted)">Visualize, edite e acompanhe o volume total do seu estoque.</p>
         </div>
-        <button
-          type="button"
-          onClick={() => exportProductsCsv(session!.accessToken)}
-          className="inline-flex h-9 shrink-0 items-center gap-1.5 rounded-lg border-2 border-(--stroke) bg-(--card) px-4 text-xs font-bold text-(--ink) transition-all hover:bg-(--soft)"
-        >
-          <Download size={14} strokeWidth={2.5} />
-          CSV
-        </button>
+        <ExportButton onExportCsv={() => exportProductsCsv(session!.accessToken)} />
       </section>
 
       <section className="surface-card p-6">
@@ -520,7 +550,7 @@ function ProductsPageContent() {
               <Search size={20} className="text-(--muted)" />
               <input
                 value={query}
-                onChange={(event) => setQuery(event.target.value)}
+                onChange={(event) => { setQuery(event.target.value); setCurrentPage(1); }}
                 placeholder="Pesquisar por nome ou descrição..."
                 className="w-full bg-transparent text-sm font-medium text-(--ink) outline-none placeholder:text-(--muted)"
               />
@@ -536,26 +566,34 @@ function ProductsPageContent() {
           </div>
 
           <div className="flex flex-wrap items-center gap-2">
-            <CategoryChip active={categoryFilter === 'Todos'} label="Todos" onClick={() => setCategoryFilter('Todos')} />
+            <CategoryChip active={categoryFilter === 'Todos'} label="Todos" onClick={() => updateCategoryInUrl('Todos')} />
             {categories.map((category) => {
               const isActive = categoryFilter === category.name;
 
               return (
-                <button
-                  key={category.id}
-                  type="button"
-                  onClick={() => setCategoryFilter(category.name)}
-                  onDoubleClick={() => {
-                    setCategoryEditing(category);
-                    setCategoryDraft(category.name);
-                    setShowCategoryModal(true);
-                  }}
-                  className={`h-8 rounded-full border-2 px-3 text-xs font-semibold transition-all ${isActive
-                    ? 'border-(--button) bg-(--button) text-white'
-                    : 'border-(--stroke) bg-(--card) text-(--muted) hover:bg-(--soft) hover:text-(--ink)'
-                    }`}>
-                  {category.name}
-                </button>
+                <div key={category.id} className="group relative">
+                  <button
+                    type="button"
+                    onClick={() => updateCategoryInUrl(category.name)}
+                    className={`h-8 rounded-full border-2 px-3 text-xs font-semibold transition-all ${isActive
+                      ? 'border-(--button) bg-(--button) text-white'
+                      : 'border-(--stroke) bg-(--card) text-(--muted) hover:bg-(--soft) hover:text-(--ink)'
+                      }`}>
+                    {category.name}
+                  </button>
+                  <button
+                    type="button"
+                    onClick={(event) => {
+                      event.stopPropagation();
+                      setCategoryEditing(category);
+                      setCategoryDraft(category.name);
+                      setShowCategoryModal(true);
+                    }}
+                    className="absolute -top-1 -right-1 hidden h-5 w-5 items-center justify-center rounded-full border-2 border-(--stroke) bg-(--card) text-(--muted) transition-all hover:bg-(--soft) hover:text-(--ink) group-hover:flex"
+                  >
+                    <Pencil size={10} />
+                  </button>
+                </div>
               );
             })}
             <button
@@ -569,6 +607,21 @@ function ProductsPageContent() {
               <Plus size={14} strokeWidth={2.5} />
               Nova
             </button>
+          </div>
+
+          <div className="flex flex-wrap items-center justify-between gap-3">
+            <p className="text-xs font-bold text-(--muted)">Mostrando {filteredCount} de {totalProducts} produtos</p>
+            <select
+              value={sortBy}
+              onChange={(event) => setSortBy(event.target.value)}
+              className="h-8 rounded-lg border-2 border-(--stroke) bg-(--card) px-3 text-xs font-bold text-(--ink) outline-none transition-all focus:border-(--accent) hover:bg-(--soft)"
+            >
+              <option value="stock_asc">Menor estoque primeiro</option>
+              <option value="stock_desc">Maior estoque primeiro</option>
+              <option value="name_asc">Nome A-Z</option>
+              <option value="newest">Mais recente</option>
+              <option value="oldest">Mais antigo</option>
+            </select>
           </div>
         </div>
       </section>
@@ -584,8 +637,9 @@ function ProductsPageContent() {
           <p className="mt-1 text-sm font-medium text-(--muted)">Tente ajustar sua busca ou filtros.</p>
         </div>
       ) : (
+        <>
         <div className="grid gap-4 md:grid-cols-3">
-          {filteredProducts.map((product) => {
+          {paginatedProducts.map((product) => {
           const categoryName = product.category?.name ?? categoryMap.get(product.categoryId ?? '')?.name ?? 'Sem Categoria';
           const status = getStatusBadge(
             product.quantity,
@@ -685,7 +739,12 @@ function ProductsPageContent() {
                 </div>
 
                 <h5 className="truncate text-[15px] font-bold text-(--ink)">{product.name}</h5>
-                <p className="line-clamp-1 text-xs font-medium text-(--muted)">{product.description}</p>
+                <p className="line-clamp-1 text-xs font-medium text-(--muted)">{product.description || 'Sem descrição'}</p>
+                {product.hasExpiration && product.expirationDate && (
+                  <p className="text-[10px] font-semibold text-(--critical) mt-0.5">
+                    Validade: {new Date(product.expirationDate).toLocaleDateString('pt-BR')}
+                  </p>
+                )}
 
                 <div className="mt-auto flex items-end justify-between gap-2 border-t-2 border-(--stroke) pt-2.5">
                   <div className="flex flex-wrap items-center gap-1.5 sm:gap-2">
@@ -758,6 +817,30 @@ function ProductsPageContent() {
           );
         })}
         </div>
+        {totalPages > 1 && (
+          <div className="flex items-center justify-center gap-2 pt-4">
+            <button
+              type="button"
+              onClick={() => setCurrentPage((p) => Math.max(1, p - 1))}
+              disabled={currentPage === 1}
+              className="inline-flex h-8 items-center gap-1 rounded-lg border-2 border-(--stroke) bg-(--card) px-3 text-xs font-bold text-(--ink) transition-all hover:bg-(--soft) disabled:opacity-40"
+            >
+              <ChevronLeft size={14} />
+              Anterior
+            </button>
+            <span className="text-xs font-bold text-(--muted)">{currentPage} / {totalPages}</span>
+            <button
+              type="button"
+              onClick={() => setCurrentPage((p) => Math.min(totalPages, p + 1))}
+              disabled={currentPage === totalPages}
+              className="inline-flex h-8 items-center gap-1 rounded-lg border-2 border-(--stroke) bg-(--card) px-3 text-xs font-bold text-(--ink) transition-all hover:bg-(--soft) disabled:opacity-40"
+            >
+              Próximo
+              <ChevronRight size={14} />
+            </button>
+          </div>
+        )}
+        </>
       )}
 
 
@@ -789,7 +872,7 @@ function ProductsPageContent() {
                   value={form.categoryId}
                   onChange={(event) => setForm((current) => ({ ...current, categoryId: event.target.value }))}
                   className="w-full rounded-lg border-2 border-(--stroke) bg-(--surface-2) px-4 py-3 text-sm font-medium text-(--ink) outline-none transition-all focus:border-(--accent) focus:bg-(--card) focus:ring-4 focus:[--tw-ring-color:var(--accent)]/30">
-                  <option value="" className="font-medium text-(--ink)">Nenhuma</option>
+                  <option value="" className="font-medium text-(--ink)">Sem categoria</option>
                   {categories.map((category) => (
                     <option key={category.id} value={category.id} className="font-medium text-(--ink)">
                       {category.name}
@@ -797,6 +880,33 @@ function ProductsPageContent() {
                   ))}
                 </select>
               </div>
+              <div>
+                <label className="mb-1.5 block text-xs font-bold text-(--ink) uppercase tracking-wider">Controle de Validade</label>
+                <select
+                  value={form.hasExpiration ? 'yes' : 'no'}
+                  onChange={(event) => {
+                    const hasExp = event.target.value === 'yes';
+                    setForm((current) => ({
+                      ...current,
+                      hasExpiration: hasExp,
+                      expirationDate: hasExp ? current.expirationDate || new Date().toISOString().split('T')[0] : '',
+                    }));
+                  }}
+                  className="w-full rounded-lg border-2 border-(--stroke) bg-(--surface-2) px-4 py-3 text-sm font-medium text-(--ink) outline-none transition-all focus:border-(--accent) focus:bg-(--card) focus:ring-4 focus:[--tw-ring-color:var(--accent)]/30">
+                  <option value="no" className="font-medium text-(--ink)">Sem validade</option>
+                  <option value="yes" className="font-medium text-(--ink)">Com validade</option>
+                </select>
+              </div>
+              {form.hasExpiration ? (
+                <div>
+                  <Input
+                    label="Data de Validade"
+                    type="date"
+                    value={form.expirationDate}
+                    onChange={(value) => setForm((current) => ({ ...current, expirationDate: value }))}
+                  />
+                </div>
+              ) : null}
             </div>
 
             <div>
@@ -880,7 +990,7 @@ function ProductsPageContent() {
                   value={form.categoryId}
                   onChange={(event) => setForm((current) => ({ ...current, categoryId: event.target.value }))}
                   className="w-full rounded-lg border-2 border-(--stroke) bg-(--surface-2) px-4 py-3 text-sm font-medium text-(--ink) outline-none transition-all focus:border-(--accent) focus:bg-(--card) focus:ring-4 focus:[--tw-ring-color:var(--accent)]/30">
-                  <option value="" className="font-medium text-(--ink)">Nenhuma</option>
+                  <option value="" className="font-medium text-(--ink)">Sem categoria</option>
                   {categories.map((category) => (
                     <option key={category.id} value={category.id} className="font-medium text-(--ink)">
                       {category.name}
@@ -888,6 +998,33 @@ function ProductsPageContent() {
                   ))}
                 </select>
               </div>
+              <div>
+                <label className="mb-1.5 block text-xs font-bold text-(--ink) uppercase tracking-wider">Controle de Validade</label>
+                <select
+                  value={form.hasExpiration ? 'yes' : 'no'}
+                  onChange={(event) => {
+                    const hasExp = event.target.value === 'yes';
+                    setForm((current) => ({
+                      ...current,
+                      hasExpiration: hasExp,
+                      expirationDate: hasExp ? current.expirationDate || new Date().toISOString().split('T')[0] : '',
+                    }));
+                  }}
+                  className="w-full rounded-lg border-2 border-(--stroke) bg-(--surface-2) px-4 py-3 text-sm font-medium text-(--ink) outline-none transition-all focus:border-(--accent) focus:bg-(--card) focus:ring-4 focus:[--tw-ring-color:var(--accent)]/30">
+                  <option value="no" className="font-medium text-(--ink)">Sem validade</option>
+                  <option value="yes" className="font-medium text-(--ink)">Com validade</option>
+                </select>
+              </div>
+              {form.hasExpiration ? (
+                <div>
+                  <Input
+                    label="Data de Validade"
+                    type="date"
+                    value={form.expirationDate}
+                    onChange={(value) => setForm((current) => ({ ...current, expirationDate: value }))}
+                  />
+                </div>
+              ) : null}
             </div>
 
             <div>
@@ -1127,7 +1264,7 @@ function Input({
   label: string;
   onChange: (value: string) => void;
   placeholder?: string;
-  type?: 'text' | 'number';
+  type?: 'text' | 'number' | 'date';
   value: string;
 }) {
   return (

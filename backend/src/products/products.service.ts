@@ -206,6 +206,8 @@ export class ProductsService {
         category: product.category
           ? { id: product.category.id, name: product.category.name }
           : null,
+        hasExpiration: product.hasExpiration,
+        expirationDate: product.expirationDate,
       },
       dashboard: {
         alertDaysBefore: user?.alertDaysBefore ?? 7,

@@ -1,103 +1,193 @@
 "use client";
 
-import { useState, useEffect } from 'react';
-import { ArrowDownLeft, ArrowUpRight, Download, History } from 'lucide-react';
-import { useHistoryStore } from '@/store/history-store';
+import { Suspense, useMemo, useState } from 'react';
+import { ArrowDownLeft, ArrowUpRight, ChevronLeft, ChevronRight, History, Link as LinkIcon, Search } from 'lucide-react';
+import { useQuery } from '@tanstack/react-query';
+import Link from 'next/link';
 import { getStockMovements } from '@/lib/api/stock-movements';
 import { exportStockMovementsCsv } from '@/lib/api/export';
 import { useAuthStore } from '@/store/auth-store';
+import { ExportButton } from '@/components/ui/export-button';
+import type { StockHistoryItem } from '@/lib/types';
+
+const ITEMS_PER_PAGE = 12;
+
+type MovementType = 'all' | 'in' | 'out';
+
+function formatDateHeader(date: Date, period: string): string {
+  const now = new Date();
+  const crossesYear = date.getFullYear() !== now.getFullYear();
+
+  if (period === 'yearly') {
+    return date.toLocaleDateString('pt-BR', { month: 'long', year: 'numeric' });
+  }
+
+  if (crossesYear) {
+    return date.toLocaleDateString('pt-BR', {
+      weekday: 'long',
+      day: '2-digit',
+      month: 'long',
+      year: 'numeric',
+    });
+  }
+
+  return date.toLocaleDateString('pt-BR', {
+    weekday: 'long',
+    day: '2-digit',
+    month: 'long',
+  });
+}
 
 export default function HistoryPage() {
-  const items = useHistoryStore((state) => state.items);
-  const setItems = useHistoryStore((state) => state.setItems);
+  return (
+    <Suspense fallback={<div className="space-y-8 reveal-up"><div className="h-10 w-full animate-pulse rounded-lg bg-(--soft)" /></div>}>
+      <HistoryPageContent />
+    </Suspense>
+  );
+}
+
+function HistoryPageContent() {
   const session = useAuthStore((state) => state.session);
   const [period, setPeriod] = useState<'weekly' | 'monthly' | 'yearly'>('monthly');
+  const [typeFilter, setTypeFilter] = useState<MovementType>('all');
+  const [searchQuery, setSearchQuery] = useState('');
+  const [currentPage, setCurrentPage] = useState(1);
 
-  useEffect(() => {
-    if (!session?.accessToken) return;
+  const movementsQuery = useQuery({
+    queryKey: ['stock-movements', session?.user.id, period],
+    queryFn: () => getStockMovements(session!.accessToken, undefined, period),
+    enabled: Boolean(session?.accessToken),
+  });
 
-    const controller = new AbortController();
-    let active = true;
+  const allItems = useMemo(() => movementsQuery.data ?? [], [movementsQuery.data]);
 
-    getStockMovements(session.accessToken, controller.signal, period)
-      .then((items) => {
-        if (!active) return;
-        setItems(items);
-      })
-      .catch((error) => {
-        if (controller.signal.aborted) return;
-        console.error(error);
-      });
+  const filteredItems = useMemo(() => {
+    const normalizedQuery = searchQuery.trim().toLowerCase();
+    return allItems.filter((item) => {
+      const matchesType = typeFilter === 'all' || item.type === typeFilter;
+      const matchesSearch = normalizedQuery === '' || item.productName.toLowerCase().includes(normalizedQuery);
+      return matchesType && matchesSearch;
+    });
+  }, [allItems, typeFilter, searchQuery]);
 
-    return () => {
-      active = false;
-      controller.abort();
-    };
-  }, [session, setItems, period]);
+  const groupedByDate = useMemo(() => {
+    return filteredItems.reduce<Record<string, StockHistoryItem[]>>((acc, item) => {
+      const date = new Date(item.createdAt);
+      const key = formatDateHeader(date, period);
 
-  const groupedByDate = items.reduce<Record<string, typeof items>>((acc, item) => {
-    const date = new Date(item.createdAt);
-    const key = period === 'yearly'
-      ? date.toLocaleDateString('pt-BR', { month: 'long', year: 'numeric' })
-      : date.toLocaleDateString('pt-BR', {
-          weekday: 'long',
-          day: '2-digit',
-          month: 'long',
-        });
+      if (!acc[key]) {
+        acc[key] = [];
+      }
 
-    if (!acc[key]) {
-      acc[key] = [];
-    }
-
-    acc[key].push(item);
-    return acc;
-  }, {});
+      acc[key].push(item);
+      return acc;
+    }, {});
+  }, [filteredItems, period]);
 
   const groupedEntries = Object.entries(groupedByDate);
 
+  const totalPages = Math.max(1, Math.ceil(filteredItems.length / ITEMS_PER_PAGE));
+  const paginatedGroupedEntries = useMemo(() => {
+    const allFlat: { dateLabel: string; item: StockHistoryItem }[] = [];
+    for (const [dateLabel, entries] of groupedEntries) {
+      for (const item of entries) {
+        allFlat.push({ dateLabel, item });
+      }
+    }
+
+    const start = (currentPage - 1) * ITEMS_PER_PAGE;
+    const pageItems = allFlat.slice(start, start + ITEMS_PER_PAGE);
+
+    const groups: Record<string, StockHistoryItem[]> = {};
+    for (const { dateLabel, item } of pageItems) {
+      if (!groups[dateLabel]) {
+        groups[dateLabel] = [];
+      }
+      groups[dateLabel].push(item);
+    }
+    return Object.entries(groups);
+  }, [groupedEntries, currentPage]);
+
   return (
     <div className="space-y-8 reveal-up">
-      <section className="flex flex-wrap items-center justify-between gap-4">
-        <p className="text-sm font-medium text-(--muted)">Acompanhe cada entrada e saída do seu estoque em tempo real.</p>
-        <div className="flex gap-1 rounded-lg border-2 border-(--stroke) p-0.5">
-          {(['weekly', 'monthly', 'yearly'] as const).map((p) => (
-            <button
-              key={p}
-              type="button"
-              onClick={() => setPeriod(p)}
-              className={`rounded-md px-2 py-1 text-[10px] sm:px-3 sm:py-1.5 sm:text-[11px] font-bold uppercase tracking-wider transition-all ${
-                period === p
-                  ? 'bg-(--button) text-white'
-                  : 'text-(--muted) hover:text-(--ink)'
-              }`}
-            >
-              {p === 'weekly' ? 'Semanal' : p === 'monthly' ? 'Mensal' : 'Anual'}
-            </button>
-          ))}
+      <section className="surface-card p-6">
+        <div className="flex flex-col gap-4">
+          <div className="flex flex-wrap items-center gap-2">
+            <p className="text-sm font-medium text-(--muted)">Acompanhe cada entrada e saída do seu estoque em tempo real.</p>
+          </div>
+
+          <div className="flex gap-1 rounded-lg border-2 border-(--stroke) p-0.5 w-fit">
+            {(['weekly', 'monthly', 'yearly'] as const).map((p) => (
+              <button
+                key={p}
+                type="button"
+                onClick={() => { setPeriod(p); setCurrentPage(1); }}
+                className={`rounded-md px-2 py-1 text-[10px] sm:px-3 sm:py-1.5 sm:text-[11px] font-bold uppercase tracking-wider transition-all ${
+                  period === p
+                    ? 'bg-(--button) text-white'
+                    : 'text-(--muted) hover:text-(--ink)'
+                }`}
+              >
+                {p === 'weekly' ? 'Semanal' : p === 'monthly' ? 'Mensal' : 'Anual'}
+              </button>
+            ))}
+          </div>
+
+          <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+            <div className="flex flex-1 items-center gap-3 rounded-xl border-2 border-(--stroke) bg-(--surface-2) px-4 py-3 transition-all focus-within:border-(--accent) focus-within:bg-(--card) focus-within:ring-4 focus-within:[--tw-ring-color:var(--accent)]/30">
+              <Search size={20} className="text-(--muted)" />
+              <input
+                value={searchQuery}
+                onChange={(event) => { setSearchQuery(event.target.value); setCurrentPage(1); }}
+                placeholder="Buscar por nome do produto..."
+                className="w-full bg-transparent text-sm font-medium text-(--ink) outline-none placeholder:text-(--muted)"
+              />
+            </div>
+            <div className="flex flex-wrap items-center gap-2">
+              <div className="flex gap-1 rounded-lg border-2 border-(--stroke) p-0.5">
+                {([['all', 'Todos'], ['in', 'Entradas'], ['out', 'Saídas']] as const).map(([value, label]) => (
+                  <button
+                    key={value}
+                    type="button"
+                    onClick={() => { setTypeFilter(value); setCurrentPage(1); }}
+                    className={`rounded-md px-2 py-1 text-[10px] sm:px-3 sm:py-1.5 sm:text-[11px] font-bold uppercase tracking-wider transition-all ${
+                      typeFilter === value
+                        ? value === 'in' ? 'bg-(--ok) text-white' : value === 'out' ? 'bg-(--critical) text-white' : 'bg-(--button) text-white'
+                        : 'text-(--muted) hover:text-(--ink)'
+                    }`}
+                  >
+                    {label}
+                  </button>
+                ))}
+              </div>
+              <ExportButton
+                onExportCsv={() => {
+                  const now = new Date();
+                  const endDate = now.toISOString().slice(0, 10);
+                  const startDate = new Date(now);
+                  switch (period) {
+                    case 'weekly': startDate.setDate(startDate.getDate() - 7); break;
+                    case 'monthly': startDate.setMonth(startDate.getMonth() - 1); break;
+                    case 'yearly': startDate.setFullYear(startDate.getFullYear() - 1); break;
+                  }
+                  exportStockMovementsCsv(session!.accessToken, startDate.toISOString().slice(0, 10), endDate);
+                }}
+              />
+            </div>
+          </div>
         </div>
-        <button
-          type="button"
-          onClick={() => {
-            const now = new Date();
-            const endDate = now.toISOString().slice(0, 10);
-            const startDate = new Date(now);
-            switch (period) {
-              case 'weekly': startDate.setDate(startDate.getDate() - 7); break;
-              case 'monthly': startDate.setMonth(startDate.getMonth() - 1); break;
-              case 'yearly': startDate.setFullYear(startDate.getFullYear() - 1); break;
-            }
-            exportStockMovementsCsv(session!.accessToken, startDate.toISOString().slice(0, 10), endDate);
-          }}
-          className="inline-flex h-9 shrink-0 items-center gap-1.5 rounded-lg border-2 border-(--stroke) bg-(--card) px-4 text-xs font-bold text-(--ink) transition-all hover:bg-(--soft)">
-          <Download size={14} strokeWidth={2.5} />
-          CSV
-        </button>
       </section>
 
       <section>
-        {groupedEntries.length ? (
+        {movementsQuery.isLoading ? (
+          <div className="space-y-3">
+            {[1, 2, 3].map((i) => (
+              <div key={i} className="h-16 w-full animate-pulse rounded-lg bg-(--soft)" />
+            ))}
+          </div>
+        ) : paginatedGroupedEntries.length ? (
           <div className="space-y-8">
-            {groupedEntries.map(([dateLabel, entries]) => (
+            {paginatedGroupedEntries.map(([dateLabel, entries]) => (
               <article key={dateLabel} className="space-y-4">
                 <header className="flex items-center gap-3">
                   <div className="rounded-full border-2 border-(--stroke) bg-(--card) px-3 py-1 text-[9px] font-bold uppercase tracking-[0.18em] text-(--muted)">
@@ -118,7 +208,13 @@ export default function HistoryPage() {
                             {item.type === 'in' ? <ArrowDownLeft size={16} /> : <ArrowUpRight size={16} />}
                           </div>
                           <div className="min-w-0">
-                            <p className="text-sm font-bold text-(--ink) truncate">{item.productName}</p>
+                            <Link
+                              href={`/products/${item.productId}`}
+                              className="text-sm font-bold text-(--ink) truncate hover:underline inline-flex items-center gap-1"
+                            >
+                              {item.productName}
+                              <LinkIcon size={10} className="shrink-0 opacity-50" />
+                            </Link>
                             <div className="mt-0.5 flex items-center gap-2">
                               <p className="text-[11px] font-medium text-(--muted)">
                                 {new Date(item.createdAt).toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' })}
@@ -148,9 +244,39 @@ export default function HistoryPage() {
             </div>
             <p className="text-base font-bold text-(--ink)">Sem movimentações</p>
             <p className="mt-1 text-sm font-medium text-(--muted)">Nenhuma movimentação encontrada no período selecionado.</p>
+            <Link
+              href="/products"
+              className="mt-4 inline-flex h-9 items-center gap-1.5 rounded-lg bg-(--button) px-4 text-xs font-bold text-white transition-all hover:brightness-125"
+            >
+              Registrar movimentação
+            </Link>
           </div>
         )}
       </section>
+
+      {totalPages > 1 && (
+        <div className="flex items-center justify-center gap-2 pt-4">
+          <button
+            type="button"
+            onClick={() => setCurrentPage((p) => Math.max(1, p - 1))}
+            disabled={currentPage === 1}
+            className="inline-flex h-8 items-center gap-1 rounded-lg border-2 border-(--stroke) bg-(--card) px-3 text-xs font-bold text-(--ink) transition-all hover:bg-(--soft) disabled:opacity-40"
+          >
+            <ChevronLeft size={14} />
+            Anterior
+          </button>
+          <span className="text-xs font-bold text-(--muted)">{currentPage} / {totalPages}</span>
+          <button
+            type="button"
+            onClick={() => setCurrentPage((p) => Math.min(totalPages, p + 1))}
+            disabled={currentPage === totalPages}
+            className="inline-flex h-8 items-center gap-1 rounded-lg border-2 border-(--stroke) bg-(--card) px-3 text-xs font-bold text-(--ink) transition-all hover:bg-(--soft) disabled:opacity-40"
+          >
+            Próximo
+            <ChevronRight size={14} />
+          </button>
+        </div>
+      )}
     </div>
   );
 }

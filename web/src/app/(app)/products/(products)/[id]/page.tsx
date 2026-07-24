@@ -37,6 +37,8 @@ type DashboardLoadState = {
   averageDailySales: number;
   estimatedDaysLeft: number | null;
   recentMovements: ProductDashboardMovement[];
+  hasExpiration?: boolean;
+  expirationDate?: string | null;
 };
 
 export default function ProductDetailsPage() {
@@ -67,7 +69,7 @@ export default function ProductDetailsPage() {
 
           return {
             productCategory: details.product.category?.name ?? 'Sem categoria',
-            productDescription: details.product.description,
+            productDescription: details.product.description ?? '',
             productImage: details.product.image,
             productName: details.product.name,
             currentStock: details.dashboard.currentStock,
@@ -77,6 +79,8 @@ export default function ProductDetailsPage() {
             recentMovements: details.dashboard.recentMovements,
             totalEntries: details.dashboard.summary.totalEntries,
             totalOutputs: details.dashboard.summary.totalOutputs,
+            hasExpiration: details.product.hasExpiration,
+            expirationDate: details.product.expirationDate,
           };
         },
         enabled: Boolean(session?.accessToken && productId),
@@ -175,9 +179,14 @@ export default function ProductDetailsPage() {
                   <span className={`rounded-full border-2 px-2.5 py-0.5 text-[10px] font-bold tracking-wider ${status.className}`}>
                     {status.label}
                   </span>
+                  {dashboard.hasExpiration && dashboard.expirationDate && (
+                    <span className="rounded-full bg-(--critical-soft) px-2.5 py-0.5 text-[10px] font-bold uppercase tracking-wider text-(--critical)">
+                      Validade: {new Date(dashboard.expirationDate).toLocaleDateString('pt-BR')}
+                    </span>
+                  )}
                 </div>
                 <h1 className="mt-1.5 text-lg font-bold tracking-tight text-(--ink) sm:text-xl">{dashboard.productName}</h1>
-                <p className="mt-0.5 max-w-xl text-xs leading-6 text-(--muted)">{dashboard.productDescription}</p>
+                <p className="mt-0.5 max-w-xl text-xs leading-6 text-(--muted)">{dashboard.productDescription || 'Sem descrição.'}</p>
               </div>
             </div>
             <Link

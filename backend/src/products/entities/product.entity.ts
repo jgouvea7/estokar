@@ -37,14 +37,20 @@ export class Product {
   @Column()
   name: string;
 
-  @Column()
-  description: string;
+  @Column({ nullable: true })
+  description?: string | null;
 
   @Column()
   quantity: number;
 
   @Column()
   image: string;
+
+  @Column({ default: false })
+  hasExpiration: boolean;
+
+  @Column({ nullable: true })
+  expirationDate?: Date | null;
 
   @Column()
   createdAt: Date;

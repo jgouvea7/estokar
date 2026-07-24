@@ -14,18 +14,38 @@ interface VersionEntry {
 
 const changelog: VersionEntry[] = [
   {
-    version: "v1.14.0",
-    date: "20 de Junho, 2026",
-    build: "20260620",
+    version: "v1.15.0",
+    date: "24 de Julho, 2026",
+    build: "20260724",
     changes: [
       {
         type: "feature",
-        text: "Implementado novo design da interface e modo escuro",
+        text: "Suporte a data de validade nos produtos",
       },
       {
         type: "feature",
-        text: "Adicionada exportação de produtos em formato CSV",
-      }      
+        text: "Paginação e ordenação na lista de produtos",
+      },
+      {
+        type: "feature",
+        text: "Busca, filtro por tipo e paginação no histórico",
+      },
+      {
+        type: "feature",
+        text: "Edição rápida de categorias",
+      },
+      {
+        type: "improvement",
+        text: "Botão 'CSV' substituído por 'Exportar' com menu dropdown",
+      },
+      {
+        type: "improvement",
+        text: "Novo layout do histórico com abas de período e barra de busca",
+      },
+      {
+        type: "improvement",
+        text: "Descrição do produto tornada opcional",
+      },
     ],
   },
 ];

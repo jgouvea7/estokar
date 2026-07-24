@@ -7,6 +7,8 @@ import {
   Min,
   IsOptional,
   IsInt,
+  IsBoolean,
+  IsDateString,
 } from 'class-validator';
 import { Type } from 'class-transformer';
 
@@ -23,10 +25,10 @@ export class CreateProductDto {
   @MaxLength(200)
   name: string;
 
+  @IsOptional()
   @IsString()
-  @IsNotEmpty({ message: 'Descrição é obrigatória' })
   @MaxLength(2000)
-  description: string;
+  description?: string;
 
   @Type(() => Number)
   @IsNumber({}, { message: 'Quantidade deve ser um número' })
@@ -42,4 +44,12 @@ export class CreateProductDto {
   @IsString()
   @IsNotEmpty({ message: 'Imagem é obrigatória' })
   image: string;
+
+  @IsOptional()
+  @IsBoolean()
+  hasExpiration?: boolean;
+
+  @IsOptional()
+  @IsDateString({}, { message: 'Data de validade inválida' })
+  expirationDate?: string;
 }

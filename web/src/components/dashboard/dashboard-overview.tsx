@@ -9,11 +9,11 @@ import {
   BarChart3,
   Boxes,
   Clock3,
-  Download,
   TrendingDown,
   TrendingUp,
   Package2,
 } from 'lucide-react';
+import { ExportButton } from '@/components/ui/export-button';
 import { StockTimelineChart } from '@/components/dashboard/stock-timeline-chart';
 import { CategoryPieChart } from '@/components/dashboard/category-pie-chart';
 import type { DashboardOverviewData } from '@/lib/dashboard/dashboard-data';
@@ -53,14 +53,7 @@ export function DashboardOverview({ data, accessToken, lastUpdatedAt }: Dashboar
             Última atualização {formatDateTime(new Date(lastUpdatedAt))}
           </span>
         </div>
-        <button
-          type="button"
-          onClick={() => exportDashboardCsv(accessToken)}
-          className="inline-flex h-9 items-center gap-1.5 rounded-lg border-2 border-(--stroke) bg-(--card) px-4 text-xs font-bold text-(--ink) transition-all hover:bg-(--soft)"
-        >
-          <Download size={14} strokeWidth={2.5} />
-          CSV
-        </button>
+        <ExportButton onExportCsv={() => exportDashboardCsv(accessToken)} />
       </section>
 
       <section className="grid grid-cols-2 gap-3 sm:grid-cols-4">

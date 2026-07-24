@@ -31,7 +31,7 @@ export type Category = {
 export type Product = {
   id: string;
   name: string;
-  description: string;
+  description?: string | null;
   categoryId?: string | null;
   category?: Category | null;
   quantity: number;
@@ -40,14 +40,18 @@ export type Product = {
   image: string;
   createdAt?: string;
   updatedAt?: string;
+  hasExpiration?: boolean;
+  expirationDate?: string | null;
 };
 
 export type CreateProductPayload = {
   name: string;
-  description: string;
+  description?: string | null;
   categoryId?: string | null;
   quantity: number;
   image: string;
+  hasExpiration?: boolean;
+  expirationDate?: string | null;
 };
 
 export type UpdateProductPayload = Partial<CreateProductPayload>;
@@ -92,10 +96,12 @@ export type ProductDetailsResponse = {
   product: {
     id: string;
     name: string;
-    description: string;
+    description?: string | null;
     image: string;
     categoryId?: string | null;
     category?: Category | null;
+    hasExpiration?: boolean;
+    expirationDate?: string | null;
   };
   dashboard: {
     alertDaysBefore: number;

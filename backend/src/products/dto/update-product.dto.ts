@@ -7,6 +7,8 @@ import {
   Min,
   IsOptional,
   IsInt,
+  IsBoolean,
+  IsDateString,
 } from 'class-validator';
 import { Type } from 'class-transformer';
 
@@ -41,4 +43,12 @@ export class UpdateProductDto {
   @IsOptional()
   @IsString()
   image?: string;
+
+  @IsOptional()
+  @IsBoolean()
+  hasExpiration?: boolean;
+
+  @IsOptional()
+  @IsDateString({}, { message: 'Data de validade inválida' })
+  expirationDate?: string;
 }
