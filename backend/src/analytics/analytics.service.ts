@@ -7,8 +7,7 @@ import {
   StockMovementType,
 } from '../stock-movements/entities/stock-movement.entity';
 import { calculateForecast, toNumber } from '../common/utils/forecast.util';
-
-type Period = 'daily' | 'weekly' | 'monthly' | 'yearly';
+import { resolvePeriod, getStartDate } from '../common/utils/period.util';
 
 @Injectable()
 export class AnalyticsService {
@@ -20,8 +19,8 @@ export class AnalyticsService {
   ) {}
 
   async getAnalytics(userId: string, period?: string) {
-    const resolvedPeriod = this.resolvePeriod(period);
-    const startDate = this.getStartDate(resolvedPeriod);
+    const resolvedPeriod = resolvePeriod(period);
+    const startDate = getStartDate(resolvedPeriod);
 
     const sevenDaysAgo = new Date();
     sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 7);
@@ -217,32 +216,6 @@ export class AnalyticsService {
       stockDistribution,
       forecast,
     };
-  }
-
-  private resolvePeriod(period?: string): Period {
-    const valid: Period[] = ['daily', 'weekly', 'monthly', 'yearly'];
-    return valid.includes(period as Period) ? (period as Period) : 'monthly';
-  }
-
-  private getStartDate(period: Period): Date {
-    const now = new Date();
-    const d = new Date(now);
-    switch (period) {
-      case 'daily':
-        d.setDate(d.getDate() - 1);
-        break;
-      case 'weekly':
-        d.setDate(d.getDate() - 7);
-        break;
-      case 'monthly':
-        d.setMonth(d.getMonth() - 1);
-        break;
-      case 'yearly':
-        d.setFullYear(d.getFullYear() - 1);
-        break;
-    }
-    d.setHours(0, 0, 0, 0);
-    return d;
   }
 
   private getTimelineMovements(userId: string, startDate?: Date) {

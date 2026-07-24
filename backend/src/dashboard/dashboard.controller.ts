@@ -1,4 +1,4 @@
-import { Controller, Get, UseGuards } from '@nestjs/common';
+import { Controller, Get, Query, UseGuards } from '@nestjs/common';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
 import { CurrentUser } from '../common/decorators/current-user.decorator';
 import { DashboardService } from './dashboard.service';
@@ -19,8 +19,11 @@ export class DashboardController {
   }
 
   @Get('timeline')
-  getTimeline(@CurrentUser('id') userId: string) {
-    return this.dashboardService.getTimeline(userId);
+  getTimeline(
+    @CurrentUser('id') userId: string,
+    @Query('period') period?: string,
+  ) {
+    return this.dashboardService.getTimeline(userId, period);
   }
 
   @Get('categories-stock')

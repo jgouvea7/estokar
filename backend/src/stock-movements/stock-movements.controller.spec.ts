@@ -43,6 +43,7 @@ describe('StockMovementsController', () => {
         'user-1',
         1,
         100,
+        undefined,
       );
       expect(result).toEqual({
         data: [mockMovement],
@@ -66,6 +67,7 @@ describe('StockMovementsController', () => {
         'user-1',
         2,
         50,
+        undefined,
       );
     });
   });

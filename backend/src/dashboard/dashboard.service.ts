@@ -8,6 +8,7 @@ import {
 } from '../stock-movements/entities/stock-movement.entity';
 import { Repository } from 'typeorm';
 import { calculateForecast, toNumber } from '../common/utils/forecast.util';
+import { resolvePeriod, getStartDate } from '../common/utils/period.util';
 
 @Injectable()
 export class DashboardService {
@@ -354,7 +355,10 @@ export class DashboardService {
       .sort((a, b) => a!.estimatedDaysLeft - b!.estimatedDaysLeft);
   }
 
-  async getTimeline(userId: string) {
+  async getTimeline(userId: string, period?: string) {
+    const resolvedPeriod = resolvePeriod(period);
+    const startDate = getStartDate(resolvedPeriod);
+
     const movements = await this.stockMovementsRepository
       .createQueryBuilder('m')
       .select('m.createdAt', 'createdAt')
@@ -363,6 +367,7 @@ export class DashboardService {
         'netChange',
       )
       .where('m.userId = :userId', { userId })
+      .andWhere('m.createdAt >= :startDate', { startDate })
       .setParameter('inType', StockMovementType.IN)
       .orderBy('m.createdAt', 'ASC')
       .getRawMany<{ createdAt: Date; netChange: string }>();

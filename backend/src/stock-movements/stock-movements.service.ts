@@ -1,7 +1,8 @@
 import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository } from 'typeorm';
+import { Repository, MoreThanOrEqual } from 'typeorm';
 import { StockMovement } from './entities/stock-movement.entity';
+import { resolvePeriod, getStartDate } from '../common/utils/period.util';
 
 @Injectable()
 export class StockMovementsService {
@@ -14,6 +15,7 @@ export class StockMovementsService {
     userId: string,
     page = 1,
     limit = 100,
+    period?: string,
   ): Promise<{
     data: StockMovement[];
     total: number;
@@ -22,8 +24,16 @@ export class StockMovementsService {
   }> {
     const skip = (page - 1) * limit;
 
+    const where: Record<string, unknown> = { userId };
+
+    if (period) {
+      const resolvedPeriod = resolvePeriod(period);
+      const startDate = getStartDate(resolvedPeriod);
+      where.createdAt = MoreThanOrEqual(startDate);
+    }
+
     const [data, total] = await this.stockMovementsRepository.findAndCount({
-      where: { userId },
+      where,
       order: { createdAt: 'DESC' },
       skip,
       take: limit,

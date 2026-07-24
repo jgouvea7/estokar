@@ -13,11 +13,13 @@ export class StockMovementsController {
     @CurrentUser('id') userId: string,
     @Query('page') page?: string,
     @Query('limit') limit?: string,
+    @Query('period') period?: string,
   ) {
     return this.stockMovementsService.findAll(
       userId,
       page ? Math.max(1, Number(page)) : 1,
       limit ? Math.min(200, Math.max(1, Number(limit))) : 100,
+      period,
     );
   }
 }
