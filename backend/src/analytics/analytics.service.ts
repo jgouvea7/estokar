@@ -36,13 +36,13 @@ export class AnalyticsService {
       periodMovements,
       timelineMovements,
       dailyBalanceData,
-      topSellingData,
-      lowestSellingData,
+      topAndLowestSellingData,
       categorySalesData,
       weekDayData,
       stockRangesData,
       salesData,
       stockDistributionData,
+      categoryStockData,
     ] = await Promise.all([
       this.productsRepository.find({
         where: { userId },
@@ -57,13 +57,13 @@ export class AnalyticsService {
         .getMany(),
       this.getTimelineMovements(userId, startDate),
       this.getDailyBalance(userId, startDate),
-      this.getTopSelling(userId, startDate),
-      this.getLowestSelling(userId, startDate),
+      this.getTopAndLowestSelling(userId, startDate),
       this.getCategorySales(userId, startDate),
       this.getWeekDayDistribution(userId, startDate),
       this.getStockRanges(userId),
       this.getSalesData(userId, sevenDaysAgo, fourteenDaysAgo, thirtyDaysAgo),
       this.getStockDistribution(userId),
+      this.getCategoryStock(userId),
     ]);
 
     const totalProducts = products.length;
@@ -91,13 +91,20 @@ export class AnalyticsService {
       balance: toNumber(row.entries) - toNumber(row.outputs),
     }));
 
-    const topSelling = topSellingData.map((row) => ({
+    const topSelling = topAndLowestSellingData.slice(0, 10).map((row) => ({
       productId: row.productId,
       productName: row.productName,
       quantity: toNumber(row.quantity),
     }));
 
-    const categoryStockData = await this.getCategoryStock(userId);
+    const lowestSelling = [...topAndLowestSellingData]
+      .sort((a, b) => toNumber(a.quantity) - toNumber(b.quantity))
+      .slice(0, 5)
+      .map((row) => ({
+        productId: row.productId,
+        productName: row.productName,
+        quantity: toNumber(row.quantity),
+      }));
 
     const salesMap = new Map(
       salesData.map((row) => [
@@ -205,11 +212,7 @@ export class AnalyticsService {
       timeline,
       dailyBalance,
       topSelling,
-      lowestSelling: lowestSellingData.map((row) => ({
-        productId: row.productId,
-        productName: row.productName,
-        quantity: toNumber(row.quantity),
-      })),
+      lowestSelling,
       categoryPerformance,
       weekDayDistribution,
       stockRanges,
@@ -221,26 +224,27 @@ export class AnalyticsService {
   private getTimelineMovements(userId: string, startDate?: Date) {
     const query = this.stockMovementsRepository
       .createQueryBuilder('m')
-      .select('m."createdAt"', 'createdAt')
+      .select(`TO_CHAR(DATE_TRUNC('day', m."createdAt"), 'YYYY-MM-DD')`, 'date')
       .addSelect(
-        `CASE WHEN m.type = :inType THEN m.quantity ELSE -m.quantity END`,
+        `SUM(CASE WHEN m.type = :inType THEN m.quantity ELSE -m.quantity END)`,
         'netChange',
       )
       .where('m.userId = :userId', { userId })
       .setParameter('inType', StockMovementType.IN)
-      .orderBy('m."createdAt"', 'ASC');
+      .groupBy(`DATE_TRUNC('day', m."createdAt")`)
+      .orderBy(`DATE_TRUNC('day', m."createdAt")`, 'ASC');
 
     if (startDate) {
       query.andWhere('m."createdAt" >= :startDate', { startDate });
     }
 
-    return query.getRawMany<{ createdAt: Date; netChange: string }>();
+    return query.getRawMany<{ date: string; netChange: string }>();
   }
 
   private getDailyBalance(userId: string, startDate: Date) {
     return this.stockMovementsRepository
       .createQueryBuilder('m')
-      .select(`m."createdAt"::date`, 'date')
+      .select(`TO_CHAR(m."createdAt", 'YYYY-MM-DD')`, 'date')
       .addSelect(
         `COALESCE(SUM(CASE WHEN m.type = 'in' THEN m.quantity ELSE 0 END), 0)`,
         'entries',
@@ -251,12 +255,12 @@ export class AnalyticsService {
       )
       .where('m.userId = :userId', { userId })
       .andWhere('m."createdAt" >= :startDate', { startDate })
-      .groupBy('m."createdAt"::date')
-      .orderBy('m."createdAt"::date', 'ASC')
+      .groupBy(`TO_CHAR(m."createdAt", 'YYYY-MM-DD')`)
+      .orderBy(`TO_CHAR(m."createdAt", 'YYYY-MM-DD')`, 'ASC')
       .getRawMany<{ date: string; entries: string; outputs: string }>();
   }
 
-  private getTopSelling(userId: string, startDate: Date) {
+  private getTopAndLowestSelling(userId: string, startDate: Date) {
     return this.stockMovementsRepository
       .createQueryBuilder('m')
       .select('m.productId', 'productId')
@@ -269,28 +273,6 @@ export class AnalyticsService {
       .groupBy('m.productId')
       .addGroupBy('p.name')
       .orderBy('"quantity"', 'DESC')
-      .limit(10)
-      .getRawMany<{
-        productId: string;
-        productName: string;
-        quantity: string;
-      }>();
-  }
-
-  private getLowestSelling(userId: string, startDate: Date) {
-    return this.stockMovementsRepository
-      .createQueryBuilder('m')
-      .select('m.productId', 'productId')
-      .addSelect('p.name', 'productName')
-      .addSelect('COALESCE(SUM(m.quantity), 0)', 'quantity')
-      .innerJoin('product', 'p', 'p.id = m.productId')
-      .where('m.userId = :userId', { userId })
-      .andWhere('m.type = :outType', { outType: StockMovementType.OUT })
-      .andWhere('m."createdAt" >= :startDate', { startDate })
-      .groupBy('m.productId')
-      .addGroupBy('p.name')
-      .orderBy('"quantity"', 'ASC')
-      .limit(5)
       .getRawMany<{
         productId: string;
         productName: string;
@@ -403,21 +385,14 @@ export class AnalyticsService {
       }>();
   }
 
-  private buildTimeline(movements: { createdAt: Date; netChange: string }[]) {
+  private buildTimeline(movements: { date: string; netChange: string }[]) {
     if (!movements.length) return [];
 
-    const dailyMap = new Map<string, number>();
-    for (const m of movements) {
-      const day = m.createdAt.toISOString().slice(0, 10);
-      dailyMap.set(day, (dailyMap.get(day) ?? 0) + Number(m.netChange));
-    }
-
-    const sortedDays = [...dailyMap.keys()].sort();
     let cumulative = 0;
     const points: { date: string; balance: number }[] = [];
-    for (const day of sortedDays) {
-      cumulative += dailyMap.get(day)!;
-      points.push({ date: day, balance: cumulative });
+    for (const m of movements) {
+      cumulative += Number(m.netChange);
+      points.push({ date: m.date, balance: cumulative });
     }
 
     return points;

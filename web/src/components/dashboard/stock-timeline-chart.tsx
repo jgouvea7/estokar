@@ -110,7 +110,7 @@ export const StockTimelineChart = memo(function StockTimelineChart({ data, title
               tick={{ fontSize: 10, fill: 'var(--muted)', fontWeight: 600 }}
               tickLine={false}
               axisLine={{ stroke: 'var(--stroke)' }}
-              interval="preserveStartEnd"
+              interval={0}
             />
             <YAxis
               tick={{ fontSize: 10, fill: 'var(--muted)', fontWeight: 600 }}

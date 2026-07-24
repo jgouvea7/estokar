@@ -4,7 +4,8 @@ import { useState, useMemo } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { getAnalytics } from '@/lib/api/analytics';
 import { useAuthStore } from '@/store/auth-store';
-import type { AnalyticsFilter, AnalyticsPeriod } from '@/lib/types';
+import type { AnalyticsFilter } from '@/lib/types';
+import { aggregateByPeriod } from '@/lib/aggregate-by-period';
 import { AnalyticsFilterToggle } from '@/components/analytics/analytics-filter-toggle';
 import { AnalyticsTimelineChart } from '@/components/analytics/analytics-timeline-chart';
 import { AnalyticsDailyBalanceChart } from '@/components/analytics/analytics-daily-balance-chart';
@@ -15,54 +16,13 @@ import { AnalyticsForecastTable } from '@/components/analytics/analytics-forecas
 import { AnalyticsTopStockChart } from '@/components/analytics/analytics-top-stock-chart';
 import { AnalyticsSummaryCards } from '@/components/analytics/analytics-summary-cards';
 
-function aggregateByPeriod<T extends { date: string }>(
-  data: T[] | undefined,
-  filter: AnalyticsFilter,
-): T[] {
-  if (!data || !data.length) return [];
-  if (!filter || filter === 'daily') return data;
-
-  const groups = new Map<string, T & { entries: number; outputs: number }>();
-  for (const item of data) {
-    const rawDate = (item as { date: string }).date;
-    if (!rawDate) continue;
-    const d = new Date(rawDate + 'T00:00:00');
-    if (isNaN(d.getTime())) continue;
-    const key = (() => {
-      switch (filter) {
-        case 'weekly': {
-          const start = new Date(d);
-          start.setDate(d.getDate() - d.getDay());
-          return start.toISOString().slice(0, 10);
-        }
-        case 'monthly':
-          return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}`;
-        case 'yearly':
-          return `${d.getFullYear()}`;
-        default:
-          return rawDate;
-      }
-    })();
-    const existing = groups.get(key);
-    const entry = item as T & { entries: number; outputs: number };
-    if (existing) {
-      existing.entries += entry.entries;
-      existing.outputs += entry.outputs;
-    } else {
-      groups.set(key, { ...entry, date: key });
-    }
-  }
-  return Array.from(groups.values()) as unknown as T[];
-}
-
 export default function AnalyticsPage() {
   const [filter, setFilter] = useState<AnalyticsFilter>(null);
   const session = useAuthStore((state) => state.session);
 
-  const period = filter ?? 'monthly';
   const { data, isLoading, error } = useQuery({
-    queryKey: ['analytics', session?.user.id, period],
-    queryFn: async () => getAnalytics(session!.accessToken, period as AnalyticsPeriod),
+    queryKey: ['analytics', session?.user.id, filter ?? 'all'],
+    queryFn: async () => getAnalytics(session!.accessToken, filter),
     enabled: Boolean(session?.accessToken),
     staleTime: 30_000,
   });
@@ -72,18 +32,13 @@ export default function AnalyticsPage() {
     [data, filter],
   );
 
-  const filteredTimeline = useMemo(() => {
-    if (!data || !data.timeline.length) return [];
-    const startDate = new Date();
-    startDate.setHours(0, 0, 0, 0);
-    if (filter === 'daily') startDate.setDate(startDate.getDate() - 1);
-    else if (filter === 'weekly') startDate.setDate(startDate.getDate() - 7);
-    else if (filter === 'monthly') startDate.setMonth(startDate.getMonth() - 1);
-    else if (filter === 'yearly') startDate.setFullYear(startDate.getFullYear() - 1);
-    else return data.timeline;
-    const cutoff = startDate.toISOString().slice(0, 10);
-    return data.timeline.filter((p) => p.date >= cutoff);
-  }, [data, filter]);
+  const aggregatedTimeline = useMemo(
+    () => (data ? aggregateByPeriod(
+      data.timeline.map(p => ({ ...p, entries: 0, outputs: 0, balance: p.balance })),
+      filter,
+    ) : []),
+    [data, filter],
+  );
 
   if (!session) return null;
 
@@ -140,7 +95,7 @@ export default function AnalyticsPage() {
       <AnalyticsSummaryCards summary={data.summary} />
 
       <section className="grid gap-4 lg:grid-cols-2">
-        <AnalyticsTimelineChart data={filteredTimeline} filter={filter} />
+        <AnalyticsTimelineChart data={aggregatedTimeline} filter={filter} />
         <AnalyticsDailyBalanceChart data={aggregatedDailyBalance} filter={filter} />
       </section>
 

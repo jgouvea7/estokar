@@ -3,9 +3,10 @@ import type { AnalyticsData, AnalyticsPeriod } from '@/lib/types';
 
 export async function getAnalytics(
   accessToken: string,
-  period: AnalyticsPeriod,
+  period: AnalyticsPeriod | null,
 ): Promise<AnalyticsData> {
-  return apiRequest<AnalyticsData>(`/analytics?period=${period}`, {
+  const qs = period ? `?period=${period}` : '';
+  return apiRequest<AnalyticsData>(`/analytics${qs}`, {
     method: 'GET',
     accessToken,
   });

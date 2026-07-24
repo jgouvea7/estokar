@@ -73,7 +73,7 @@ export class DashboardService {
           'createdAt',
         ],
         order: { createdAt: 'DESC' },
-        take: 9,
+        take: 6,
       }),
       this.stockMovementsRepository
         .createQueryBuilder('m')

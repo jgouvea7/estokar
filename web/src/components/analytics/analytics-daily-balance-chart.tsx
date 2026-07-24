@@ -15,7 +15,7 @@ import { BarChart3 } from 'lucide-react';
 import type { AnalyticsFilter } from '@/lib/types';
 
 type AnalyticsDailyBalanceChartProps = {
-  data: { date: string; entries: number; outputs: number; balance: number }[];
+  data: { date: string; entries: number; outputs: number; balance: number; label?: string }[];
   filter: AnalyticsFilter;
 };
 
@@ -34,7 +34,9 @@ export function AnalyticsDailyBalanceChart({ data, filter }: AnalyticsDailyBalan
     return data
       .filter((d) => d.date)
       .map((d) => {
-        const date = new Date(d.date + 'T00:00:00');
+        if (d.label) return { ...d, label: d.label };
+        const dateStr = d.date.length > 10 ? d.date.slice(0, 10) : d.date;
+        const date = new Date(dateStr + 'T00:00:00');
         return {
           ...d,
           label: isNaN(date.getTime()) ? d.date : date.toLocaleDateString('pt-BR', {
@@ -78,7 +80,7 @@ export function AnalyticsDailyBalanceChart({ data, filter }: AnalyticsDailyBalan
               tick={{ fontSize: 10, fill: 'var(--muted)', fontWeight: 600 }}
               tickLine={false}
               axisLine={{ stroke: 'var(--stroke)' }}
-              interval="preserveStartEnd"
+              interval={filter && filter !== 'daily' ? 0 : 'preserveStartEnd'}
             />
             <YAxis
               tick={{ fontSize: 10, fill: 'var(--muted)', fontWeight: 600 }}

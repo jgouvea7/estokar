@@ -10,8 +10,12 @@ export async function getDashboard(accessToken: string): Promise<DashboardSummar
 
 export type TimelinePoint = { date: string; balance: number };
 
-export async function getDashboardTimeline(accessToken: string): Promise<{ points: TimelinePoint[] }> {
-  return apiRequest<{ points: TimelinePoint[] }>('/dashboard/timeline', {
+export async function getDashboardTimeline(accessToken: string, period?: string): Promise<{ points: TimelinePoint[] }> {
+  const params = new URLSearchParams();
+  if (period) params.set('period', period);
+  const qs = params.toString();
+  const path = `/dashboard/timeline${qs ? `?${qs}` : ''}`;
+  return apiRequest<{ points: TimelinePoint[] }>(path, {
     method: 'GET',
     accessToken,
   });

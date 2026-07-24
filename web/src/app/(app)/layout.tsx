@@ -229,7 +229,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
       <div
         className="flex h-screen flex-1 flex-col overflow-y-auto transition-all duration-300 ease-in-out"
         style={{
-          paddingLeft: isMobile ? '72px' : (isDesktopCollapsed ? '96px' : '304px'),
+          paddingLeft: isMobile ? '72px' : (isDesktopCollapsed ? '72px' : '280px'),
         }}
       >
         <header className="sticky top-0 z-50 flex min-h-[72px] items-center justify-between border-b-2 border-(--stroke) bg-(--card) px-4 sm:px-6">

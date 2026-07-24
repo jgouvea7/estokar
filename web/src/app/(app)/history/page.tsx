@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useMemo } from 'react';
+import { useState, useEffect } from 'react';
 import { ArrowDownLeft, ArrowUpRight, Download, History } from 'lucide-react';
 import { useHistoryStore } from '@/store/history-store';
 import { getStockMovements } from '@/lib/api/stock-movements';
@@ -19,7 +19,7 @@ export default function HistoryPage() {
     const controller = new AbortController();
     let active = true;
 
-    getStockMovements(session.accessToken, controller.signal)
+    getStockMovements(session.accessToken, controller.signal, period)
       .then((items) => {
         if (!active) return;
         setItems(items);
@@ -33,25 +33,17 @@ export default function HistoryPage() {
       active = false;
       controller.abort();
     };
-  }, [session, setItems]);
+  }, [session, setItems, period]);
 
-  const filteredItems = useMemo(() => {
-    const now = new Date();
-    const cutoff = new Date(now);
-    switch (period) {
-      case 'weekly': cutoff.setDate(cutoff.getDate() - 7); break;
-      case 'monthly': cutoff.setMonth(cutoff.getMonth() - 1); break;
-      case 'yearly': cutoff.setFullYear(cutoff.getFullYear() - 1); break;
-    }
-    return items.filter((item) => new Date(item.createdAt) >= cutoff);
-  }, [items, period]);
-
-  const groupedByDate = filteredItems.reduce<Record<string, typeof items>>((acc, item) => {
-    const key = new Date(item.createdAt).toLocaleDateString('pt-BR', {
-      weekday: 'long',
-      day: '2-digit',
-      month: 'long',
-    });
+  const groupedByDate = items.reduce<Record<string, typeof items>>((acc, item) => {
+    const date = new Date(item.createdAt);
+    const key = period === 'yearly'
+      ? date.toLocaleDateString('pt-BR', { month: 'long', year: 'numeric' })
+      : date.toLocaleDateString('pt-BR', {
+          weekday: 'long',
+          day: '2-digit',
+          month: 'long',
+        });
 
     if (!acc[key]) {
       acc[key] = [];
@@ -85,7 +77,17 @@ export default function HistoryPage() {
         </div>
         <button
           type="button"
-          onClick={() => exportStockMovementsCsv(session!.accessToken)}
+          onClick={() => {
+            const now = new Date();
+            const endDate = now.toISOString().slice(0, 10);
+            const startDate = new Date(now);
+            switch (period) {
+              case 'weekly': startDate.setDate(startDate.getDate() - 7); break;
+              case 'monthly': startDate.setMonth(startDate.getMonth() - 1); break;
+              case 'yearly': startDate.setFullYear(startDate.getFullYear() - 1); break;
+            }
+            exportStockMovementsCsv(session!.accessToken, startDate.toISOString().slice(0, 10), endDate);
+          }}
           className="inline-flex h-9 shrink-0 items-center gap-1.5 rounded-lg border-2 border-(--stroke) bg-(--card) px-4 text-xs font-bold text-(--ink) transition-all hover:bg-(--soft)">
           <Download size={14} strokeWidth={2.5} />
           CSV

@@ -14,7 +14,7 @@ import { BarChart3 } from 'lucide-react';
 import type { AnalyticsFilter } from '@/lib/types';
 
 type AnalyticsTimelineChartProps = {
-  data: { date: string; balance: number }[];
+  data: { date: string; balance: number; label?: string }[];
   filter?: AnalyticsFilter;
 };
 
@@ -28,22 +28,35 @@ const titleByFilter: Record<string, string> = {
 export function AnalyticsTimelineChart({ data, filter }: AnalyticsTimelineChartProps) {
   const title = filter ? titleByFilter[filter] : 'Movimentação do Estoque';
 
+  const getLabelByFilter = (dateStr: string, f?: AnalyticsFilter) => {
+    const normalized = dateStr.length > 10 ? dateStr.slice(0, 10) : dateStr;
+    const date = new Date(normalized + 'T00:00:00');
+    if (isNaN(date.getTime())) return dateStr;
+    switch (f) {
+      case 'yearly':
+        return String(date.getFullYear());
+      case 'monthly':
+        return date.toLocaleDateString('pt-BR', { month: 'short', year: '2-digit' });
+      default:
+        return date.toLocaleDateString('pt-BR', { day: 'numeric', month: 'short' });
+    }
+  };
+
   const chartData = useMemo(() => {
     if (!data || !data.length) return [];
     return data
       .filter((p) => p.date)
       .map((p) => {
-        const date = new Date(p.date + 'T00:00:00');
+        if (p.label) return { ...p, label: p.label };
+        const normalized = p.date.length > 10 ? p.date.slice(0, 10) : p.date;
+        const date = new Date(normalized + 'T00:00:00');
         return {
           date: p.date,
           balance: p.balance,
-          label: isNaN(date.getTime()) ? p.date : date.toLocaleDateString('pt-BR', {
-            day: 'numeric',
-            month: 'short',
-          }),
+          label: isNaN(date.getTime()) ? p.date : getLabelByFilter(p.date, filter),
         };
       });
-  }, [data]);
+  }, [data, filter]);
 
   if (!chartData.length) {
     return (
@@ -83,7 +96,7 @@ export function AnalyticsTimelineChart({ data, filter }: AnalyticsTimelineChartP
               tick={{ fontSize: 10, fill: 'var(--muted)', fontWeight: 600 }}
               tickLine={false}
               axisLine={{ stroke: 'var(--stroke)' }}
-              interval="preserveStartEnd"
+              interval={filter && filter !== 'daily' ? 0 : 'preserveStartEnd'}
             />
             <YAxis
               tick={{ fontSize: 10, fill: 'var(--muted)', fontWeight: 600 }}
