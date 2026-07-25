@@ -4,7 +4,8 @@ import { useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { useAuthStore } from '@/store/auth-store';
 import { getAdminLogs } from '@/lib/api/admin';
-import { ShieldCheck, UserMinus, ChevronLeft, ChevronRight } from 'lucide-react';
+import { ShieldCheck, UserMinus } from 'lucide-react';
+import { Pagination } from '@/components/ui/pagination';
 
 const actionLabels: Record<string, { label: string; className: string }> = {
   PROMOTE_USER: { label: 'Promovido a Admin', className: 'text-(--ok) bg-(--ok-soft)' },
@@ -80,23 +81,7 @@ export default function AdminLogsPage() {
       </div>
 
       {data && data.meta.lastPage > 1 && (
-        <div className="flex items-center justify-between">
-          <p className="text-xs text-(--muted)">
-            Página {data.meta.page} de {data.meta.lastPage} ({data.meta.total} registros)
-          </p>
-          <div className="flex gap-2">
-            <button onClick={() => setPage((p) => Math.max(1, p - 1))} disabled={page <= 1}
-              className="flex items-center gap-1 rounded-lg border-2 border-(--stroke) px-3 py-1.5 text-xs font-bold text-(--ink) transition-colors hover:bg-(--soft) disabled:opacity-40"
-            >
-              <ChevronLeft size={14} /> Anterior
-            </button>
-            <button onClick={() => setPage((p) => p + 1)} disabled={page >= data.meta.lastPage}
-              className="flex items-center gap-1 rounded-lg border-2 border-(--stroke) px-3 py-1.5 text-xs font-bold text-(--ink) transition-colors hover:bg-(--soft) disabled:opacity-40"
-            >
-              Próximo <ChevronRight size={14} />
-            </button>
-          </div>
-        </div>
+        <Pagination currentPage={page} totalPages={data.meta.lastPage} onPageChange={setPage} />
       )}
     </div>
   );

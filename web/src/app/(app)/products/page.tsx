@@ -1,12 +1,15 @@
 "use client";
 
 import { useEffect, useMemo, useRef, useState, Suspense } from 'react';
-import { createPortal } from 'react-dom';
 import Image from 'next/image';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
-import { ChevronLeft, ChevronRight, Edit2, Image as ImageIcon, MoreVertical, PackageSearch, Pencil, Plus, Search, Trash2, TrendingDown } from 'lucide-react';
+import { Edit2, Image as ImageIcon, MoreVertical, PackageSearch, Pencil, Plus, Search, Trash2, TrendingDown } from 'lucide-react';
 import { ExportButton } from '@/components/ui/export-button';
+import { Modal } from '@/components/ui/modal';
+import { Input } from '@/components/ui/input';
+import { Pagination } from '@/components/ui/pagination';
+import { getStatusBadge } from '@/lib/utils';
 import toast from 'react-hot-toast';
 import {
   createCategory,
@@ -674,7 +677,7 @@ function ProductsPageContent() {
                     alt={product.name}
                     width={80}
                     height={80}
-                    
+                    sizes="(min-width: 640px) 80px, 64px"
                     className="h-full w-full object-cover"
                   />
                 ) : (
@@ -817,29 +820,7 @@ function ProductsPageContent() {
           );
         })}
         </div>
-        {totalPages > 1 && (
-          <div className="flex items-center justify-center gap-2 pt-4">
-            <button
-              type="button"
-              onClick={() => setCurrentPage((p) => Math.max(1, p - 1))}
-              disabled={currentPage === 1}
-              className="inline-flex h-8 items-center gap-1 rounded-lg border-2 border-(--stroke) bg-(--card) px-3 text-xs font-bold text-(--ink) transition-all hover:bg-(--soft) disabled:opacity-40"
-            >
-              <ChevronLeft size={14} />
-              Anterior
-            </button>
-            <span className="text-xs font-bold text-(--muted)">{currentPage} / {totalPages}</span>
-            <button
-              type="button"
-              onClick={() => setCurrentPage((p) => Math.min(totalPages, p + 1))}
-              disabled={currentPage === totalPages}
-              className="inline-flex h-8 items-center gap-1 rounded-lg border-2 border-(--stroke) bg-(--card) px-3 text-xs font-bold text-(--ink) transition-all hover:bg-(--soft) disabled:opacity-40"
-            >
-              Próximo
-              <ChevronRight size={14} />
-            </button>
-          </div>
-        )}
+        <Pagination currentPage={currentPage} totalPages={totalPages} onPageChange={setCurrentPage} />
         </>
       )}
 
@@ -1183,101 +1164,6 @@ function CategoryChip({
         }`}>
       {label}
     </button>
-  );
-}
-
-function getStatusBadge(currentStock: number, estimatedDaysLeft: number | null, alertDaysBefore: number) {
-  if (currentStock <= 0) {
-    return {
-      accent: 'text-(--critical)',
-      className: 'bg-(--critical-soft) text-(--critical)',
-      label: 'Sem estoque',
-      tone: 'bg-(--critical-soft)',
-    };
-  }
-
-  if (estimatedDaysLeft !== null && estimatedDaysLeft <= alertDaysBefore) {
-    return {
-      accent: 'text-(--low)',
-      className: 'bg-(--low-soft) text-(--low)',
-      label: 'Atenção',
-      tone: 'bg-(--low-soft)',
-    };
-  }
-
-  return {
-    accent: 'text-(--ok)',
-    className: 'bg-(--ok-soft) text-(--ok)',
-    label: 'Estoque OK',
-    tone: 'bg-(--ok-soft)',
-  };
-}
-
-function Modal({
-  children,
-  onClose,
-  title,
-}: {
-  children: React.ReactNode;
-  onClose: () => void;
-  title: string;
-}) {
-  useEffect(() => {
-    document.body.style.overflow = 'hidden';
-    return () => {
-      document.body.style.overflow = 'unset';
-    };
-  }, []);
-
-  if (typeof document === 'undefined') {
-    return null;
-  }
-
-  return createPortal(
-    <div className="fixed inset-0 z-[70] flex items-center justify-center p-4 sm:p-6">
-      <div
-        className="absolute inset-0 bg-(--overlay)"
-        onClick={onClose}
-      />
-      <div
-        className="relative z-[80] w-full max-w-[720px] max-h-[85vh] overflow-y-auto rounded-xl bg-(--card) border-2 border-(--stroke) p-6 sm:p-8 shadow-(--elevated-shadow-strong)"
-        onClick={(e) => e.stopPropagation()}
-      >
-        <div className="mb-6">
-          <h4 className="text-xl font-bold tracking-tight text-(--ink)">{title}</h4>
-        </div>
-        {children}
-      </div>
-    </div>,
-    document.body,
-  );
-}
-
-
-function Input({
-  label,
-  onChange,
-  placeholder,
-  type = 'text',
-  value,
-}: {
-  label: string;
-  onChange: (value: string) => void;
-  placeholder?: string;
-  type?: 'text' | 'number' | 'date';
-  value: string;
-}) {
-  return (
-    <div className="flex flex-col gap-2">
-      <label className="text-xs font-bold text-(--ink) uppercase tracking-wider">{label}</label>
-      <input
-        type={type}
-        value={value}
-        placeholder={placeholder}
-        onChange={(event) => onChange(event.target.value)}
-        className="w-full rounded-lg border-2 border-(--stroke) bg-(--surface-2) px-4 py-3 text-sm font-medium text-(--ink) outline-none transition-all placeholder:text-(--muted) focus:border-(--accent) focus:bg-(--card) focus:ring-4 focus:[--tw-ring-color:var(--accent)]/30"
-      />
-    </div>
   );
 }
 

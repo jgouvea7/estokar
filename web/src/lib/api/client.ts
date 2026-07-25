@@ -71,6 +71,7 @@ export async function apiRequest<T>(path: string, options: RequestOptions = {}):
         message = detail;
       }
     } catch {
+      if (process.env.NODE_ENV === 'development') console.warn('Falha ao parsear resposta de erro da API');
     }
 
     throw new ApiError(message, response.status);

@@ -1,5 +1,6 @@
 "use client";
 
+import { memo } from 'react';
 import {
   BarChart,
   Bar,
@@ -14,7 +15,7 @@ type AnalyticsWeekdayChartProps = {
   data: { day: string; entries: number; outputs: number }[];
 };
 
-export function AnalyticsWeekdayChart({ data }: AnalyticsWeekdayChartProps) {
+export const AnalyticsWeekdayChart = memo(function AnalyticsWeekdayChart({ data }: AnalyticsWeekdayChartProps) {
   if (!data.length) return null;
 
   return (
@@ -55,4 +56,4 @@ export function AnalyticsWeekdayChart({ data }: AnalyticsWeekdayChartProps) {
       </div>
     </section>
   );
-}
+});

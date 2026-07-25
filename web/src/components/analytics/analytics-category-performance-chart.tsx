@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo } from 'react';
+import { memo, useMemo } from 'react';
 import {
   BarChart,
   Bar,
@@ -17,7 +17,7 @@ type AnalyticsCategoryPerformanceChartProps = {
   data: { categoryName: string; sales: number; stock: number; percentage: number }[];
 };
 
-export function AnalyticsCategoryPerformanceChart({
+export const AnalyticsCategoryPerformanceChart = memo(function AnalyticsCategoryPerformanceChart({
   data,
 }: AnalyticsCategoryPerformanceChartProps) {
   const chartData = useMemo(() => {
@@ -91,4 +91,4 @@ export function AnalyticsCategoryPerformanceChart({
       </div>
     </section>
   );
-}
+});

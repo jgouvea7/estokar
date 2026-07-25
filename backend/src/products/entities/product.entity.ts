@@ -24,7 +24,7 @@ export class Product {
   @JoinColumn({ name: 'userId' })
   user: User;
 
-  @Column({ nullable: true })
+  @Column({ type: 'uuid', nullable: true })
   categoryId?: string | null;
 
   @ManyToOne(() => Category, (category) => category.products, {
@@ -37,7 +37,7 @@ export class Product {
   @Column()
   name: string;
 
-  @Column({ nullable: true })
+  @Column({ type: 'text', nullable: true })
   description?: string | null;
 
   @Column()
@@ -49,7 +49,7 @@ export class Product {
   @Column({ default: false })
   hasExpiration: boolean;
 
-  @Column({ nullable: true })
+  @Column({ type: 'timestamp', nullable: true })
   expirationDate?: Date | null;
 
   @Column()

@@ -1,5 +1,6 @@
 "use client";
 
+import { memo } from 'react';
 import Link from 'next/link';
 import { TrendingDown, BarChart3 } from 'lucide-react';
 import { formatNumber } from '@/lib/utils';
@@ -17,7 +18,7 @@ const subtitleByFilter: Record<string, string> = {
   yearly: 'Menos vendidos este ano',
 };
 
-export function AnalyticsLowestSellingChart({ data, filter }: AnalyticsLowestSellingChartProps) {
+export const AnalyticsLowestSellingChart = memo(function AnalyticsLowestSellingChart({ data, filter }: AnalyticsLowestSellingChartProps) {
   const subtitle = filter ? subtitleByFilter[filter] : 'Menos Vendidos';
 
   if (!data || !data.length) {
@@ -73,4 +74,4 @@ export function AnalyticsLowestSellingChart({ data, filter }: AnalyticsLowestSel
       </div>
     </section>
   );
-}
+});

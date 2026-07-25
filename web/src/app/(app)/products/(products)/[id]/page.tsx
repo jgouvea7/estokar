@@ -21,7 +21,7 @@ import { getProductDetails, getProductTimeline } from '@/lib/api/products';
 import { StockTimelineChart } from '@/components/dashboard/stock-timeline-chart';
 import type { ProductDashboardMovement } from '@/lib/types';
 import { useAuthStore } from '@/store/auth-store';
-import { formatMetric, formatDays } from '@/lib/utils';
+import { formatMetric, formatDays, getStatusBadge } from '@/lib/utils';
 
 const NO_PHOTO_IMAGE = 'sem-foto';
 
@@ -163,6 +163,7 @@ export default function ProductDetailsPage() {
                     alt={dashboard.productName}
                     width={48}
                     height={48}
+                    sizes="48px"
                     className="h-full w-full object-cover"
                   />
                 ) : (
@@ -412,30 +413,5 @@ function InfoRow({
   );
 }
 
-function getStatusBadge(currentStock: number, estimatedDaysLeft: number | null, alertDaysBefore: number) {
-  if (currentStock <= 0) {
-    return {
-      accent: 'text-(--critical)',
-      className: 'border-(--critical) bg-(--critical-soft) text-(--critical)',
-      label: 'Sem estoque',
-      tone: 'bg-(--critical-soft)',
-    };
-  }
 
-  if (estimatedDaysLeft !== null && estimatedDaysLeft <= alertDaysBefore) {
-    return {
-      accent: 'text-(--low)',
-      className: 'border-(--low) bg-(--low-soft) text-(--low)',
-      label: 'Atenção',
-      tone: 'bg-(--low-soft)',
-    };
-  }
-
-  return {
-    accent: 'text-(--ok)',
-    className: 'border-(--ok) bg-(--ok-soft) text-(--ok)',
-    label: 'Estoque OK',
-    tone: 'bg-(--ok-soft)',
-  };
-}
 

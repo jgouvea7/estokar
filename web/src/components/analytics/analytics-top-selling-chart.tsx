@@ -1,5 +1,6 @@
 "use client";
 
+import { memo } from 'react';
 import Link from 'next/link';
 import { BarChart3 } from 'lucide-react';
 import { formatNumber } from '@/lib/utils';
@@ -17,7 +18,7 @@ const subtitleByFilter: Record<string, string> = {
   yearly: 'Mais vendidos este ano',
 };
 
-export function AnalyticsTopSellingChart({ data, filter }: AnalyticsTopSellingChartProps) {
+export const AnalyticsTopSellingChart = memo(function AnalyticsTopSellingChart({ data, filter }: AnalyticsTopSellingChartProps) {
   const subtitle = filter ? subtitleByFilter[filter] : 'Mais Vendidos';
 
   if (!data.length) {
@@ -73,4 +74,4 @@ export function AnalyticsTopSellingChart({ data, filter }: AnalyticsTopSellingCh
       </div>
     </section>
   );
-}
+});

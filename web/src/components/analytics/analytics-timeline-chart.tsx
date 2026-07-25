@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo } from 'react';
+import { memo, useMemo } from 'react';
 import {
   LineChart,
   Line,
@@ -25,7 +25,7 @@ const titleByFilter: Record<string, string> = {
   yearly: 'Movimentação Anual',
 };
 
-export function AnalyticsTimelineChart({ data, filter }: AnalyticsTimelineChartProps) {
+export const AnalyticsTimelineChart = memo(function AnalyticsTimelineChart({ data, filter }: AnalyticsTimelineChartProps) {
   const title = filter ? titleByFilter[filter] : 'Movimentação do Estoque';
 
   const getLabelByFilter = (dateStr: string, f?: AnalyticsFilter) => {
@@ -134,4 +134,4 @@ export function AnalyticsTimelineChart({ data, filter }: AnalyticsTimelineChartP
       </div>
     </section>
   );
-}
+});

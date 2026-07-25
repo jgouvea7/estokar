@@ -1,5 +1,6 @@
 "use client";
 
+import { memo } from 'react';
 import Link from 'next/link';
 import { BarChart3 } from 'lucide-react';
 import { formatNumber, formatMetric, formatDays } from '@/lib/utils';
@@ -15,7 +16,7 @@ type AnalyticsForecastTableProps = {
   }[];
 };
 
-export function AnalyticsForecastTable({ data }: AnalyticsForecastTableProps) {
+export const AnalyticsForecastTable = memo(function AnalyticsForecastTable({ data }: AnalyticsForecastTableProps) {
   if (!data.length) {
     return (
       <section className="surface-card p-5 sm:p-6">
@@ -96,4 +97,4 @@ export function AnalyticsForecastTable({ data }: AnalyticsForecastTableProps) {
       </div>
     </section>
   );
-}
+});

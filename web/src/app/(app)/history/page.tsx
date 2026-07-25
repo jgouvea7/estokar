@@ -1,7 +1,8 @@
 "use client";
 
 import { Suspense, useMemo, useState } from 'react';
-import { ArrowDownLeft, ArrowUpRight, ChevronLeft, ChevronRight, History, Link as LinkIcon, Search } from 'lucide-react';
+import { ArrowDownLeft, ArrowUpRight, History, Link as LinkIcon, Search } from 'lucide-react';
+import { Pagination } from '@/components/ui/pagination';
 import { useQuery } from '@tanstack/react-query';
 import Link from 'next/link';
 import { getStockMovements } from '@/lib/api/stock-movements';
@@ -254,29 +255,7 @@ function HistoryPageContent() {
         )}
       </section>
 
-      {totalPages > 1 && (
-        <div className="flex items-center justify-center gap-2 pt-4">
-          <button
-            type="button"
-            onClick={() => setCurrentPage((p) => Math.max(1, p - 1))}
-            disabled={currentPage === 1}
-            className="inline-flex h-8 items-center gap-1 rounded-lg border-2 border-(--stroke) bg-(--card) px-3 text-xs font-bold text-(--ink) transition-all hover:bg-(--soft) disabled:opacity-40"
-          >
-            <ChevronLeft size={14} />
-            Anterior
-          </button>
-          <span className="text-xs font-bold text-(--muted)">{currentPage} / {totalPages}</span>
-          <button
-            type="button"
-            onClick={() => setCurrentPage((p) => Math.min(totalPages, p + 1))}
-            disabled={currentPage === totalPages}
-            className="inline-flex h-8 items-center gap-1 rounded-lg border-2 border-(--stroke) bg-(--card) px-3 text-xs font-bold text-(--ink) transition-all hover:bg-(--soft) disabled:opacity-40"
-          >
-            Próximo
-            <ChevronRight size={14} />
-          </button>
-        </div>
-      )}
+      <Pagination currentPage={currentPage} totalPages={totalPages} onPageChange={setCurrentPage} />
     </div>
   );
 }

@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo } from 'react';
+import { memo, useMemo } from 'react';
 import {
   BarChart,
   Bar,
@@ -26,7 +26,7 @@ const titleByFilter: Record<string, string> = {
   yearly: 'Entradas vs Saídas por Ano',
 };
 
-export function AnalyticsDailyBalanceChart({ data, filter }: AnalyticsDailyBalanceChartProps) {
+export const AnalyticsDailyBalanceChart = memo(function AnalyticsDailyBalanceChart({ data, filter }: AnalyticsDailyBalanceChartProps) {
   const title = filter ? titleByFilter[filter] : 'Entradas vs Saídas';
 
   const chartData = useMemo(() => {
@@ -113,4 +113,4 @@ export function AnalyticsDailyBalanceChart({ data, filter }: AnalyticsDailyBalan
       </div>
     </section>
   );
-}
+});

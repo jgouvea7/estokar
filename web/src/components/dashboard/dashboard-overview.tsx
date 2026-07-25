@@ -14,6 +14,7 @@ import {
   Package2,
 } from 'lucide-react';
 import { ExportButton } from '@/components/ui/export-button';
+import { ErrorBoundary } from '@/components/ui/error-boundary';
 import { StockTimelineChart } from '@/components/dashboard/stock-timeline-chart';
 import { CategoryPieChart } from '@/components/dashboard/category-pie-chart';
 import type { DashboardOverviewData } from '@/lib/dashboard/dashboard-data';
@@ -105,7 +106,7 @@ export function DashboardOverview({ data, accessToken, lastUpdatedAt }: Dashboar
             </section>
           )}
 
-          <StockTimelineChart data={data.timelinePoints} title="Movimentação do Estoque" />
+          <ErrorBoundary><StockTimelineChart data={data.timelinePoints} title="Movimentação do Estoque" /></ErrorBoundary>
 
           <section className="grid gap-6 lg:grid-cols-[1.6fr_1fr]">
             <div className="space-y-5">
@@ -134,7 +135,7 @@ export function DashboardOverview({ data, accessToken, lastUpdatedAt }: Dashboar
 
             <div className="flex flex-col gap-5">
               <div className="min-h-0">
-                <CategoryPieChart data={data.categoryStockPoints} />
+                <ErrorBoundary><CategoryPieChart data={data.categoryStockPoints} /></ErrorBoundary>
               </div>
               <section className="surface-card p-5 sm:p-6 sm:flex-[1]">
                 <div className="mb-4">

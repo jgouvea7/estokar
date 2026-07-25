@@ -33,3 +33,30 @@ export function formatDateTime(value: string | Date) {
     month: '2-digit',
   }).format(new Date(value));
 }
+
+export function getStatusBadge(currentStock: number, estimatedDaysLeft: number | null, alertDaysBefore: number) {
+  if (currentStock <= 0) {
+    return {
+      accent: 'text-(--critical)',
+      className: 'border-(--critical) bg-(--critical-soft) text-(--critical)',
+      label: 'Sem estoque',
+      tone: 'bg-(--critical-soft)',
+    };
+  }
+
+  if (estimatedDaysLeft !== null && estimatedDaysLeft <= alertDaysBefore) {
+    return {
+      accent: 'text-(--low)',
+      className: 'border-(--low) bg-(--low-soft) text-(--low)',
+      label: 'Atenção',
+      tone: 'bg-(--low-soft)',
+    };
+  }
+
+  return {
+    accent: 'text-(--ok)',
+    className: 'border-(--ok) bg-(--ok-soft) text-(--ok)',
+    label: 'Estoque OK',
+    tone: 'bg-(--ok-soft)',
+  };
+}

@@ -15,6 +15,7 @@ import { AnalyticsCategoryPerformanceChart } from '@/components/analytics/analyt
 import { AnalyticsForecastTable } from '@/components/analytics/analytics-forecast-table';
 import { AnalyticsTopStockChart } from '@/components/analytics/analytics-top-stock-chart';
 import { AnalyticsSummaryCards } from '@/components/analytics/analytics-summary-cards';
+import { ErrorBoundary } from '@/components/ui/error-boundary';
 
 export default function AnalyticsPage() {
   const [filter, setFilter] = useState<AnalyticsFilter>(null);
@@ -95,21 +96,21 @@ export default function AnalyticsPage() {
       <AnalyticsSummaryCards summary={data.summary} />
 
       <section className="grid gap-4 lg:grid-cols-2">
-        <AnalyticsTimelineChart data={aggregatedTimeline} filter={filter} />
-        <AnalyticsDailyBalanceChart data={aggregatedDailyBalance} filter={filter} />
+        <ErrorBoundary><AnalyticsTimelineChart data={aggregatedTimeline} filter={filter} /></ErrorBoundary>
+        <ErrorBoundary><AnalyticsDailyBalanceChart data={aggregatedDailyBalance} filter={filter} /></ErrorBoundary>
       </section>
 
       <section className="grid gap-4 lg:grid-cols-2">
-        <AnalyticsTopSellingChart data={data.topSelling} filter={filter} />
-        <AnalyticsLowestSellingChart data={data.lowestSelling} filter={filter} />
+        <ErrorBoundary><AnalyticsTopSellingChart data={data.topSelling} filter={filter} /></ErrorBoundary>
+        <ErrorBoundary><AnalyticsLowestSellingChart data={data.lowestSelling} filter={filter} /></ErrorBoundary>
       </section>
 
       <section className="grid gap-4 lg:grid-cols-2">
-        <AnalyticsTopStockChart data={data.stockDistribution} />
-        <AnalyticsCategoryPerformanceChart data={data.categoryPerformance} />
+        <ErrorBoundary><AnalyticsTopStockChart data={data.stockDistribution} /></ErrorBoundary>
+        <ErrorBoundary><AnalyticsCategoryPerformanceChart data={data.categoryPerformance} /></ErrorBoundary>
       </section>
 
-      <AnalyticsForecastTable data={data.forecast} />
+      <ErrorBoundary><AnalyticsForecastTable data={data.forecast} /></ErrorBoundary>
     </div>
   );
 }

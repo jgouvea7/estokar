@@ -1,5 +1,6 @@
 "use client";
 
+import { memo } from 'react';
 import {
   BarChart,
   Bar,
@@ -17,7 +18,7 @@ type AnalyticsStockRangesChartProps = {
 
 const COLORS = ['var(--critical)', 'var(--low)', 'var(--accent)', 'var(--ok)', 'var(--muted)'];
 
-export function AnalyticsStockRangesChart({ data }: AnalyticsStockRangesChartProps) {
+export const AnalyticsStockRangesChart = memo(function AnalyticsStockRangesChart({ data }: AnalyticsStockRangesChartProps) {
   if (!data.length) return null;
 
   return (
@@ -64,4 +65,4 @@ export function AnalyticsStockRangesChart({ data }: AnalyticsStockRangesChartPro
       </div>
     </section>
   );
-}
+});

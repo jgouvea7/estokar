@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo } from 'react';
+import { memo, useMemo } from 'react';
 import {
   BarChart,
   Bar,
@@ -18,7 +18,7 @@ type AnalyticsTopStockChartProps = {
   data: { productId: string; productName: string; quantity: number }[];
 };
 
-export function AnalyticsTopStockChart({ data }: AnalyticsTopStockChartProps) {
+export const AnalyticsTopStockChart = memo(function AnalyticsTopStockChart({ data }: AnalyticsTopStockChartProps) {
   const chartData = useMemo(() => {
     if (!data || !data.length) return [];
     const top5 = [...data].sort((a, b) => b.quantity - a.quantity).slice(0, 5);
@@ -75,4 +75,4 @@ export function AnalyticsTopStockChart({ data }: AnalyticsTopStockChartProps) {
       </div>
     </section>
   );
-}
+});
